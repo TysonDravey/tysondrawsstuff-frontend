@@ -11,7 +11,12 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'your-strapi-domain.com', // Replace with your production Strapi domain
+        hostname: 'loose-stake-distributor-are.trycloudflare.com',
+        pathname: '/uploads/**',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.trycloudflare.com', // Allow any Cloudflare tunnel
         pathname: '/uploads/**',
       },
     ],
