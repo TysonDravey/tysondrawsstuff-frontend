@@ -34,36 +34,54 @@ export interface StrapiResponse<T> {
 }
 
 export async function fetchProducts(): Promise<Product[]> {
-  const response = await fetch(`${STRAPI_URL}/api/products?populate=*`);
+  try {
+    const response = await fetch(`${STRAPI_URL}/api/products?populate=*`);
 
-  if (!response.ok) {
-    throw new Error('Failed to fetch products');
+    if (!response.ok) {
+      console.warn('Failed to fetch products, returning empty array');
+      return [];
+    }
+
+    const result: StrapiResponse<Product[]> = await response.json();
+    return result.data;
+  } catch (error) {
+    console.warn('Strapi not available during build, returning empty array');
+    return [];
   }
-
-  const result: StrapiResponse<Product[]> = await response.json();
-  return result.data;
 }
 
 export async function fetchProductBySlug(slug: string): Promise<Product | null> {
-  const response = await fetch(`${STRAPI_URL}/api/products?filters[slug][$eq]=${slug}&populate=*`);
+  try {
+    const response = await fetch(`${STRAPI_URL}/api/products?filters[slug][$eq]=${slug}&populate=*`);
 
-  if (!response.ok) {
-    throw new Error('Failed to fetch product');
+    if (!response.ok) {
+      console.warn(`Failed to fetch product ${slug}, returning null`);
+      return null;
+    }
+
+    const result: StrapiResponse<Product[]> = await response.json();
+    return result.data.length > 0 ? result.data[0] : null;
+  } catch (error) {
+    console.warn(`Strapi not available during build for product ${slug}, returning null`);
+    return null;
   }
-
-  const result: StrapiResponse<Product[]> = await response.json();
-  return result.data.length > 0 ? result.data[0] : null;
 }
 
 export async function fetchProductSlugs(): Promise<string[]> {
-  const response = await fetch(`${STRAPI_URL}/api/products?fields[0]=slug`);
+  try {
+    const response = await fetch(`${STRAPI_URL}/api/products?fields[0]=slug`);
 
-  if (!response.ok) {
-    throw new Error('Failed to fetch product slugs');
+    if (!response.ok) {
+      console.warn('Failed to fetch product slugs, returning empty array');
+      return [];
+    }
+
+    const result: StrapiResponse<Product[]> = await response.json();
+    return result.data.map(product => product.slug);
+  } catch (error) {
+    console.warn('Strapi not available during build for slugs, returning empty array');
+    return [];
   }
-
-  const result: StrapiResponse<Product[]> = await response.json();
-  return result.data.map(product => product.slug);
 }
 
 export function getStrapiImageUrl(image: StrapiImage): string {

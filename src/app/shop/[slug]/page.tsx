@@ -25,6 +25,18 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const product = await fetchProductBySlug(params.slug);
 
   if (!product) {
+    // During build time, if Strapi is not available, show a placeholder
+    if (process.env.NODE_ENV === 'production') {
+      return (
+        <div className="container mx-auto px-4 py-16 text-center">
+          <h1 className="text-2xl font-bold mb-4">Product Not Available</h1>
+          <p className="text-gray-600 mb-8">This product could not be loaded at the moment.</p>
+          <Link href="/shop" className="text-blue-600 hover:text-blue-800">
+            ← Back to Shop
+          </Link>
+        </div>
+      );
+    }
     notFound();
   }
 
