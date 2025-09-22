@@ -57,7 +57,7 @@ export async function fetchProducts(): Promise<Product[]> {
 
     const result: StrapiResponse<Product[]> = await response.json();
     return result.data;
-  } catch (error) {
+  } catch {
     console.warn('Strapi not available during build, returning empty array');
     return [];
   }
@@ -74,7 +74,7 @@ export async function fetchProductBySlug(slug: string): Promise<Product | null> 
 
     const result: StrapiResponse<Product[]> = await response.json();
     return result.data.length > 0 ? result.data[0] : null;
-  } catch (error) {
+  } catch {
     console.warn(`Strapi not available during build for product ${slug}, returning null`);
     return null;
   }
@@ -91,7 +91,7 @@ export async function fetchProductSlugs(): Promise<string[]> {
 
     const result: StrapiResponse<Product[]> = await response.json();
     return result.data.map(product => product.slug);
-  } catch (error) {
+  } catch {
     console.warn('Strapi not available during build for slugs, returning empty array');
     return [];
   }
@@ -144,7 +144,7 @@ export async function fetchFeaturedProducts(): Promise<Product[]> {
 
     const result: StrapiResponse<Product[]> = await response.json();
     return result.data;
-  } catch (error) {
+  } catch {
     console.warn('Strapi not available during build for featured products, returning empty array');
     return [];
   }
@@ -161,7 +161,7 @@ export async function fetchProductsByCategory(categorySlug: string): Promise<Pro
 
     const result: StrapiResponse<Product[]> = await response.json();
     return result.data;
-  } catch (error) {
+  } catch {
     console.warn(`Strapi not available during build for category ${categorySlug}, returning empty array`);
     return [];
   }
@@ -178,7 +178,7 @@ export async function fetchCategories(): Promise<Category[]> {
 
     const result: StrapiResponse<Category[]> = await response.json();
     return result.data;
-  } catch (error) {
+  } catch {
     console.warn('Strapi not available during build for categories, returning empty array');
     return [];
   }
@@ -194,7 +194,7 @@ export async function fetchCategoryBySlug(slug: string): Promise<Category | null
 
     const result: StrapiResponse<Category[]> = await response.json();
     return result.data.length > 0 ? result.data[0] : null;
-  } catch (error) {
+  } catch {
     console.warn(`Strapi not available during build for category ${slug}, returning null`);
     return null;
   }

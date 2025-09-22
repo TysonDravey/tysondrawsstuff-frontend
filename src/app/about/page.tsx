@@ -1,5 +1,5 @@
 import Layout from '@/components/Layout';
-import Image from 'next/image';
+import Link from 'next/link';
 
 export default function About() {
   return (
@@ -23,7 +23,7 @@ export default function About() {
               <div className="space-y-4">
                 <h2 className="text-2xl font-bold text-foreground">About the Artist</h2>
                 <p className="text-muted-foreground leading-relaxed">
-                  Welcome to Tyson Draws Stuff! I'm Kirk Brillon, the artist behind all the creative work you see here.
+                  Welcome to Tyson Draws Stuff! I&apos;m Kirk Brillon, the artist behind all the creative work you see here.
                   What started as a passion for drawing and creating has evolved into a full collection of original
                   artwork, prints, and unique merchandise.
                 </p>
@@ -33,14 +33,14 @@ export default function About() {
                   your face.
                 </p>
                 <p className="text-muted-foreground leading-relaxed">
-                  Whether you're looking for an original piece to hang on your wall, a high-quality print for
-                  your collection, or some fun merchandise to show your support, you'll find something unique
+                  Whether you&apos;re looking for an original piece to hang on your wall, a high-quality print for
+                  your collection, or some fun merchandise to show your support, you&apos;ll find something unique
                   in the Tyson Draws Stuff shop.
                 </p>
               </div>
 
               <div className="space-y-4">
-                <h3 className="text-xl font-semibold text-foreground">What You'll Find Here:</h3>
+                <h3 className="text-xl font-semibold text-foreground">What You&apos;ll Find Here:</h3>
                 <ul className="space-y-2 text-muted-foreground">
                   <li className="flex items-start">
                     <span className="text-primary mr-2">•</span>
@@ -105,18 +105,18 @@ export default function About() {
               Browse through all the available artwork, prints, and merchandise in the shop.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a
+              <Link
                 href="/shop"
                 className="bg-primary text-primary-foreground px-8 py-3 rounded-lg font-semibold hover:bg-red-700 transition-colors"
               >
                 Browse All Art
-              </a>
-              <a
+              </Link>
+              <Link
                 href="/category/original-art"
                 className="bg-secondary text-secondary-foreground px-8 py-3 rounded-lg font-semibold hover:bg-gray-700 transition-colors"
               >
                 View Originals
-              </a>
+              </Link>
             </div>
           </div>
         </div>
