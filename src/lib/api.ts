@@ -8,6 +8,17 @@ export interface StrapiImage {
   height: number;
 }
 
+export interface Category {
+  id: number;
+  documentId: string;
+  name: string;
+  slug: string;
+  description?: string;
+  createdAt: string;
+  updatedAt: string;
+  publishedAt: string;
+}
+
 export interface Product {
   id: number;
   documentId: string;
@@ -15,7 +26,9 @@ export interface Product {
   price: number;
   description?: string;
   slug: string;
+  featured: boolean;
   images?: StrapiImage[];
+  category?: Category;
   createdAt: string;
   updatedAt: string;
   publishedAt: string;
@@ -118,4 +131,71 @@ export function getStrapiImageUrl(image: StrapiImage, format?: string): string {
     return url;
   }
   return `${STRAPI_URL}${url}`;
+}
+
+export async function fetchFeaturedProducts(): Promise<Product[]> {
+  try {
+    const response = await fetch(`${STRAPI_URL}/api/products?populate=*&filters[featured][$eq]=true`);
+
+    if (!response.ok) {
+      console.warn('Failed to fetch featured products, returning empty array');
+      return [];
+    }
+
+    const result: StrapiResponse<Product[]> = await response.json();
+    return result.data;
+  } catch (error) {
+    console.warn('Strapi not available during build for featured products, returning empty array');
+    return [];
+  }
+}
+
+export async function fetchProductsByCategory(categorySlug: string): Promise<Product[]> {
+  try {
+    const response = await fetch(`${STRAPI_URL}/api/products?populate=*&filters[category][slug][$eq]=${categorySlug}`);
+
+    if (!response.ok) {
+      console.warn(`Failed to fetch products for category ${categorySlug}, returning empty array`);
+      return [];
+    }
+
+    const result: StrapiResponse<Product[]> = await response.json();
+    return result.data;
+  } catch (error) {
+    console.warn(`Strapi not available during build for category ${categorySlug}, returning empty array`);
+    return [];
+  }
+}
+
+export async function fetchCategories(): Promise<Category[]> {
+  try {
+    const response = await fetch(`${STRAPI_URL}/api/categories`);
+
+    if (!response.ok) {
+      console.warn('Failed to fetch categories, returning empty array');
+      return [];
+    }
+
+    const result: StrapiResponse<Category[]> = await response.json();
+    return result.data;
+  } catch (error) {
+    console.warn('Strapi not available during build for categories, returning empty array');
+    return [];
+  }
+}
+
+export async function fetchCategoryBySlug(slug: string): Promise<Category | null> {
+  try {
+    const response = await fetch(`${STRAPI_URL}/api/categories?filters[slug][$eq]=${slug}`);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result: StrapiResponse<Category[]> = await response.json();
+    return result.data.length > 0 ? result.data[0] : null;
+  } catch (error) {
+    console.warn(`Strapi not available during build for category ${slug}, returning null`);
+    return null;
+  }
 }
