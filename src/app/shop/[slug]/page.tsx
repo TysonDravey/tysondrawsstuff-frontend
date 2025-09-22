@@ -92,11 +92,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
                     </span>
                   </div>
                 )}
-
-                {/* Purchase Section */}
-                <div className="pt-4 border-t border-border">
-                  <BuyButton productSlug={product.slug} price={product.price} />
-                </div>
               </div>
 
               {/* Description */}
@@ -109,6 +104,12 @@ export default async function ProductPage({ params }: ProductPageProps) {
                   />
                 </div>
               )}
+
+              {/* Purchase Section */}
+              <div className="bg-card border border-border rounded-lg p-6">
+                <h3 className="text-lg font-semibold mb-4 text-card-foreground">Purchase</h3>
+                <BuyButton productSlug={product.slug} price={product.price} />
+              </div>
 
             </div>
           </div>
