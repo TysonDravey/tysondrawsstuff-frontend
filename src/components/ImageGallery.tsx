@@ -41,11 +41,6 @@ export default function ImageGallery({ images, productTitle }: ImageGalleryProps
           }}
           className="rounded-lg"
           priority={selectedImageIndex === 0}
-          onError={(e) => {
-            // Fallback to original URL if format-specific URL fails
-            const target = e.target as HTMLImageElement;
-            target.src = getStrapiImageUrl(selectedImage);
-          }}
         />
       </div>
 
@@ -63,15 +58,10 @@ export default function ImageGallery({ images, productTitle }: ImageGalleryProps
               }`}
             >
               <Image
-                src={getStrapiImageUrl(image, 'thumbnail')}
+                src={getStrapiImageUrl(image)}
                 alt={image.alternativeText || `${productTitle} - Thumbnail ${index + 1}`}
                 fill
                 className="object-cover"
-                onError={(e) => {
-                  // Fallback to original URL if thumbnail format fails
-                  const target = e.target as HTMLImageElement;
-                  target.src = getStrapiImageUrl(image);
-                }}
               />
 
               {/* Selected indicator */}
