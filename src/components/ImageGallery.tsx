@@ -64,10 +64,6 @@ export default function ImageGallery({ images, productTitle }: ImageGalleryProps
                 className="object-cover"
               />
 
-              {/* Selected indicator - subtle overlay */}
-              {index === selectedImageIndex && (
-                <div className="absolute inset-0 bg-blue-500 bg-opacity-10 border-2 border-blue-500 rounded-md"></div>
-              )}
             </button>
           ))}
         </div>
