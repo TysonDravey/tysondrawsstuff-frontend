@@ -3,6 +3,20 @@ import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
 import Stripe from 'stripe';
 
+interface ExpandedSession extends Stripe.Checkout.Session {
+  shipping_details?: {
+    name?: string;
+    address?: {
+      line1?: string;
+      line2?: string;
+      city?: string;
+      state?: string;
+      postal_code?: string;
+      country?: string;
+    };
+  };
+}
+
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-08-27.basil',
 });
@@ -25,7 +39,7 @@ async function getCheckoutSession(sessionId: string) {
   }
 }
 
-function SuccessContent({ session }: { session: Stripe.Checkout.Session | null }) {
+function SuccessContent({ session }: { session: ExpandedSession | null }) {
   if (!session) {
     return (
       <div className="container mx-auto px-4 py-16 text-center">
