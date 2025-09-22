@@ -34,7 +34,7 @@ function SuccessContent({ session }: { session: Stripe.Checkout.Session | null }
             Order Not Found
           </h1>
           <p className="text-gray-600 mb-8">
-            We couldn't find your order details. Please contact support if you need assistance.
+            We couldn&apos;t find your order details. Please contact support if you need assistance.
           </p>
           <Link
             href="/shop"
@@ -136,8 +136,8 @@ function SuccessContent({ session }: { session: Stripe.Checkout.Session | null }
           <h3 className="text-lg font-semibold text-blue-900 mb-2">What Happens Next?</h3>
           <ul className="text-sm text-blue-700 space-y-1">
             <li>• Your order details have been sent to {customerEmail}</li>
-            <li>• We'll prepare your artwork for shipping</li>
-            <li>• You'll receive tracking information once shipped</li>
+            <li>• We&apos;ll prepare your artwork for shipping</li>
+            <li>• You&apos;ll receive tracking information once shipped</li>
             <li>• Questions? Contact us with your order ID: <span className="font-mono">{session.id}</span></li>
           </ul>
         </div>
