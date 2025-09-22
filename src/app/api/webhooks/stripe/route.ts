@@ -45,10 +45,10 @@ export async function POST(request: NextRequest) {
   return NextResponse.json({ received: true });
 }
 
-async function saveOrderToStrapi(session: Stripe.Checkout.Session) {
+async function saveOrderToStrapi(session: Stripe.Checkout.Session & { shipping_details?: Stripe.Checkout.Session.ShippingDetails }) {
   const customer = session.customer as Stripe.Customer | null;
   const customerEmail = customer?.email || session.customer_email;
-  const customerName = customer?.name || session.shipping_details?.name;
+  const customerName = customer?.name;
   const shippingAddress = session.shipping_details?.address;
 
   // Get custom fields (order notes)
