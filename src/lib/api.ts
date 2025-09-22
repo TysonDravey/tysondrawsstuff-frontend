@@ -14,6 +14,7 @@ export interface Category {
   name: string;
   slug: string;
   description?: string;
+  sortOrder: number;
   createdAt: string;
   updatedAt: string;
   publishedAt: string;
@@ -169,7 +170,7 @@ export async function fetchProductsByCategory(categorySlug: string): Promise<Pro
 
 export async function fetchCategories(): Promise<Category[]> {
   try {
-    const response = await fetch(`${STRAPI_URL}/api/categories`);
+    const response = await fetch(`${STRAPI_URL}/api/categories?sort=sortOrder:asc`);
 
     if (!response.ok) {
       console.warn('Failed to fetch categories, returning empty array');
@@ -186,10 +187,10 @@ export async function fetchCategories(): Promise<Category[]> {
 
 export async function fetchCategoriesWithProducts(): Promise<Category[]> {
   try {
-    // Get all categories
+    // Get all categories (already sorted by sortOrder)
     const categories = await fetchCategories();
 
-    // Filter categories that have products
+    // Filter categories that have products, maintaining sort order
     const categoriesWithProducts: Category[] = [];
 
     for (const category of categories) {
@@ -199,6 +200,7 @@ export async function fetchCategoriesWithProducts(): Promise<Category[]> {
       }
     }
 
+    // Categories are already sorted by sortOrder from fetchCategories
     return categoriesWithProducts;
   } catch {
     console.warn('Error fetching categories with products, returning empty array');
