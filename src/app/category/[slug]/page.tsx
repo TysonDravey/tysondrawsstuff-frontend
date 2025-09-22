@@ -80,30 +80,6 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
             )}
           </div>
 
-          {/* Category Navigation */}
-          <div className="mb-12">
-            <div className="flex flex-wrap gap-3">
-              <Link
-                href="/shop"
-                className="px-6 py-3 text-sm font-medium text-muted-foreground bg-secondary rounded-lg hover:bg-gray-700 transition-colors"
-              >
-                All Products
-              </Link>
-              {(await fetchCategoriesWithProducts()).map((cat) => (
-                <Link
-                  key={cat.slug}
-                  href={`/category/${cat.slug}`}
-                  className={`px-6 py-3 text-sm font-medium rounded-lg transition-colors ${
-                    cat.slug === slug
-                      ? 'bg-primary text-primary-foreground'
-                      : 'text-muted-foreground bg-secondary hover:bg-gray-700'
-                  }`}
-                >
-                  {cat.name}
-                </Link>
-              ))}
-            </div>
-          </div>
 
           {/* Products Grid */}
           {products.length === 0 ? (
