@@ -5,7 +5,7 @@ import ProductCard from '@/components/ProductCard';
 import {
   fetchProductsByCategory,
   fetchCategoryBySlug,
-  fetchCategoriesWithProducts,
+  fetchCategories,
   type Product
 } from '@/lib/api';
 
