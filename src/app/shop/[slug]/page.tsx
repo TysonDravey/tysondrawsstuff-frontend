@@ -5,9 +5,9 @@ import { fetchProductBySlug, fetchProductSlugs, getStrapiImageUrl } from '@/lib/
 import BuyButton from '@/components/BuyButton';
 
 interface ProductPageProps {
-  params: {
+  params: Promise<{
     slug: string;
-  };
+  }>;
 }
 
 // Revalidate every 60 seconds
@@ -22,7 +22,8 @@ export async function generateStaticParams() {
 }
 
 export default async function ProductPage({ params }: ProductPageProps) {
-  const product = await fetchProductBySlug(params.slug);
+  const { slug } = await params;
+  const product = await fetchProductBySlug(slug);
 
   if (!product) {
     // During build time, if Strapi is not available, show a placeholder
