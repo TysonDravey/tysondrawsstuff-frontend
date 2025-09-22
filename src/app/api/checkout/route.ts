@@ -83,7 +83,7 @@ export async function POST(request: NextRequest) {
       custom_fields: [
         {
           key: 'order_notes',
-          label: { type: 'plain', value: 'Special instructions (optional)' },
+          label: { type: 'custom', custom: 'Special instructions (optional)' },
           type: 'text',
           optional: true,
         },
