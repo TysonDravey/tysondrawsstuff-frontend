@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import Layout from '@/components/Layout';
 import ProductCard from '@/components/ProductCard';
 import { fetchFeaturedProducts, type Product } from '@/lib/api';
@@ -14,6 +15,18 @@ export default async function Home() {
       {/* Hero Section */}
       <section className="bg-background py-20 lg:py-32">
         <div className="container mx-auto px-4 text-center">
+          {/* Logo */}
+          <div className="mb-8">
+            <Image
+              src={`${process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1339'}/uploads/tysondrawsstuff_web_logo_06_e9ebe2d054.png`}
+              alt="Tyson Draws Stuff Logo"
+              width={300}
+              height={300}
+              className="mx-auto"
+              priority
+            />
+          </div>
+
           <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-foreground mb-6">
             Tyson Draws Stuff
           </h1>
