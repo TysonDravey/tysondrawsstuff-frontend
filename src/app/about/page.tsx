@@ -1,5 +1,6 @@
 import Layout from '@/components/Layout';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function About() {
   return (
@@ -65,12 +66,13 @@ export default function About() {
             {/* Artist Photo Placeholder */}
             <div className="space-y-6">
               <div className="bg-card border border-border rounded-lg p-8 text-center">
-                <div className="w-48 h-48 mx-auto bg-muted rounded-full flex items-center justify-center mb-6">
-                  <div className="text-muted-foreground">
-                    <svg className="w-20 h-20" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-                    </svg>
-                  </div>
+                <div className="w-48 h-48 mx-auto mb-6 relative">
+                  <Image
+                    src={`${process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1339'}/uploads/TysonPuppet_head_07_small_01.png`}
+                    alt="Kirk Brillon - Artist"
+                    fill
+                    className="object-cover rounded-full"
+                  />
                 </div>
                 <h3 className="text-xl font-semibold text-card-foreground mb-2">Kirk Brillon</h3>
                 <p className="text-muted-foreground">Artist & Creator</p>

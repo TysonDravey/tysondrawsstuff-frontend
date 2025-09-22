@@ -28,9 +28,6 @@ export default async function Home() {
             />
           </div>
 
-          <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold text-foreground mb-6">
-            Tyson Draws Stuff
-          </h1>
           <p className="text-xl sm:text-2xl text-muted-foreground mb-12 max-w-3xl mx-auto">
             Original Art, Prints, and More
           </p>
