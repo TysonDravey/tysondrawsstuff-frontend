@@ -1,8 +1,8 @@
 import { notFound } from 'next/navigation';
-import Image from 'next/image';
 import Link from 'next/link';
-import { fetchProductBySlug, fetchProductSlugs, getStrapiImageUrl } from '@/lib/api';
+import { fetchProductBySlug, fetchProductSlugs } from '@/lib/api';
 import BuyButton from '@/components/BuyButton';
+import ImageGallery from '@/components/ImageGallery';
 
 interface ProductPageProps {
   params: Promise<{
@@ -50,65 +50,49 @@ export default async function ProductPage({ params }: ProductPageProps) {
         ← Back to Shop
       </Link>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
         {/* Product Images */}
-        <div className="space-y-4">
-          {product.images && product.images.length > 0 ? (
-            <>
-              <div className="aspect-square relative bg-gray-200 rounded-lg overflow-hidden">
-                <Image
-                  src={getStrapiImageUrl(product.images[0])}
-                  alt={product.images[0].alternativeText || product.title}
-                  fill
-                  className="object-cover"
-                  priority
-                />
-              </div>
-
-              {product.images.length > 1 && (
-                <div className="grid grid-cols-4 gap-2">
-                  {product.images.slice(1, 5).map((image, index) => (
-                    <div key={image.id} className="aspect-square relative bg-gray-200 rounded overflow-hidden">
-                      <Image
-                        src={getStrapiImageUrl(image)}
-                        alt={image.alternativeText || `${product.title} ${index + 2}`}
-                        fill
-                        className="object-cover"
-                      />
-                    </div>
-                  ))}
-                </div>
-              )}
-            </>
-          ) : (
-            <div className="aspect-square bg-gray-200 rounded-lg flex items-center justify-center">
-              <span className="text-gray-500">No images available</span>
-            </div>
-          )}
+        <div>
+          <ImageGallery
+            images={product.images || []}
+            productTitle={product.title}
+          />
         </div>
 
         {/* Product Details */}
-        <div className="space-y-6">
+        <div className="space-y-6 lg:space-y-8">
+          {/* Title and Price */}
           <div>
-            <h1 className="text-3xl font-bold mb-4">{product.title}</h1>
-            <p className="text-4xl font-bold text-green-600">${product.price.toFixed(2)}</p>
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 lg:mb-4 leading-tight">
+              {product.title}
+            </h1>
+            <p className="text-3xl sm:text-4xl lg:text-5xl font-bold text-green-600">
+              ${product.price.toFixed(2)} <span className="text-sm sm:text-base text-gray-500 font-normal">CAD</span>
+            </p>
           </div>
 
+          {/* Description */}
           {product.description && (
-            <div className="prose max-w-none">
-              <h3 className="text-lg font-semibold mb-2">Description</h3>
+            <div className="prose prose-sm sm:prose lg:prose-lg max-w-none">
+              <h3 className="text-lg sm:text-xl font-semibold mb-3 text-gray-900">Description</h3>
               <div
-                className="text-gray-700"
+                className="text-gray-700 leading-relaxed"
                 dangerouslySetInnerHTML={{ __html: product.description }}
               />
             </div>
           )}
 
-          <BuyButton productSlug={product.slug} price={product.price} />
+          {/* Purchase Section */}
+          <div className="bg-gray-50 p-4 sm:p-6 rounded-lg">
+            <BuyButton productSlug={product.slug} price={product.price} />
+          </div>
 
-          <div className="border-t pt-6 text-sm text-gray-600">
-            <p><strong>Product ID:</strong> {product.documentId}</p>
-            <p><strong>SKU:</strong> {product.slug}</p>
+          {/* Product Info */}
+          <div className="border-t pt-6 text-sm text-gray-600 space-y-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <p><strong>Product ID:</strong> {product.documentId}</p>
+              <p><strong>SKU:</strong> {product.slug}</p>
+            </div>
           </div>
         </div>
       </div>

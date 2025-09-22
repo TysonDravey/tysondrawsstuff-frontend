@@ -84,9 +84,38 @@ export async function fetchProductSlugs(): Promise<string[]> {
   }
 }
 
-export function getStrapiImageUrl(image: StrapiImage): string {
-  if (image.url.startsWith('http')) {
-    return image.url;
+export function getStrapiImageUrl(image: StrapiImage, format?: string): string {
+  let url = image.url;
+
+  // If requesting a specific format and image has formats
+  if (format && url.includes('/uploads/')) {
+    // For Strapi images, we can request different formats by modifying the URL
+    const urlParts = url.split('.');
+    const extension = urlParts.pop();
+    const baseName = urlParts.join('.');
+
+    // Try to get the format, fallback to original
+    switch (format) {
+      case 'large':
+        url = `${baseName}_large.${extension}`;
+        break;
+      case 'medium':
+        url = `${baseName}_medium.${extension}`;
+        break;
+      case 'small':
+        url = `${baseName}_small.${extension}`;
+        break;
+      case 'thumbnail':
+        url = `${baseName}_thumbnail.${extension}`;
+        break;
+      default:
+        // Keep original URL
+        break;
+    }
   }
-  return `${STRAPI_URL}${image.url}`;
+
+  if (url.startsWith('http')) {
+    return url;
+  }
+  return `${STRAPI_URL}${url}`;
 }
