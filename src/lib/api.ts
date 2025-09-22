@@ -184,6 +184,28 @@ export async function fetchCategories(): Promise<Category[]> {
   }
 }
 
+export async function fetchCategoriesWithProducts(): Promise<Category[]> {
+  try {
+    // Get all categories
+    const categories = await fetchCategories();
+
+    // Filter categories that have products
+    const categoriesWithProducts: Category[] = [];
+
+    for (const category of categories) {
+      const products = await fetchProductsByCategory(category.slug);
+      if (products.length > 0) {
+        categoriesWithProducts.push(category);
+      }
+    }
+
+    return categoriesWithProducts;
+  } catch {
+    console.warn('Error fetching categories with products, returning empty array');
+    return [];
+  }
+}
+
 export async function fetchCategoryBySlug(slug: string): Promise<Category | null> {
   try {
     const response = await fetch(`${STRAPI_URL}/api/categories?filters[slug][$eq]=${slug}`);

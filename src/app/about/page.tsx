@@ -104,18 +104,12 @@ export default function About() {
             <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
               Browse through all the available artwork, prints, and merchandise in the shop.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex justify-center">
               <Link
                 href="/shop"
                 className="bg-primary text-primary-foreground px-8 py-3 rounded-lg font-semibold hover:bg-red-700 transition-colors"
               >
                 Browse All Art
-              </Link>
-              <Link
-                href="/category/original-art"
-                className="bg-secondary text-secondary-foreground px-8 py-3 rounded-lg font-semibold hover:bg-gray-700 transition-colors"
-              >
-                View Originals
               </Link>
             </div>
           </div>

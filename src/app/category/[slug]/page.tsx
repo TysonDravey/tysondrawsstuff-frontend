@@ -5,7 +5,7 @@ import ProductCard from '@/components/ProductCard';
 import {
   fetchProductsByCategory,
   fetchCategoryBySlug,
-  fetchCategories,
+  fetchCategoriesWithProducts,
   type Product
 } from '@/lib/api';
 
@@ -89,7 +89,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
               >
                 All Products
               </Link>
-              {(await fetchCategories()).map((cat) => (
+              {(await fetchCategoriesWithProducts()).map((cat) => (
                 <Link
                   key={cat.slug}
                   href={`/category/${cat.slug}`}

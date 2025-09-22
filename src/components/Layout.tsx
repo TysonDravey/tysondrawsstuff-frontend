@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { fetchCategories, type Category } from '@/lib/api';
+import { fetchCategoriesWithProducts, type Category } from '@/lib/api';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -16,7 +16,7 @@ export default function Layout({ children }: LayoutProps) {
 
   useEffect(() => {
     const loadCategories = async () => {
-      const fetchedCategories = await fetchCategories();
+      const fetchedCategories = await fetchCategoriesWithProducts();
       setCategories(fetchedCategories);
     };
 
