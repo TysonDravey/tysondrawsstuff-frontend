@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { fetchCategoriesWithProducts, type Category } from '@/lib/api';
 
@@ -37,8 +38,14 @@ export default function Layout({ children }: LayoutProps) {
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
             <div className="flex items-center">
-              <Link href="/" className="text-2xl font-bold text-foreground hover:text-primary transition-colors">
-                Tyson Draws Stuff
+              <Link href="/" className="hover:opacity-80 transition-opacity">
+                <Image
+                  src={`${process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1339'}/uploads/tysondrawsstuff_web_logo_06_e9ebe2d054.png`}
+                  alt="Tyson Draws Stuff"
+                  width={50}
+                  height={50}
+                  className="h-10 w-auto"
+                />
               </Link>
             </div>
 

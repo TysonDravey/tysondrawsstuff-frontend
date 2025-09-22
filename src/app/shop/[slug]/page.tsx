@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import Layout from '@/components/Layout';
 import { fetchProductBySlug, fetchProductSlugs } from '@/lib/api';
 import BuyButton from '@/components/BuyButton';
 import ImageGallery from '@/components/ImageGallery';
@@ -29,73 +30,100 @@ export default async function ProductPage({ params }: ProductPageProps) {
     // During build time, if Strapi is not available, show a placeholder
     if (process.env.NODE_ENV === 'production') {
       return (
-        <div className="container mx-auto px-4 py-16 text-center">
-          <h1 className="text-2xl font-bold mb-4">Product Not Available</h1>
-          <p className="text-gray-600 mb-8">This product could not be loaded at the moment.</p>
-          <Link href="/shop" className="text-blue-600 hover:text-blue-800">
-            ← Back to Shop
-          </Link>
-        </div>
+        <Layout>
+          <div className="container mx-auto px-4 py-16 text-center">
+            <h1 className="text-2xl font-bold mb-4 text-foreground">Product Not Available</h1>
+            <p className="text-muted-foreground mb-8">This product could not be loaded at the moment.</p>
+            <Link href="/shop" className="text-primary hover:text-orange-600 inline-flex items-center">
+              <svg className="mr-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              Back to Shop
+            </Link>
+          </div>
+        </Layout>
       );
     }
     notFound();
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <Link
-        href="/shop"
-        className="text-blue-600 hover:text-blue-800 mb-6 inline-block"
-      >
-        ← Back to Shop
-      </Link>
+    <Layout>
+      <div className="py-8">
+        <div className="container mx-auto px-4">
+          <Link
+            href="/shop"
+            className="text-primary hover:text-orange-600 mb-6 inline-flex items-center font-medium transition-colors"
+          >
+            <svg className="mr-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            </svg>
+            Back to Shop
+          </Link>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
-        {/* Product Images */}
-        <div>
-          <ImageGallery
-            images={product.images || []}
-            productTitle={product.title}
-          />
-        </div>
-
-        {/* Product Details */}
-        <div className="space-y-6 lg:space-y-8">
-          {/* Title and Price */}
-          <div>
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 lg:mb-4 leading-tight">
-              {product.title}
-            </h1>
-            <p className="text-3xl sm:text-4xl lg:text-5xl font-bold text-green-600">
-              ${product.price.toFixed(2)} <span className="text-sm sm:text-base text-gray-500 font-normal">CAD</span>
-            </p>
-          </div>
-
-          {/* Description */}
-          {product.description && (
-            <div className="prose prose-sm sm:prose lg:prose-lg max-w-none">
-              <h3 className="text-lg sm:text-xl font-semibold mb-3 text-gray-900">Description</h3>
-              <div
-                className="text-gray-700 leading-relaxed"
-                dangerouslySetInnerHTML={{ __html: product.description }}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
+            {/* Product Images */}
+            <div>
+              <ImageGallery
+                images={product.images || []}
+                productTitle={product.title}
               />
             </div>
-          )}
 
-          {/* Purchase Section */}
-          <div className="bg-gray-50 p-4 sm:p-6 rounded-lg">
-            <BuyButton productSlug={product.slug} price={product.price} />
-          </div>
+            {/* Product Details */}
+            <div className="space-y-6 lg:space-y-8">
+              {/* Product Info Card */}
+              <div className="bg-card border border-border rounded-lg p-6 space-y-6">
+                {/* Title and Price */}
+                <div>
+                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 lg:mb-4 leading-tight text-card-foreground">
+                    {product.title}
+                  </h1>
+                  <p className="text-3xl sm:text-4xl lg:text-5xl font-bold text-primary">
+                    ${product.price.toFixed(2)} <span className="text-sm sm:text-base text-muted-foreground font-normal">CAD</span>
+                  </p>
+                </div>
 
-          {/* Product Info */}
-          <div className="border-t pt-6 text-sm text-gray-600 space-y-2">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              <p><strong>Product ID:</strong> {product.documentId}</p>
-              <p><strong>SKU:</strong> {product.slug}</p>
+                {/* Category */}
+                {product.category && (
+                  <div>
+                    <span className="inline-block bg-secondary text-secondary-foreground text-sm font-medium px-3 py-1 rounded">
+                      {product.category.name}
+                    </span>
+                  </div>
+                )}
+
+                {/* Purchase Section */}
+                <div className="pt-4 border-t border-border">
+                  <BuyButton productSlug={product.slug} price={product.price} />
+                </div>
+              </div>
+
+              {/* Description */}
+              {product.description && (
+                <div className="bg-card border border-border rounded-lg p-6">
+                  <h3 className="text-lg sm:text-xl font-semibold mb-4 text-card-foreground">Description</h3>
+                  <div
+                    className="text-muted-foreground leading-relaxed prose prose-sm max-w-none"
+                    dangerouslySetInnerHTML={{ __html: product.description }}
+                  />
+                </div>
+              )}
+
+              {/* Product Info */}
+              <div className="bg-card border border-border rounded-lg p-6">
+                <h3 className="text-lg font-semibold mb-4 text-card-foreground">Product Details</h3>
+                <div className="text-sm text-muted-foreground space-y-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    <p><strong className="text-card-foreground">Product ID:</strong> {product.documentId}</p>
+                    <p><strong className="text-card-foreground">SKU:</strong> {product.slug}</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </Layout>
   );
 }
