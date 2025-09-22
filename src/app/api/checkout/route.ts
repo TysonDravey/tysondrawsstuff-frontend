@@ -31,7 +31,7 @@ export async function POST(request: NextRequest) {
     // Convert CAD to cents for Stripe
     const priceInCents = Math.round(product.price * 100);
 
-    // Create Stripe checkout session
+    // Create Stripe checkout session with comprehensive customer data collection
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
@@ -51,12 +51,43 @@ export async function POST(request: NextRequest) {
         },
       ],
       mode: 'payment',
+
+      // Customer information collection
+      customer_creation: 'always',
+      customer_email: undefined, // Allows customer to enter email
+
+      // Collect customer details
+      billing_address_collection: 'auto', // Optional billing address
+      shipping_address_collection: {
+        allowed_countries: ['CA', 'US'], // Adjust based on your shipping countries
+      },
+
+      // Phone number collection
+      phone_number_collection: {
+        enabled: true,
+      },
+
+      // Success and cancel URLs
       success_url: `${request.nextUrl.origin}/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${request.nextUrl.origin}/cancel`,
+
+      // Enhanced metadata for order tracking
       metadata: {
         productId: product.documentId,
         productSlug: product.slug,
+        productTitle: product.title,
+        productPrice: product.price.toString(),
       },
+
+      // Custom fields for additional information (optional)
+      custom_fields: [
+        {
+          key: 'order_notes',
+          label: { type: 'plain', value: 'Special instructions (optional)' },
+          type: 'text',
+          optional: true,
+        },
+      ],
     });
 
     return NextResponse.json({ url: session.url });
