@@ -45,11 +45,26 @@ export async function POST(request: NextRequest) {
   return NextResponse.json({ received: true });
 }
 
+interface ExpandedSession extends Stripe.Checkout.Session {
+  shipping_details?: {
+    name?: string;
+    address?: {
+      line1?: string;
+      line2?: string;
+      city?: string;
+      state?: string;
+      postal_code?: string;
+      country?: string;
+    };
+  };
+}
+
 async function saveOrderToStrapi(session: Stripe.Checkout.Session) {
   const customer = session.customer as Stripe.Customer | null;
   const customerEmail = customer?.email || session.customer_email;
   const customerName = customer?.name;
-  const shippingDetails = (session as any).shipping_details;
+  const expandedSession = session as ExpandedSession;
+  const shippingDetails = expandedSession.shipping_details;
   const shippingAddress = shippingDetails?.address;
 
   // Get custom fields (order notes)
