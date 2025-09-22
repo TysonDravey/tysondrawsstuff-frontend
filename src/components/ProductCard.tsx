@@ -55,7 +55,7 @@ export default function ProductCard({ product, featured = false }: ProductCardPr
                 ${product.price.toFixed(2)}
               </p>
 
-              <button className="bg-primary text-primary-foreground px-4 py-2 rounded font-medium hover:bg-red-700 transition-colors">
+              <button className="bg-primary text-primary-foreground px-4 py-2 rounded font-medium hover:bg-orange-600 transition-colors">
                 Buy Now
               </button>
             </div>

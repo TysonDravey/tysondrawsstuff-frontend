@@ -107,7 +107,7 @@ export default function About() {
             <div className="flex justify-center">
               <Link
                 href="/shop"
-                className="bg-primary text-primary-foreground px-8 py-3 rounded-lg font-semibold hover:bg-red-700 transition-colors"
+                className="bg-primary text-primary-foreground px-8 py-3 rounded-lg font-semibold hover:bg-orange-600 transition-colors"
               >
                 Browse All Art
               </Link>

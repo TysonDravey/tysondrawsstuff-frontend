@@ -93,7 +93,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
                 </p>
                 <Link
                   href="/shop"
-                  className="inline-block bg-primary text-primary-foreground py-3 px-8 rounded-lg hover:bg-red-700 transition-colors font-semibold"
+                  className="inline-block bg-primary text-primary-foreground py-3 px-8 rounded-lg hover:bg-orange-600 transition-colors font-semibold"
                 >
                   Browse All Products
                 </Link>
@@ -119,7 +119,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
               <div className="text-center mt-16">
                 <Link
                   href="/shop"
-                  className="inline-flex items-center text-primary hover:text-red-700 font-semibold text-lg"
+                  className="inline-flex items-center text-primary hover:text-orange-600 font-semibold text-lg"
                 >
                   <svg className="mr-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />

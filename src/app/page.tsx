@@ -37,7 +37,7 @@ export default async function Home() {
           <div className="flex flex-col sm:flex-row gap-6 justify-center">
             <Link
               href="/shop"
-              className="bg-primary text-primary-foreground px-10 py-4 rounded-lg font-semibold hover:bg-red-700 transition-colors text-lg"
+              className="bg-primary text-primary-foreground px-10 py-4 rounded-lg font-semibold hover:bg-orange-600 transition-colors text-lg"
             >
               Shop All
             </Link>
@@ -62,7 +62,7 @@ export default async function Home() {
               <p className="text-muted-foreground text-lg mb-6">No featured products available at the moment.</p>
               <Link
                 href="/shop"
-                className="inline-block bg-primary text-primary-foreground px-8 py-3 rounded-lg font-semibold hover:bg-red-700 transition-colors"
+                className="inline-block bg-primary text-primary-foreground px-8 py-3 rounded-lg font-semibold hover:bg-orange-600 transition-colors"
               >
                 Browse all products →
               </Link>
@@ -80,7 +80,7 @@ export default async function Home() {
             <div className="text-center mt-16">
               <Link
                 href="/shop"
-                className="inline-flex items-center text-primary hover:text-red-700 font-semibold text-lg transition-colors"
+                className="inline-flex items-center text-primary hover:text-orange-600 font-semibold text-lg transition-colors"
               >
                 View All Products
                 <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
