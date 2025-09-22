@@ -53,8 +53,8 @@ export default function ImageGallery({ images, productTitle }: ImageGalleryProps
               onClick={() => setSelectedImageIndex(index)}
               className={`relative flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-md overflow-hidden border-2 transition-all duration-200 ${
                 index === selectedImageIndex
-                  ? 'border-blue-500 ring-2 ring-blue-200'
-                  : 'border-gray-300 hover:border-gray-400'
+                  ? 'border-blue-500 ring-2 ring-blue-300 shadow-lg scale-105'
+                  : 'border-gray-300 hover:border-gray-400 hover:shadow-md'
               }`}
             >
               <Image
@@ -64,11 +64,9 @@ export default function ImageGallery({ images, productTitle }: ImageGalleryProps
                 className="object-cover"
               />
 
-              {/* Selected indicator */}
+              {/* Selected indicator - subtle overlay */}
               {index === selectedImageIndex && (
-                <div className="absolute inset-0 bg-blue-500 bg-opacity-20 flex items-center justify-center">
-                  <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                </div>
+                <div className="absolute inset-0 bg-blue-500 bg-opacity-10 border-2 border-blue-500 rounded-md"></div>
               )}
             </button>
           ))}
