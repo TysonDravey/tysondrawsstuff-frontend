@@ -1,12 +1,13 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { fetchFeaturedProducts, getStrapiImageUrl, type Product } from '@/lib/api';
+import { fetchFeaturedProducts, fetchCategories, getStrapiImageUrl, type Product } from '@/lib/api';
 
 // Revalidate every 60 seconds
 export const revalidate = 60;
 
 export default async function Home() {
   const featuredProducts = await fetchFeaturedProducts();
+  const categories = await fetchCategories();
 
   return (
     <div className="min-h-screen">
@@ -136,12 +137,7 @@ export default async function Home() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              { name: 'Original Art', slug: 'original-art', description: 'One-of-a-kind pieces' },
-              { name: 'Posters', slug: 'posters', description: 'High-quality prints' },
-              { name: 'Merch', slug: 'merch', description: 'Apparel & accessories' },
-              { name: 'Books', slug: 'books', description: 'Art books & collections' }
-            ].map((category) => (
+            {categories.map((category) => (
               <Link
                 key={category.slug}
                 href={`/category/${category.slug}`}
@@ -150,7 +146,7 @@ export default async function Home() {
                 <h3 className="text-xl font-semibold text-gray-900 mb-2 group-hover:text-blue-600">
                   {category.name}
                 </h3>
-                <p className="text-gray-600">{category.description}</p>
+                <p className="text-gray-600">{category.description || 'Browse this category'}</p>
                 <div className="mt-4 text-blue-600 font-medium">
                   Browse →
                 </div>

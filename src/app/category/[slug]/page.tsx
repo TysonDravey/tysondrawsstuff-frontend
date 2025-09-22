@@ -87,12 +87,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
           >
             All Products
           </Link>
-          {[
-            { name: 'Original Art', slug: 'original-art' },
-            { name: 'Posters', slug: 'posters' },
-            { name: 'Merch', slug: 'merch' },
-            { name: 'Books', slug: 'books' }
-          ].map((cat) => (
+          {(await fetchCategories()).map((cat) => (
             <Link
               key={cat.slug}
               href={`/category/${cat.slug}`}

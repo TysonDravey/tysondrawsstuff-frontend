@@ -1,19 +1,23 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { fetchCategories, type Category } from '@/lib/api';
 
 export default function Navigation() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [categories, setCategories] = useState<Category[]>([]);
   const pathname = usePathname();
 
-  const categories = [
-    { name: 'Original Art', slug: 'original-art' },
-    { name: 'Posters', slug: 'posters' },
-    { name: 'Merch', slug: 'merch' },
-    { name: 'Books', slug: 'books' }
-  ];
+  useEffect(() => {
+    const loadCategories = async () => {
+      const fetchedCategories = await fetchCategories();
+      setCategories(fetchedCategories);
+    };
+
+    loadCategories();
+  }, []);
 
   const isActiveLink = (href: string) => {
     if (href === '/' && pathname === '/') return true;
