@@ -45,11 +45,12 @@ export async function POST(request: NextRequest) {
   return NextResponse.json({ received: true });
 }
 
-async function saveOrderToStrapi(session: Stripe.Checkout.Session & { shipping_details?: Stripe.Checkout.Session.ShippingDetails }) {
+async function saveOrderToStrapi(session: Stripe.Checkout.Session) {
   const customer = session.customer as Stripe.Customer | null;
   const customerEmail = customer?.email || session.customer_email;
   const customerName = customer?.name;
-  const shippingAddress = session.shipping_details?.address;
+  const shippingDetails = (session as any).shipping_details;
+  const shippingAddress = shippingDetails?.address;
 
   // Get custom fields (order notes)
   const orderNotes = session.custom_fields?.find(field => field.key === 'order_notes')?.text?.value;
@@ -85,7 +86,7 @@ async function saveOrderToStrapi(session: Stripe.Checkout.Session & { shipping_d
       customerEmail,
       customerName,
       customerPhone: session.customer_details?.phone || null,
-      shippingName: session.shipping_details?.name || null,
+      shippingName: shippingDetails?.name || null,
       shippingAddress: shippingAddress ? {
         line1: shippingAddress.line1,
         line2: shippingAddress.line2,
