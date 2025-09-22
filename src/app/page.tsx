@@ -14,10 +14,10 @@ export default async function Home() {
   return (
     <Layout>
       {/* Hero Section */}
-      <section className="bg-background py-20 lg:py-32">
+      <section className="bg-background py-12 lg:py-16">
         <div className="container mx-auto px-4 text-center">
           {/* Logo */}
-          <div className="mb-8">
+          <div className="mb-6">
             <Image
               src={`${process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1339'}/uploads/tysondrawsstuff_web_logo_06_e9ebe2d054.png`}
               alt="Tyson Draws Stuff Logo"
@@ -28,7 +28,7 @@ export default async function Home() {
             />
           </div>
 
-          <p className="text-xl sm:text-2xl text-muted-foreground mb-12 max-w-3xl mx-auto">
+          <p className="text-xl sm:text-2xl text-muted-foreground mb-8 max-w-3xl mx-auto">
             Original Art, Prints, and More
           </p>
           <div className="flex flex-col sm:flex-row gap-6 justify-center">

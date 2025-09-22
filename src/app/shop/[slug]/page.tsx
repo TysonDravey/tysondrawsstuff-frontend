@@ -110,16 +110,6 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 </div>
               )}
 
-              {/* Product Info */}
-              <div className="bg-card border border-border rounded-lg p-6">
-                <h3 className="text-lg font-semibold mb-4 text-card-foreground">Product Details</h3>
-                <div className="text-sm text-muted-foreground space-y-2">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    <p><strong className="text-card-foreground">Product ID:</strong> {product.documentId}</p>
-                    <p><strong className="text-card-foreground">SKU:</strong> {product.slug}</p>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </div>

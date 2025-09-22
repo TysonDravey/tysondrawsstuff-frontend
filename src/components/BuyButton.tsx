@@ -51,14 +51,14 @@ export default function BuyButton({ productSlug, price }: BuyButtonProps) {
       <button
         onClick={handleBuyNow}
         disabled={loading}
-        className="w-full bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full bg-primary text-primary-foreground py-3 px-6 rounded-lg hover:bg-orange-600 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {loading ? 'Processing...' : `Buy Now - $${price.toFixed(2)} CAD`}
       </button>
 
       <button
         onClick={handleAddToCart}
-        className="w-full border border-gray-300 text-gray-700 py-3 px-6 rounded-lg hover:bg-gray-50 transition-colors"
+        className="w-full border border-border text-card-foreground py-3 px-6 rounded-lg hover:bg-muted transition-colors"
       >
         Add to Cart
       </button>
