@@ -1,7 +1,7 @@
 import Layout from '@/components/Layout';
 import Link from 'next/link';
 import Image from 'next/image';
-import { fetchCategoriesWithProducts, type Category } from '@/lib/api';
+import { fetchCategoriesWithProducts } from '@/lib/api';
 import { getStaticAssetUrl } from '@/lib/images';
 
 export default async function About() {

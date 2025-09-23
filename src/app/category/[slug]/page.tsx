@@ -7,8 +7,7 @@ import {
   fetchCategoryBySlug,
   fetchCategories,
   fetchCategoriesWithProducts,
-  type Product,
-  type Category
+  type Product
 } from '@/lib/api';
 
 interface CategoryPageProps {

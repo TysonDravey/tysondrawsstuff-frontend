@@ -2,7 +2,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import Layout from '@/components/Layout';
 import ProductCard from '@/components/ProductCard';
-import { fetchFeaturedProducts, fetchCategoriesWithProducts, type Product, type Category } from '@/lib/api';
+import { fetchFeaturedProducts, fetchCategoriesWithProducts, type Product } from '@/lib/api';
 import { getLogoUrl } from '@/lib/images';
 // Trigger Vercel deployment with static site generation fixes
 

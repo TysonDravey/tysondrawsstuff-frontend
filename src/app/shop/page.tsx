@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import Layout from '@/components/Layout';
-import { fetchProducts, fetchCategoriesWithProducts, getStrapiImageUrl, type Product, type Category } from '@/lib/api';
+import { fetchProducts, fetchCategoriesWithProducts, getStrapiImageUrl, type Product } from '@/lib/api';
 
 // Static export - no revalidation needed
 
