@@ -37,24 +37,15 @@ if (!newStrapiUrl) {
   process.exit(1);
 }
 
-async function updateVercelEnv(key, value) {
+async function getExistingEnvVar(key) {
   return new Promise((resolve, reject) => {
-    const data = JSON.stringify({
-      key: key,
-      type: 'encrypted',
-      value: value,
-      target: ['production', 'preview', 'development']
-    });
-
     const options = {
       hostname: 'api.vercel.com',
       port: 443,
       path: `/v10/projects/${PROJECT_ID}/env${TEAM_ID ? `?teamId=${TEAM_ID}` : ''}`,
-      method: 'POST',
+      method: 'GET',
       headers: {
         'Authorization': `Bearer ${VERCEL_TOKEN}`,
-        'Content-Type': 'application/json',
-        'Content-Length': data.length
       }
     };
 
@@ -63,10 +54,66 @@ async function updateVercelEnv(key, value) {
       res.on('data', (chunk) => responseData += chunk);
       res.on('end', () => {
         if (res.statusCode >= 200 && res.statusCode < 300) {
-          console.log(`✅ Updated ${key} to: ${value}`);
+          const envVars = JSON.parse(responseData);
+          const existingVar = envVars.envs.find(env => env.key === key);
+          resolve(existingVar);
+        } else {
+          reject(new Error(`Failed to get env vars: ${res.statusCode} ${responseData}`));
+        }
+      });
+    });
+
+    req.on('error', reject);
+    req.end();
+  });
+}
+
+async function updateVercelEnv(key, value) {
+  // First check if the variable exists
+  const existingVar = await getExistingEnvVar(key);
+
+  const data = JSON.stringify({
+    key: key,
+    type: 'encrypted',
+    value: value,
+    target: ['production', 'preview', 'development']
+  });
+
+  const isUpdate = !!existingVar;
+  const method = isUpdate ? 'PATCH' : 'POST';
+  const path = isUpdate
+    ? `/v10/projects/${PROJECT_ID}/env/${existingVar.id}${TEAM_ID ? `?teamId=${TEAM_ID}` : ''}`
+    : `/v10/projects/${PROJECT_ID}/env${TEAM_ID ? `?teamId=${TEAM_ID}` : ''}`;
+
+  return new Promise((resolve, reject) => {
+    const options = {
+      hostname: 'api.vercel.com',
+      port: 443,
+      path: path,
+      method: method,
+      headers: {
+        'Authorization': `Bearer ${VERCEL_TOKEN}`,
+        'Content-Type': 'application/json',
+        'Content-Length': data.length
+      }
+    };
+
+    console.log(`🔄 ${isUpdate ? 'Updating existing' : 'Creating new'} environment variable ${key}...`);
+    if (isUpdate) {
+      console.log(`   Existing variable ID: ${existingVar.id}`);
+      console.log(`   Current value: ${existingVar.value ? '[ENCRYPTED]' : '[EMPTY]'}`);
+      console.log(`   New value: ${value}`);
+    }
+
+    const req = https.request(options, (res) => {
+      let responseData = '';
+      res.on('data', (chunk) => responseData += chunk);
+      res.on('end', () => {
+        if (res.statusCode >= 200 && res.statusCode < 300) {
+          console.log(`✅ ${isUpdate ? 'Updated' : 'Created'} ${key} to: ${value}`);
           resolve(responseData);
         } else {
-          reject(new Error(`Failed to update ${key}: ${res.statusCode} ${responseData}`));
+          reject(new Error(`Failed to ${isUpdate ? 'update' : 'create'} ${key}: ${res.statusCode} ${responseData}`));
         }
       });
     });
