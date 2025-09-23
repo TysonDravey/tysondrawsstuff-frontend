@@ -7,8 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "sync-images": "node scripts/sync-images.js",
-    "prebuild": "npm run sync-images"
+    "sync-images": "node scripts/sync-images.js"
   },
   "dependencies": {
     "@stripe/stripe-js": "^7.9.0",
