@@ -183,6 +183,11 @@ async function syncImages() {
         url: '/uploads/tysondrawsstuff_web_logo_06_e9ebe2d054.png',
         filename: 'logo.png',
         description: 'Site logo'
+      },
+      {
+        url: '/uploads/TysonPuppet_head_07_small_01.png',
+        filename: 'artist-photo.png',
+        description: 'Artist profile photo'
       }
       // Add more static assets here as needed
     ];
