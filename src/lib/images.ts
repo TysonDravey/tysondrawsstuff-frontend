@@ -121,5 +121,5 @@ export function getLogoUrl(): string {
  * Check if we're using static images (image map exists)
  */
 export function isUsingStaticImages(): boolean {
-  return imageMap && Object.keys(imageMap.products || {}).length > 0;
+  return !!(imageMap && Object.keys(imageMap.products || {}).length > 0);
 }
