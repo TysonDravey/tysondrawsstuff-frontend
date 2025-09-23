@@ -5,8 +5,7 @@ import ProductCard from '@/components/ProductCard';
 import { fetchFeaturedProducts, fetchCategoriesWithProducts, type Product, type Category } from '@/lib/api';
 // Trigger Vercel deployment with static site generation fixes
 
-// Revalidate every 60 seconds
-export const revalidate = 60;
+// Static export - no revalidation needed
 
 export default async function Home() {
   const [featuredProducts, categories] = await Promise.all([

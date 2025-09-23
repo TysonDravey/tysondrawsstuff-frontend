@@ -11,8 +11,7 @@ interface ProductPageProps {
   }>;
 }
 
-// Revalidate every 60 seconds
-export const revalidate = 60;
+// Static export - no revalidation needed
 
 export async function generateStaticParams() {
   const slugs = await fetchProductSlugs();

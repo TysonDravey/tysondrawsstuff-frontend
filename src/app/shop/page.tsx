@@ -3,8 +3,7 @@ import Image from 'next/image';
 import Layout from '@/components/Layout';
 import { fetchProducts, fetchCategoriesWithProducts, getStrapiImageUrl, type Product, type Category } from '@/lib/api';
 
-// Revalidate every 60 seconds
-export const revalidate = 60;
+// Static export - no revalidation needed
 
 export default async function ShopPage() {
   const [products, categories] = await Promise.all([
