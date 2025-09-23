@@ -3,7 +3,7 @@ import Image from 'next/image';
 import Layout from '@/components/Layout';
 import ProductCard from '@/components/ProductCard';
 import { fetchFeaturedProducts, fetchCategoriesWithProducts, type Product, type Category } from '@/lib/api';
-// Trigger deployment with clean descriptions
+// Trigger Vercel deployment with static site generation fixes
 
 // Revalidate every 60 seconds
 export const revalidate = 60;
