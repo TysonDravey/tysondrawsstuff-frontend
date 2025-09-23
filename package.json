@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "sync-images": "node scripts/sync-images.js"
+    "sync-images": "node scripts/sync-images.js",
+    "tunnel": "node scripts/start-tunnel-and-update.js",
+    "update-vercel-env": "node scripts/update-vercel-env.js"
   },
   "dependencies": {
     "@stripe/stripe-js": "^7.9.0",
