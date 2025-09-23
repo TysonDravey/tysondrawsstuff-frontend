@@ -1,5 +1,28 @@
 const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1339';
 
+// Create a fetch function with timeout for build time
+async function fetchWithTimeout(url: string, options: RequestInit = {}, timeout = 10000) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+  try {
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal,
+      headers: {
+        'Authorization': `Bearer ${process.env.STRAPI_API_TOKEN}`,
+        'Content-Type': 'application/json',
+        ...options.headers,
+      },
+    });
+    clearTimeout(timeoutId);
+    return response;
+  } catch (error) {
+    clearTimeout(timeoutId);
+    throw error;
+  }
+}
+
 export interface StrapiImage {
   id: number;
   url: string;
@@ -49,7 +72,7 @@ export interface StrapiResponse<T> {
 
 export async function fetchProducts(): Promise<Product[]> {
   try {
-    const response = await fetch(`${STRAPI_URL}/api/products?populate=*`);
+    const response = await fetchWithTimeout(`${STRAPI_URL}/api/products?populate=*`);
 
     if (!response.ok) {
       console.warn('Failed to fetch products, returning empty array');
@@ -58,15 +81,15 @@ export async function fetchProducts(): Promise<Product[]> {
 
     const result: StrapiResponse<Product[]> = await response.json();
     return result.data;
-  } catch {
-    console.warn('Strapi not available during build, returning empty array');
+  } catch (error) {
+    console.warn('Strapi not available during build for products, returning empty array', error instanceof Error ? error.message : '');
     return [];
   }
 }
 
 export async function fetchProductBySlug(slug: string): Promise<Product | null> {
   try {
-    const response = await fetch(`${STRAPI_URL}/api/products?filters[slug][$eq]=${slug}&populate=*`);
+    const response = await fetchWithTimeout(`${STRAPI_URL}/api/products?filters[slug][$eq]=${slug}&populate=*`);
 
     if (!response.ok) {
       console.warn(`Failed to fetch product ${slug}, returning null`);
@@ -75,15 +98,15 @@ export async function fetchProductBySlug(slug: string): Promise<Product | null> 
 
     const result: StrapiResponse<Product[]> = await response.json();
     return result.data.length > 0 ? result.data[0] : null;
-  } catch {
-    console.warn(`Strapi not available during build for product ${slug}, returning null`);
+  } catch (error) {
+    console.warn(`Strapi not available during build for product ${slug}, returning null`, error instanceof Error ? error.message : '');
     return null;
   }
 }
 
 export async function fetchProductSlugs(): Promise<string[]> {
   try {
-    const response = await fetch(`${STRAPI_URL}/api/products?fields[0]=slug`);
+    const response = await fetchWithTimeout(`${STRAPI_URL}/api/products?fields[0]=slug`);
 
     if (!response.ok) {
       console.warn('Failed to fetch product slugs, returning empty array');
@@ -92,8 +115,8 @@ export async function fetchProductSlugs(): Promise<string[]> {
 
     const result: StrapiResponse<Product[]> = await response.json();
     return result.data.map(product => product.slug);
-  } catch {
-    console.warn('Strapi not available during build for slugs, returning empty array');
+  } catch (error) {
+    console.warn('Strapi not available during build for slugs, returning empty array', error instanceof Error ? error.message : '');
     return [];
   }
 }
@@ -136,7 +159,7 @@ export function getStrapiImageUrl(image: StrapiImage, format?: string): string {
 
 export async function fetchFeaturedProducts(): Promise<Product[]> {
   try {
-    const response = await fetch(`${STRAPI_URL}/api/products?populate=*&filters[featured][$eq]=true`);
+    const response = await fetchWithTimeout(`${STRAPI_URL}/api/products?populate=*&filters[featured][$eq]=true`);
 
     if (!response.ok) {
       console.warn('Failed to fetch featured products, returning empty array');
@@ -153,7 +176,7 @@ export async function fetchFeaturedProducts(): Promise<Product[]> {
 
 export async function fetchProductsByCategory(categorySlug: string): Promise<Product[]> {
   try {
-    const response = await fetch(`${STRAPI_URL}/api/products?populate=*&filters[category][slug][$eq]=${categorySlug}`);
+    const response = await fetchWithTimeout(`${STRAPI_URL}/api/products?populate=*&filters[category][slug][$eq]=${categorySlug}`);
 
     if (!response.ok) {
       console.warn(`Failed to fetch products for category ${categorySlug}, returning empty array`);
@@ -170,7 +193,7 @@ export async function fetchProductsByCategory(categorySlug: string): Promise<Pro
 
 export async function fetchCategories(): Promise<Category[]> {
   try {
-    const response = await fetch(`${STRAPI_URL}/api/categories?sort=sortOrder:asc`);
+    const response = await fetchWithTimeout(`${STRAPI_URL}/api/categories?sort=sortOrder:asc`);
 
     if (!response.ok) {
       console.warn('Failed to fetch categories, returning empty array');
@@ -210,7 +233,7 @@ export async function fetchCategoriesWithProducts(): Promise<Category[]> {
 
 export async function fetchCategoryBySlug(slug: string): Promise<Category | null> {
   try {
-    const response = await fetch(`${STRAPI_URL}/api/categories?filters[slug][$eq]=${slug}`);
+    const response = await fetchWithTimeout(`${STRAPI_URL}/api/categories?filters[slug][$eq]=${slug}`);
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
