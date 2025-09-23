@@ -2,6 +2,7 @@ import Layout from '@/components/Layout';
 import Link from 'next/link';
 import Image from 'next/image';
 import { fetchCategoriesWithProducts, type Category } from '@/lib/api';
+import { getStaticAssetUrl } from '@/lib/images';
 
 export default async function About() {
   const categories = await fetchCategoriesWithProducts();
@@ -71,7 +72,7 @@ export default async function About() {
               <div className="bg-card border border-border rounded-lg p-8 text-center">
                 <div className="w-48 h-48 mx-auto mb-6 relative">
                   <Image
-                    src={`${process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1339'}/uploads/TysonPuppet_head_07_small_01.png`}
+                    src={getStaticAssetUrl('/uploads/TysonPuppet_head_07_small_01.png')}
                     alt="Kirk Brillon - Artist"
                     fill
                     className="object-cover rounded-full"

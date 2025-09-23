@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { getStrapiImageUrl, type Product } from '@/lib/api';
+import { type Product } from '@/lib/api';
+import { getProductImageUrl } from '@/lib/images';
 
 interface ProductCardProps {
   product: Product;
@@ -15,7 +16,7 @@ export default function ProductCard({ product, featured = false }: ProductCardPr
           <div className="aspect-square relative bg-muted">
             {product.images && product.images.length > 0 ? (
               <Image
-                src={getStrapiImageUrl(product.images[0])}
+                src={getProductImageUrl(product.slug, product.images[0], 0)}
                 alt={product.images[0].alternativeText || product.title}
                 fill
                 className="object-cover transition-transform duration-300 group-hover:scale-105"

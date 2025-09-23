@@ -3,6 +3,7 @@ import Image from 'next/image';
 import Layout from '@/components/Layout';
 import ProductCard from '@/components/ProductCard';
 import { fetchFeaturedProducts, fetchCategoriesWithProducts, type Product, type Category } from '@/lib/api';
+import { getLogoUrl } from '@/lib/images';
 // Trigger Vercel deployment with static site generation fixes
 
 // Static export - no revalidation needed
@@ -21,7 +22,7 @@ export default async function Home() {
           {/* Logo */}
           <div className="mb-6">
             <Image
-              src={`${process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1339'}/uploads/tysondrawsstuff_web_logo_06_e9ebe2d054.png`}
+              src={getLogoUrl()}
               alt="Tyson Draws Stuff Logo"
               width={300}
               height={300}

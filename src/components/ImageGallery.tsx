@@ -2,17 +2,22 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import { StrapiImage, getStrapiImageUrl } from '@/lib/api';
+import { StrapiImage } from '@/lib/api';
+import { getProductImages } from '@/lib/images';
 
 interface ImageGalleryProps {
   images: StrapiImage[];
   productTitle: string;
+  productSlug: string;
 }
 
-export default function ImageGallery({ images, productTitle }: ImageGalleryProps) {
+export default function ImageGallery({ images, productTitle, productSlug }: ImageGalleryProps) {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
-  if (!images || images.length === 0) {
+  // Get processed images (static or Strapi fallback)
+  const processedImages = getProductImages(productSlug, images);
+
+  if (!processedImages || processedImages.length === 0) {
     return (
       <div className="w-full aspect-square bg-gray-200 rounded-lg flex items-center justify-center">
         <span className="text-gray-500">No images available</span>
@@ -20,7 +25,7 @@ export default function ImageGallery({ images, productTitle }: ImageGalleryProps
     );
   }
 
-  const selectedImage = images[selectedImageIndex];
+  const selectedImage = processedImages[selectedImageIndex];
 
 
   return (
@@ -28,8 +33,8 @@ export default function ImageGallery({ images, productTitle }: ImageGalleryProps
       {/* Main Image Display */}
       <div className="w-full bg-gray-100 rounded-lg overflow-hidden">
         <Image
-          src={getStrapiImageUrl(selectedImage)}
-          alt={selectedImage.alternativeText || `${productTitle} - Image ${selectedImageIndex + 1}`}
+          src={selectedImage.src}
+          alt={selectedImage.alt || `${productTitle} - Image ${selectedImageIndex + 1}`}
           width={0}
           height={0}
           sizes="100vw"
@@ -45,11 +50,11 @@ export default function ImageGallery({ images, productTitle }: ImageGalleryProps
       </div>
 
       {/* Thumbnail Gallery */}
-      {images.length > 1 && (
+      {processedImages.length > 1 && (
         <div className="flex flex-wrap gap-2 justify-center lg:justify-start">
-          {images.map((image, index) => (
+          {processedImages.map((image, index) => (
             <button
-              key={image.id}
+              key={index}
               onClick={() => setSelectedImageIndex(index)}
               className={`relative flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-md overflow-hidden border-2 transition-all duration-200 ${
                 index === selectedImageIndex
@@ -58,12 +63,11 @@ export default function ImageGallery({ images, productTitle }: ImageGalleryProps
               }`}
             >
               <Image
-                src={getStrapiImageUrl(image)}
-                alt={image.alternativeText || `${productTitle} - Thumbnail ${index + 1}`}
+                src={image.src}
+                alt={image.alt || `${productTitle} - Thumbnail ${index + 1}`}
                 fill
                 className="object-cover"
               />
-
             </button>
           ))}
         </div>
@@ -71,9 +75,9 @@ export default function ImageGallery({ images, productTitle }: ImageGalleryProps
 
       {/* Image Info */}
       <div className="text-sm text-gray-600 text-center lg:text-left">
-        {images.length > 1 && (
+        {processedImages.length > 1 && (
           <p>
-            Image {selectedImageIndex + 1} of {images.length}
+            Image {selectedImageIndex + 1} of {processedImages.length}
           </p>
         )}
         {selectedImage.width && selectedImage.height && (

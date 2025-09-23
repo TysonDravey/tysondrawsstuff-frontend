@@ -1,0 +1,306 @@
+{
+  "products": {
+    "standoff-original-art": [
+      {
+        "original": "/uploads/standoff_original_art_0_b60514b445.png",
+        "static": "/products/standoff-original-art/image1.png",
+        "alt": "Standoff - Original Art",
+        "width": 900,
+        "height": 1200
+      },
+      {
+        "original": "/uploads/standoff_original_art_1_f1a2bb4b03.png",
+        "static": "/products/standoff-original-art/image2.png",
+        "alt": "Standoff - Original Art",
+        "width": 1200,
+        "height": 800
+      },
+      {
+        "original": "/uploads/standoff_original_art_2_ad6e8b70b4.png",
+        "static": "/products/standoff-original-art/image3.png",
+        "alt": "Standoff - Original Art",
+        "width": 1200,
+        "height": 902
+      }
+    ],
+    "shocked-original-art": [
+      {
+        "original": "/uploads/shocked_original_art_0_823e37bb2c.png",
+        "static": "/products/shocked-original-art/image1.png",
+        "alt": "Shocked Original Art",
+        "width": 900,
+        "height": 1200
+      }
+    ],
+    "handy-original-art": [
+      {
+        "original": "/uploads/handy_original_art_0_d807f3a023.png",
+        "static": "/products/handy-original-art/image1.png",
+        "alt": "Handy- Original Art",
+        "width": 900,
+        "height": 1200
+      }
+    ],
+    "miss-krampus-original-art": [
+      {
+        "original": "/uploads/miss_krampus_original_art_0_fbb3636fb1.png",
+        "static": "/products/miss-krampus-original-art/image1.png",
+        "alt": "Miss Krampus  - Original Art",
+        "width": 900,
+        "height": 1200
+      }
+    ],
+    "glint-original-art-krampus": [
+      {
+        "original": "/uploads/glint_original_art_krampus_0_c4157ddb5f.png",
+        "static": "/products/glint-original-art-krampus/image1.png",
+        "alt": "Glint - Original Art - Krampus",
+        "width": 1200,
+        "height": 900
+      },
+      {
+        "original": "/uploads/glint_original_art_krampus_1_9d5b78b87b.jpg",
+        "static": "/products/glint-original-art-krampus/image2.jpg",
+        "alt": "Glint - Original Art - Krampus",
+        "width": 1000,
+        "height": 1000
+      },
+      {
+        "original": "/uploads/glint_original_art_krampus_2_1f65e95ee4.jpg",
+        "static": "/products/glint-original-art-krampus/image3.jpg",
+        "alt": "Glint - Original Art - Krampus",
+        "width": 1000,
+        "height": 1000
+      }
+    ],
+    "the-controller-original-art": [
+      {
+        "original": "/uploads/the_controller_original_art_0_eada02ed79.png",
+        "static": "/products/the-controller-original-art/image1.png",
+        "alt": "The Controller - Original Art",
+        "width": 900,
+        "height": 1200
+      }
+    ],
+    "bats-original-art": [
+      {
+        "original": "/uploads/bats_original_art_0_277fb84f70.png",
+        "static": "/products/bats-original-art/image1.png",
+        "alt": "Bats - Original Art",
+        "width": 840,
+        "height": 1200
+      }
+    ],
+    "jokes-original-art": [
+      {
+        "original": "/uploads/jokes_original_art_0_6259189df8.png",
+        "static": "/products/jokes-original-art/image1.png",
+        "alt": "Jokes - Original Art",
+        "width": 840,
+        "height": 1200
+      }
+    ],
+    "harles-original-art": [
+      {
+        "original": "/uploads/harles_original_art_0_4b14397316.png",
+        "static": "/products/harles-original-art/image1.png",
+        "alt": "Harles - Original Art",
+        "width": 900,
+        "height": 1200
+      }
+    ],
+    "cats-original-art": [
+      {
+        "original": "/uploads/cats_original_art_0_5d08945f37.png",
+        "static": "/products/cats-original-art/image1.png",
+        "alt": "Cats - Original Art",
+        "width": 840,
+        "height": 1200
+      }
+    ],
+    "rob-original-art": [
+      {
+        "original": "/uploads/rob_original_art_0_9fdfbf2035.png",
+        "static": "/products/rob-original-art/image1.png",
+        "alt": "Rob - Original Art",
+        "width": 840,
+        "height": 1200
+      }
+    ],
+    "dent-original-art": [
+      {
+        "original": "/uploads/dent_original_art_0_fc8561c745.png",
+        "static": "/products/dent-original-art/image1.png",
+        "alt": "Dent - Original Art",
+        "width": 840,
+        "height": 1200
+      }
+    ],
+    "tyson-draws-stuff-the-covid-years": [
+      {
+        "original": "/uploads/tyson_draws_stuff_the_covid_years_0_d3757760ca.png",
+        "static": "/products/tyson-draws-stuff-the-covid-years/image1.png",
+        "alt": "Tyson Draws Stuff - The Covid Years",
+        "width": 1200,
+        "height": 675
+      }
+    ],
+    "tyson-draws-stuff-the-art-of-kirk-brillon": [
+      {
+        "original": "/uploads/tyson_draws_stuff_the_art_of_kirk_brillon_0_37e5e45dd2.png",
+        "static": "/products/tyson-draws-stuff-the-art-of-kirk-brillon/image1.png",
+        "alt": "Tyson Draws Stuff - The Art of Kirk Brillon",
+        "width": 909,
+        "height": 600
+      },
+      {
+        "original": "/uploads/tyson_draws_stuff_the_art_of_kirk_brillon_1_d2b664f756.png",
+        "static": "/products/tyson-draws-stuff-the-art-of-kirk-brillon/image2.png",
+        "alt": "Tyson Draws Stuff - The Art of Kirk Brillon",
+        "width": 1000,
+        "height": 1000
+      },
+      {
+        "original": "/uploads/tyson_draws_stuff_the_art_of_kirk_brillon_2_f652d2f8a0.png",
+        "static": "/products/tyson-draws-stuff-the-art-of-kirk-brillon/image3.png",
+        "alt": "Tyson Draws Stuff - The Art of Kirk Brillon",
+        "width": 1000,
+        "height": 1000
+      },
+      {
+        "original": "/uploads/tyson_draws_stuff_the_art_of_kirk_brillon_3_27ed9fb56e.png",
+        "static": "/products/tyson-draws-stuff-the-art-of-kirk-brillon/image4.png",
+        "alt": "Tyson Draws Stuff - The Art of Kirk Brillon",
+        "width": 1000,
+        "height": 1000
+      },
+      {
+        "original": "/uploads/tyson_draws_stuff_the_art_of_kirk_brillon_4_6bb715b4a5.jpg",
+        "static": "/products/tyson-draws-stuff-the-art-of-kirk-brillon/image5.jpg",
+        "alt": "Tyson Draws Stuff - The Art of Kirk Brillon",
+        "width": 680,
+        "height": 680
+      }
+    ],
+    "blinky-poster": [
+      {
+        "original": "/uploads/blinky_poster_0_ee2259cbf6.jpg",
+        "static": "/products/blinky-poster/image1.jpg",
+        "alt": "Blinky Poster",
+        "width": 1000,
+        "height": 1000
+      }
+    ],
+    "shocked-poster": [
+      {
+        "original": "/uploads/shocked_poster_0_8e0d831768.jpg",
+        "static": "/products/shocked-poster/image1.jpg",
+        "alt": "Shocked Poster",
+        "width": 1000,
+        "height": 1000
+      }
+    ],
+    "leap-poster": [
+      {
+        "original": "/uploads/leap_poster_0_570eb22d1e.jpg",
+        "static": "/products/leap-poster/image1.jpg",
+        "alt": "Leap Poster",
+        "width": 1000,
+        "height": 1000
+      }
+    ],
+    "leap-original-art": [
+      {
+        "original": "/uploads/leap_original_art_0_9c5b32ab44.png",
+        "static": "/products/leap-original-art/image1.png",
+        "alt": "Leap - Original Art",
+        "width": 900,
+        "height": 1200
+      }
+    ],
+    "lady-krampus-original-art": [
+      {
+        "original": "/uploads/lady_krampus_original_art_0_bdc254d250.png",
+        "static": "/products/lady-krampus-original-art/image1.png",
+        "alt": "Lady Krampus - Original Art",
+        "width": 900,
+        "height": 1200
+      }
+    ],
+    "blinky-original-art": [
+      {
+        "original": "/uploads/blinky_original_art_0_ae34f4e7c4.png",
+        "static": "/products/blinky-original-art/image1.png",
+        "alt": "Blinky - Original Art",
+        "width": 1200,
+        "height": 900
+      }
+    ],
+    "blinkys-disguise-poster": [
+      {
+        "original": "/uploads/blinkys_disguise_poster_0_c0e50c4055.jpg",
+        "static": "/products/blinkys-disguise-poster/image1.jpg",
+        "alt": "Blinky's Disguise Poster",
+        "width": 1000,
+        "height": 1000
+      }
+    ],
+    "bookmarks": [
+      {
+        "original": "/uploads/bookmarks_0_7decf907b4.png",
+        "static": "/products/bookmarks/image1.png",
+        "alt": "Bookmarks",
+        "width": 1200,
+        "height": 1087
+      }
+    ],
+    "standoff-photo-paper-poster": [
+      {
+        "original": "/uploads/standoff_photo_paper_poster_0_f63ea7eed2.jpg",
+        "static": "/products/standoff-photo-paper-poster/image1.jpg",
+        "alt": "Standoff - Poster",
+        "width": 1000,
+        "height": 1000
+      }
+    ],
+    "batlady-original-art": [
+      {
+        "original": "/uploads/batlady_original_art_0_d546c349a5.png",
+        "static": "/products/batlady-original-art/image1.png",
+        "alt": "BatLady - Original Art",
+        "width": 840,
+        "height": 1200
+      }
+    ],
+    "a-real-fun-gal-original-art": [
+      {
+        "original": "/uploads/a_real_fun_gal_original_art_0_465145adb5.png",
+        "static": "/products/a-real-fun-gal-original-art/image1.png",
+        "alt": "A Real Fun Gal - Original Art",
+        "width": 900,
+        "height": 1200
+      },
+      {
+        "original": "/uploads/a_real_fun_gal_original_art_1_c7ad798b98.png",
+        "static": "/products/a-real-fun-gal-original-art/image2.png",
+        "alt": "A Real Fun Gal - Original Art",
+        "width": 800,
+        "height": 800
+      },
+      {
+        "original": "/uploads/a_real_fun_gal_original_art_2_7bbb8cf555.png",
+        "static": "/products/a-real-fun-gal-original-art/image3.png",
+        "alt": "A Real Fun Gal - Original Art",
+        "width": 800,
+        "height": 800
+      }
+    ]
+  },
+  "static": {
+    "/uploads/tysondrawsstuff_web_logo_06_e9ebe2d054.png": {
+      "static": "/static/logo.png",
+      "description": "Site logo"
+    }
+  },
+  "lastSync": "2025-09-23T13:20:42.860Z"
+}
