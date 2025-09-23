@@ -6,6 +6,18 @@ const fs = require('fs');
 const path = require('path');
 const { URL } = require('url');
 
+// Load environment variables from .env.local
+const envPath = path.join(__dirname, '..', '.env.local');
+if (fs.existsSync(envPath)) {
+  const envContent = fs.readFileSync(envPath, 'utf8');
+  envContent.split('\n').forEach(line => {
+    const [key, ...values] = line.split('=');
+    if (key && values.length && !key.startsWith('#')) {
+      process.env[key.trim()] = values.join('=').trim();
+    }
+  });
+}
+
 // Configuration
 const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1339';
 const STRAPI_TOKEN = process.env.STRAPI_API_TOKEN;
@@ -185,7 +197,7 @@ async function syncImages() {
         description: 'Site logo'
       },
       {
-        url: '/uploads/TysonPuppet_head_07_small_01.png',
+        url: '/uploads/Tyson_Puppet_head_07_small_01_d6740d04c4.png',
         filename: 'artist-photo.png',
         description: 'Artist profile photo'
       }
