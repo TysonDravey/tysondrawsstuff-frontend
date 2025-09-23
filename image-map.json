@@ -304,6 +304,10 @@
     "/uploads/Tyson_Puppet_head_07_small_01_d6740d04c4.png": {
       "static": "/static/artist-photo.png",
       "description": "Artist profile photo"
+    },
+    "/uploads/TysonPuppet_head_07_small_01.png": {
+      "static": "/static/artist-photo.png",
+      "description": "Artist profile photo"
     }
   },
   "lastSync": "2025-09-23T18:02:09.446Z"
