@@ -1,10 +1,10 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  output: 'export', // Enable static export
-  trailingSlash: true, // Required for static export
+  // Remove static export for now - we have dynamic Stripe routes
+  // output: 'export',
+  trailingSlash: true,
   images: {
-    unoptimized: true, // Required for static export
     remotePatterns: [
       {
         protocol: 'http',
