@@ -67,7 +67,7 @@ export function getProductImages(productSlug: string, strapiImages: StrapiImage[
 
   if (productImages && productImages.length > 0) {
     // Use static images
-    return productImages.map((img: any) => ({
+    return productImages.map((img: ImageMapEntry) => ({
       src: img.static,
       alt: img.alt,
       width: img.width,
