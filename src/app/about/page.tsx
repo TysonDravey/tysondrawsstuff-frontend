@@ -1,10 +1,13 @@
 import Layout from '@/components/Layout';
 import Link from 'next/link';
 import Image from 'next/image';
+import { fetchCategoriesWithProducts, type Category } from '@/lib/api';
 
-export default function About() {
+export default async function About() {
+  const categories = await fetchCategoriesWithProducts();
+
   return (
-    <Layout>
+    <Layout categories={categories}>
       <div className="py-20">
         <div className="container mx-auto px-4 max-w-4xl">
           {/* Page Header */}

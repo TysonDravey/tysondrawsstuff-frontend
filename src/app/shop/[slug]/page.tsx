@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import Layout from '@/components/Layout';
-import { fetchProductBySlug, fetchProductSlugs } from '@/lib/api';
+import { fetchProductBySlug, fetchProductSlugs, fetchCategoriesWithProducts, type Category } from '@/lib/api';
 import BuyButton from '@/components/BuyButton';
 import ImageGallery from '@/components/ImageGallery';
 
@@ -24,13 +24,16 @@ export async function generateStaticParams() {
 
 export default async function ProductPage({ params }: ProductPageProps) {
   const { slug } = await params;
-  const product = await fetchProductBySlug(slug);
+  const [product, categories] = await Promise.all([
+    fetchProductBySlug(slug),
+    fetchCategoriesWithProducts()
+  ]);
 
   if (!product) {
     // During build time, if Strapi is not available, show a placeholder
     if (process.env.NODE_ENV === 'production') {
       return (
-        <Layout>
+        <Layout categories={categories}>
           <div className="container mx-auto px-4 py-16 text-center">
             <h1 className="text-2xl font-bold mb-4 text-foreground">Product Not Available</h1>
             <p className="text-muted-foreground mb-8">This product could not be loaded at the moment.</p>
@@ -48,7 +51,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
   }
 
   return (
-    <Layout>
+    <Layout categories={categories}>
       <div className="py-8">
         <div className="container mx-auto px-4">
           <Link

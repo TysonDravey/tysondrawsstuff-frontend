@@ -1,28 +1,19 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
-import { fetchCategoriesWithProducts, type Category } from '@/lib/api';
+import { type Category } from '@/lib/api';
 
 interface LayoutProps {
   children: React.ReactNode;
+  categories?: Category[];
 }
 
-export default function Layout({ children }: LayoutProps) {
+export default function Layout({ children, categories = [] }: LayoutProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [categories, setCategories] = useState<Category[]>([]);
   const pathname = usePathname();
-
-  useEffect(() => {
-    const loadCategories = async () => {
-      const fetchedCategories = await fetchCategoriesWithProducts();
-      setCategories(fetchedCategories);
-    };
-
-    loadCategories();
-  }, []);
 
   const isActiveLink = (href: string) => {
     if (href === '/' && pathname === '/') return true;

@@ -2,17 +2,20 @@ import Link from 'next/link';
 import Image from 'next/image';
 import Layout from '@/components/Layout';
 import ProductCard from '@/components/ProductCard';
-import { fetchFeaturedProducts, type Product } from '@/lib/api';
+import { fetchFeaturedProducts, fetchCategoriesWithProducts, type Product, type Category } from '@/lib/api';
 // Trigger deployment with clean descriptions
 
 // Revalidate every 60 seconds
 export const revalidate = 60;
 
 export default async function Home() {
-  const featuredProducts = await fetchFeaturedProducts();
+  const [featuredProducts, categories] = await Promise.all([
+    fetchFeaturedProducts(),
+    fetchCategoriesWithProducts()
+  ]);
 
   return (
-    <Layout>
+    <Layout categories={categories}>
       {/* Hero Section */}
       <section className="bg-background py-12 lg:py-16">
         <div className="container mx-auto px-4 text-center">

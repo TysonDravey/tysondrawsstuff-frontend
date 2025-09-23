@@ -6,7 +6,9 @@ import {
   fetchProductsByCategory,
   fetchCategoryBySlug,
   fetchCategories,
-  type Product
+  fetchCategoriesWithProducts,
+  type Product,
+  type Category
 } from '@/lib/api';
 
 interface CategoryPageProps {
@@ -28,15 +30,18 @@ export async function generateStaticParams() {
 
 export default async function CategoryPage({ params }: CategoryPageProps) {
   const { slug } = await params;
-  const category = await fetchCategoryBySlug(slug);
-  const products = await fetchProductsByCategory(slug);
+  const [category, products, categories] = await Promise.all([
+    fetchCategoryBySlug(slug),
+    fetchProductsByCategory(slug),
+    fetchCategoriesWithProducts()
+  ]);
 
   if (!category) {
     notFound();
   }
 
   return (
-    <Layout>
+    <Layout categories={categories}>
       <div className="py-8">
         <div className="container mx-auto px-4">
           {/* Breadcrumb Navigation */}

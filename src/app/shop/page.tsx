@@ -1,16 +1,19 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import Layout from '@/components/Layout';
-import { fetchProducts, getStrapiImageUrl, type Product } from '@/lib/api';
+import { fetchProducts, fetchCategoriesWithProducts, getStrapiImageUrl, type Product, type Category } from '@/lib/api';
 
 // Revalidate every 60 seconds
 export const revalidate = 60;
 
 export default async function ShopPage() {
-  const products = await fetchProducts();
+  const [products, categories] = await Promise.all([
+    fetchProducts(),
+    fetchCategoriesWithProducts()
+  ]);
 
   return (
-    <Layout>
+    <Layout categories={categories}>
       <div className="py-8">
         <div className="container mx-auto px-4">
           <h1 className="text-3xl sm:text-4xl font-bold mb-8 text-foreground">Shop All Products</h1>
