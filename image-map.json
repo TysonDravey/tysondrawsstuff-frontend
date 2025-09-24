@@ -145,43 +145,6 @@
         "height": 675
       }
     ],
-    "tyson-draws-stuff-the-art-of-kirk-brillon": [
-      {
-        "original": "/uploads/tyson_draws_stuff_the_art_of_kirk_brillon_0_37e5e45dd2.png",
-        "static": "/products/tyson-draws-stuff-the-art-of-kirk-brillon/image1.png",
-        "alt": "Tyson Draws Stuff - The Art of Kirk Brillon",
-        "width": 909,
-        "height": 600
-      },
-      {
-        "original": "/uploads/tyson_draws_stuff_the_art_of_kirk_brillon_1_d2b664f756.png",
-        "static": "/products/tyson-draws-stuff-the-art-of-kirk-brillon/image2.png",
-        "alt": "Tyson Draws Stuff - The Art of Kirk Brillon",
-        "width": 1000,
-        "height": 1000
-      },
-      {
-        "original": "/uploads/tyson_draws_stuff_the_art_of_kirk_brillon_2_f652d2f8a0.png",
-        "static": "/products/tyson-draws-stuff-the-art-of-kirk-brillon/image3.png",
-        "alt": "Tyson Draws Stuff - The Art of Kirk Brillon",
-        "width": 1000,
-        "height": 1000
-      },
-      {
-        "original": "/uploads/tyson_draws_stuff_the_art_of_kirk_brillon_3_27ed9fb56e.png",
-        "static": "/products/tyson-draws-stuff-the-art-of-kirk-brillon/image4.png",
-        "alt": "Tyson Draws Stuff - The Art of Kirk Brillon",
-        "width": 1000,
-        "height": 1000
-      },
-      {
-        "original": "/uploads/tyson_draws_stuff_the_art_of_kirk_brillon_4_6bb715b4a5.jpg",
-        "static": "/products/tyson-draws-stuff-the-art-of-kirk-brillon/image5.jpg",
-        "alt": "Tyson Draws Stuff - The Art of Kirk Brillon",
-        "width": 680,
-        "height": 680
-      }
-    ],
     "blinky-poster": [
       {
         "original": "/uploads/blinky_poster_0_ee2259cbf6.jpg",
@@ -294,6 +257,29 @@
         "width": 800,
         "height": 800
       }
+    ],
+    "tyson-draws-stuff-the-art-of-kirk-brillon": [
+      {
+        "original": "/uploads/tyson_draws_stuff_the_art_of_kirk_brillon_0_37e5e45dd2.png",
+        "static": "/products/tyson-draws-stuff-the-art-of-kirk-brillon/image1.png",
+        "alt": "Tyson Draws Stuff - The Art of Kirk Brillon",
+        "width": 909,
+        "height": 600
+      },
+      {
+        "original": "/uploads/tyson_draws_stuff_the_art_of_kirk_brillon_3_27ed9fb56e.png",
+        "static": "/products/tyson-draws-stuff-the-art-of-kirk-brillon/image2.png",
+        "alt": "Tyson Draws Stuff - The Art of Kirk Brillon",
+        "width": 1000,
+        "height": 1000
+      },
+      {
+        "original": "/uploads/tyson_draws_stuff_the_art_of_kirk_brillon_4_6bb715b4a5.jpg",
+        "static": "/products/tyson-draws-stuff-the-art-of-kirk-brillon/image3.jpg",
+        "alt": "Tyson Draws Stuff - The Art of Kirk Brillon",
+        "width": 680,
+        "height": 680
+      }
     ]
   },
   "static": {
@@ -304,11 +290,7 @@
     "/uploads/Tyson_Puppet_head_07_small_01_d6740d04c4.png": {
       "static": "/static/artist-photo.png",
       "description": "Artist profile photo"
-    },
-    "/uploads/TysonPuppet_head_07_small_01.png": {
-      "static": "/static/artist-photo.png",
-      "description": "Artist profile photo"
     }
   },
-  "lastSync": "2025-09-23T18:02:09.446Z"
+  "lastSync": "2025-09-24T00:51:19.719Z"
 }
