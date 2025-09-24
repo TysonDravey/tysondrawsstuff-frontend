@@ -33,7 +33,6 @@ export default async function Home() {
 
           <p className="text-xl sm:text-2xl text-muted-foreground mb-8 max-w-3xl mx-auto">
             Original Art, Prints, and More
-            <span className="block text-sm text-orange-500 mt-2">🚧 Testing new workflow - this is on the develop branch!</span>
           </p>
           <div className="flex flex-col sm:flex-row gap-6 justify-center">
             <Link

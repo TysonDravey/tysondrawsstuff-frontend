@@ -7,7 +7,7 @@ import { fetchProductsPaginated, fetchCategoriesWithProducts } from '@/lib/api';
 
 export default async function ShopPage() {
   const [{ products, pagination }, categories] = await Promise.all([
-    fetchProductsPaginated(1, 8), // Page 1, 8 products per page (multiple of 4)
+    fetchProductsPaginated(1, 16), // Page 1, 16 products per page (multiple of 4)
     fetchCategoriesWithProducts()
   ]);
 

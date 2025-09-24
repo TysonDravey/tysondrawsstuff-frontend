@@ -14,7 +14,7 @@ interface PageProps {
 export async function generateStaticParams() {
   try {
     // Fetch first page to get total count
-    const { pagination } = await fetchProductsPaginated(1, 8);
+    const { pagination } = await fetchProductsPaginated(1, 16);
     const totalPages = pagination.pageCount;
 
     // Generate params for all pages except page 1 (handled by main shop page)
@@ -40,7 +40,7 @@ export default async function ShopPagePaginated({ params }: PageProps) {
   }
 
   const [{ products, pagination }, categories] = await Promise.all([
-    fetchProductsPaginated(pageNumber, 8),
+    fetchProductsPaginated(pageNumber, 16),
     fetchCategoriesWithProducts()
   ]);
 

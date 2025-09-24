@@ -87,7 +87,7 @@ export async function fetchProducts(): Promise<Product[]> {
   }
 }
 
-export async function fetchProductsPaginated(page: number = 1, limit: number = 8): Promise<{ products: Product[], pagination: { page: number, pageSize: number, pageCount: number, total: number } }> {
+export async function fetchProductsPaginated(page: number = 1, limit: number = 16): Promise<{ products: Product[], pagination: { page: number, pageSize: number, pageCount: number, total: number } }> {
   try {
     const response = await fetchWithTimeout(`${STRAPI_URL}/api/products?populate=*&pagination[page]=${page}&pagination[pageSize]=${limit}`);
 
