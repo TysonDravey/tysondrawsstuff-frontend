@@ -72,7 +72,7 @@ export interface StrapiResponse<T> {
 
 export async function fetchProducts(): Promise<Product[]> {
   try {
-    const response = await fetchWithTimeout(`${STRAPI_URL}/api/products?populate=*`);
+    const response = await fetchWithTimeout(`${STRAPI_URL}/api/products?populate=*&pagination[limit]=100`);
 
     if (!response.ok) {
       console.warn('Failed to fetch products, returning empty array');
