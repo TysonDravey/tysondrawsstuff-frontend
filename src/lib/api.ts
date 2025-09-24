@@ -87,6 +87,26 @@ export async function fetchProducts(): Promise<Product[]> {
   }
 }
 
+export async function fetchProductsPaginated(page: number = 1, limit: number = 8): Promise<{ products: Product[], pagination: { page: number, pageSize: number, pageCount: number, total: number } }> {
+  try {
+    const response = await fetchWithTimeout(`${STRAPI_URL}/api/products?populate=*&pagination[page]=${page}&pagination[pageSize]=${limit}`);
+
+    if (!response.ok) {
+      console.warn('Failed to fetch paginated products, returning empty array');
+      return { products: [], pagination: { page: 1, pageSize: limit, pageCount: 0, total: 0 } };
+    }
+
+    const result: StrapiResponse<Product[]> = await response.json();
+    return {
+      products: result.data,
+      pagination: result.meta.pagination || { page: 1, pageSize: limit, pageCount: 0, total: 0 }
+    };
+  } catch (error) {
+    console.warn('Strapi not available during build for paginated products, returning empty array', error instanceof Error ? error.message : '');
+    return { products: [], pagination: { page: 1, pageSize: limit, pageCount: 0, total: 0 } };
+  }
+}
+
 export async function fetchProductBySlug(slug: string): Promise<Product | null> {
   try {
     const response = await fetchWithTimeout(`${STRAPI_URL}/api/products?filters[slug][$eq]=${slug}&populate=*`);
