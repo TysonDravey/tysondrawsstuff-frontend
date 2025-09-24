@@ -10,31 +10,62 @@ import {
   fetchCategoriesWithProducts,
 } from '@/lib/api';
 
-interface CategoryPageProps {
+interface CategoryPagePaginatedProps {
   params: Promise<{
     slug: string;
+    pageNumber: string;
   }>;
 }
 
-// Static export - no revalidation needed
-
+// Generate static params for category pagination pages
 export async function generateStaticParams() {
-  const categories = await fetchCategories();
+  try {
+    const categories = await fetchCategories();
+    const params = [];
 
-  return categories.map((category) => ({
-    slug: category.slug,
-  }));
+    for (const category of categories) {
+      // Get first page to determine total page count
+      const { pagination } = await fetchProductsByCategoryPaginated(category.slug, 1, 16);
+      const totalPages = pagination.pageCount;
+
+      // Generate params for pages 2 and up (page 1 handled by main category page)
+      for (let i = 2; i <= totalPages; i++) {
+        params.push({
+          slug: category.slug,
+          pageNumber: i.toString(),
+        });
+      }
+    }
+
+    return params;
+  } catch {
+    console.warn('Failed to generate static params for category pagination');
+    return [];
+  }
 }
 
-export default async function CategoryPage({ params }: CategoryPageProps) {
-  const { slug } = await params;
+export default async function CategoryPagePaginated({ params }: CategoryPagePaginatedProps) {
+  const resolvedParams = await params;
+  const { slug, pageNumber } = resolvedParams;
+  const pageNum = parseInt(pageNumber);
+
+  // Validate page number
+  if (isNaN(pageNum) || pageNum < 1) {
+    notFound();
+  }
+
   const [category, { products, pagination }, categories] = await Promise.all([
     fetchCategoryBySlug(slug),
-    fetchProductsByCategoryPaginated(slug, 1, 16), // Page 1, 16 products per page
+    fetchProductsByCategoryPaginated(slug, pageNum, 16),
     fetchCategoriesWithProducts()
   ]);
 
   if (!category) {
+    notFound();
+  }
+
+  // If page number is too high, show 404
+  if (pageNum > pagination.pageCount) {
     notFound();
   }
 
@@ -77,11 +108,9 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
               <h1 className="text-4xl sm:text-5xl font-bold text-foreground">
                 {category.name}
               </h1>
-              {pagination.pageCount > 1 && (
-                <div className="text-sm text-muted-foreground">
-                  Page {pagination.page} of {pagination.pageCount} ({pagination.total} total products)
-                </div>
-              )}
+              <div className="text-sm text-muted-foreground">
+                Page {pagination.page} of {pagination.pageCount} ({pagination.total} total products)
+              </div>
             </div>
             {category.description && (
               <p className="text-xl text-muted-foreground max-w-3xl">
@@ -89,7 +118,6 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
               </p>
             )}
           </div>
-
 
           <ProductGrid products={products} />
 

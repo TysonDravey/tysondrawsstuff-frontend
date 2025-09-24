@@ -211,6 +211,26 @@ export async function fetchProductsByCategory(categorySlug: string): Promise<Pro
   }
 }
 
+export async function fetchProductsByCategoryPaginated(categorySlug: string, page: number = 1, limit: number = 16): Promise<{ products: Product[], pagination: { page: number, pageSize: number, pageCount: number, total: number } }> {
+  try {
+    const response = await fetchWithTimeout(`${STRAPI_URL}/api/products?populate=*&filters[category][slug][$eq]=${categorySlug}&pagination[page]=${page}&pagination[pageSize]=${limit}`);
+
+    if (!response.ok) {
+      console.warn(`Failed to fetch paginated products for category ${categorySlug}, returning empty array`);
+      return { products: [], pagination: { page: 1, pageSize: limit, pageCount: 0, total: 0 } };
+    }
+
+    const result: StrapiResponse<Product[]> = await response.json();
+    return {
+      products: result.data,
+      pagination: result.meta.pagination || { page: 1, pageSize: limit, pageCount: 0, total: 0 }
+    };
+  } catch {
+    console.warn(`Strapi not available during build for paginated category ${categorySlug}, returning empty array`);
+    return { products: [], pagination: { page: 1, pageSize: limit, pageCount: 0, total: 0 } };
+  }
+}
+
 export async function fetchCategories(): Promise<Category[]> {
   try {
     const response = await fetchWithTimeout(`${STRAPI_URL}/api/categories?sort=sortOrder:asc`);
