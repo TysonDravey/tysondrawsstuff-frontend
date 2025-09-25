@@ -184,7 +184,7 @@ ${orderData.orderNotes}
 
         <div class="section">
             <h2>🔗 Links</h2>
-            <p><a href="https://dashboard.stripe.com/test/payments/${orderData.stripeSessionId}" target="_blank">View in Stripe Dashboard</a></p>
+            <p><a href="https://dashboard.stripe.com/test/checkout/sessions/${orderData.stripeSessionId}" target="_blank">View in Stripe Dashboard</a></p>
         </div>
     </div>
 
@@ -213,7 +213,7 @@ ${shippingInfo}
 ${productInfo}
 ${specialInstructions}
 
-View in Stripe: https://dashboard.stripe.com/test/payments/${orderData.stripeSessionId}
+View in Stripe: https://dashboard.stripe.com/test/checkout/sessions/${orderData.stripeSessionId}
       `,
     };
 
@@ -271,6 +271,7 @@ export async function POST(request: NextRequest) {
         };
 
         console.log('Processing completed checkout session:', session.id);
+        console.log('Session shipping_details:', JSON.stringify(session.shipping_details, null, 2));
 
         // Extract all order information
         const orderData = {
