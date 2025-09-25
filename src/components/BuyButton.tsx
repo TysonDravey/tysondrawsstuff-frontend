@@ -10,6 +10,9 @@ interface BuyButtonProps {
 export default function BuyButton({ productSlug, price }: BuyButtonProps) {
   const [loading, setLoading] = useState(false);
 
+  // Check if we're in test mode
+  const isTestMode = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY?.startsWith('pk_test_');
+
   const handleBuyNow = async () => {
     setLoading(true);
 
@@ -51,9 +54,18 @@ export default function BuyButton({ productSlug, price }: BuyButtonProps) {
       <button
         onClick={handleBuyNow}
         disabled={loading}
-        className="w-full bg-primary text-primary-foreground py-3 px-6 rounded-lg hover:bg-orange-600 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full bg-primary text-primary-foreground py-3 px-6 rounded-lg hover:bg-orange-600 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed relative"
       >
-        {loading ? 'Processing...' : `Buy Now - $${price.toFixed(2)} CAD`}
+        {loading ? 'Processing...' : (
+          <>
+            Buy Now - ${price.toFixed(2)} CAD
+            {isTestMode && (
+              <span className="absolute top-1 right-2 text-xs bg-red-500 text-white px-1.5 py-0.5 rounded-full font-bold">
+                TEST
+              </span>
+            )}
+          </>
+        )}
       </button>
 
       <button
