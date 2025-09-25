@@ -3,7 +3,7 @@ import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
 import Stripe from 'stripe';
 import Layout from '@/components/Layout';
-import { fetchCategoriesWithProducts } from '@/lib/api';
+import { fetchCategoriesWithProducts, Category } from '@/lib/api';
 
 interface ExpandedSession extends Stripe.Checkout.Session {
   shipping_details?: {
@@ -41,7 +41,7 @@ async function getCheckoutSession(sessionId: string) {
   }
 }
 
-function SuccessContent({ session, categories }: { session: ExpandedSession | null, categories: any[] }) {
+function SuccessContent({ session, categories }: { session: ExpandedSession | null, categories: Category[] }) {
   if (!session) {
     return (
       <Layout categories={categories}>
