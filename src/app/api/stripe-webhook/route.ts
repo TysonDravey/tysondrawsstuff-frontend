@@ -277,10 +277,14 @@ export async function POST(request: NextRequest) {
         let fullSession = session;
         try {
           fullSession = await stripe.checkout.sessions.retrieve(session.id, {
-            expand: ['customer', 'shipping_details']
+            expand: ['customer', 'shipping_details', 'shipping_cost']
           });
-          console.log('Retrieved full session shipping_details:', JSON.stringify(fullSession.shipping_details, null, 2));
-          console.log('Retrieved full session customer_details:', JSON.stringify(fullSession.customer_details, null, 2));
+          console.log('=== FULL SESSION DEBUG ===');
+          console.log('shipping_details:', JSON.stringify(fullSession.shipping_details, null, 2));
+          console.log('customer_details:', JSON.stringify(fullSession.customer_details, null, 2));
+          console.log('shipping_cost:', JSON.stringify(fullSession.shipping_cost, null, 2));
+          console.log('All session keys:', Object.keys(fullSession));
+          console.log('=== END DEBUG ===');
         } catch (error) {
           console.warn('Could not retrieve full session, using webhook session:', error);
         }
@@ -302,16 +306,37 @@ export async function POST(request: NextRequest) {
           customerEmail: fullSession.customer_details?.email || '',
           customerPhone: fullSession.customer_details?.phone || '',
 
-          // Shipping information - use fullSession for complete details
-          shippingAddress: fullSession.shipping_details?.address ? {
-            name: fullSession.shipping_details.name || fullSession.customer_details?.name || undefined,
-            line1: fullSession.shipping_details.address.line1 || undefined,
-            line2: fullSession.shipping_details.address.line2 || undefined,
-            city: fullSession.shipping_details.address.city || undefined,
-            state: fullSession.shipping_details.address.state || undefined,
-            postal_code: fullSession.shipping_details.address.postal_code || undefined,
-            country: fullSession.shipping_details.address.country || undefined,
-          } : null,
+          // Shipping information - try multiple possible locations
+          shippingAddress: (() => {
+            // First try shipping_details.address
+            if (fullSession.shipping_details?.address) {
+              return {
+                name: fullSession.shipping_details.name || fullSession.customer_details?.name || undefined,
+                line1: fullSession.shipping_details.address.line1 || undefined,
+                line2: fullSession.shipping_details.address.line2 || undefined,
+                city: fullSession.shipping_details.address.city || undefined,
+                state: fullSession.shipping_details.address.state || undefined,
+                postal_code: fullSession.shipping_details.address.postal_code || undefined,
+                country: fullSession.shipping_details.address.country || undefined,
+              };
+            }
+
+            // Try shipping_cost.shipping_address as fallback
+            if ((fullSession as any).shipping_cost?.shipping_address) {
+              const addr = (fullSession as any).shipping_cost.shipping_address;
+              return {
+                name: fullSession.customer_details?.name || undefined,
+                line1: addr.line1 || undefined,
+                line2: addr.line2 || undefined,
+                city: addr.city || undefined,
+                state: addr.state || undefined,
+                postal_code: addr.postal_code || undefined,
+                country: addr.country || undefined,
+              };
+            }
+
+            return null;
+          })(),
 
           // Product information from metadata
           productId: session.metadata?.productId || '',
