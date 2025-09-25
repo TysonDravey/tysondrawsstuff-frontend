@@ -35,8 +35,35 @@ function createEmailTransporter() {
   });
 }
 
+// Order data interface
+interface OrderData {
+  stripeSessionId: string;
+  stripeCustomerId: string | null;
+  orderDate: string;
+  orderTotal: number;
+  currency: string;
+  paymentStatus: string;
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
+  shippingAddress: {
+    name?: string;
+    line1?: string;
+    line2?: string;
+    city?: string;
+    state?: string;
+    postal_code?: string;
+    country?: string;
+  } | null;
+  productId: string;
+  productTitle: string;
+  productPrice: string;
+  productSlug: string;
+  orderNotes: string;
+}
+
 // Save order to local JSON file (fallback logging)
-async function saveOrderToLocalFile(orderData: any) {
+async function saveOrderToLocalFile(orderData: OrderData) {
   try {
     const ordersDir = path.join(process.cwd(), 'tmp');
     const ordersFile = path.join(ordersDir, 'orders.json');
@@ -47,12 +74,12 @@ async function saveOrderToLocalFile(orderData: any) {
     }
 
     // Read existing orders or start with empty array
-    let existingOrders: any[] = [];
+    let existingOrders: OrderData[] = [];
     if (existsSync(ordersFile)) {
       try {
         const fileContent = await import('fs/promises').then(fs => fs.readFile(ordersFile, 'utf8'));
         existingOrders = JSON.parse(fileContent);
-      } catch (error) {
+      } catch {
         console.warn('Could not read existing orders file, starting fresh');
       }
     }
@@ -77,7 +104,7 @@ async function saveOrderToLocalFile(orderData: any) {
 }
 
 // Send order notification email
-async function sendOrderNotificationEmail(orderData: any) {
+async function sendOrderNotificationEmail(orderData: OrderData) {
   try {
     const transporter = createEmailTransporter();
 
