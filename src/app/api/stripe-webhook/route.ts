@@ -277,7 +277,7 @@ export async function POST(request: NextRequest) {
         let fullSession = session;
         try {
           fullSession = await stripe.checkout.sessions.retrieve(session.id, {
-            expand: ['customer', 'shipping_details', 'shipping_cost']
+            expand: ['customer', 'shipping_cost']
           });
           console.log('=== FULL SESSION DEBUG ===');
           console.log('shipping_details:', JSON.stringify(fullSession.shipping_details, null, 2));
