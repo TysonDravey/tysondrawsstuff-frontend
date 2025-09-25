@@ -256,7 +256,19 @@ export async function POST(request: NextRequest) {
   try {
     switch (event.type) {
       case 'checkout.session.completed': {
-        const session = event.data.object as Stripe.Checkout.Session;
+        const session = event.data.object as Stripe.Checkout.Session & {
+          shipping_details?: {
+            name?: string;
+            address?: {
+              line1?: string;
+              line2?: string;
+              city?: string;
+              state?: string;
+              postal_code?: string;
+              country?: string;
+            };
+          };
+        };
 
         console.log('Processing completed checkout session:', session.id);
 
