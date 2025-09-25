@@ -273,17 +273,16 @@ export async function POST(request: NextRequest) {
         console.log('Processing completed checkout session:', session.id);
         console.log('Session shipping_details:', JSON.stringify(session.shipping_details, null, 2));
 
-        // Retrieve full session with shipping details if not present in webhook
+        // Always retrieve full session with all details expanded
         let fullSession = session;
-        if (!session.shipping_details && session.id) {
-          try {
-            fullSession = await stripe.checkout.sessions.retrieve(session.id, {
-              expand: ['shipping_details']
-            });
-            console.log('Retrieved full session shipping_details:', JSON.stringify(fullSession.shipping_details, null, 2));
-          } catch (error) {
-            console.warn('Could not retrieve full session:', error);
-          }
+        try {
+          fullSession = await stripe.checkout.sessions.retrieve(session.id, {
+            expand: ['customer', 'shipping_details']
+          });
+          console.log('Retrieved full session shipping_details:', JSON.stringify(fullSession.shipping_details, null, 2));
+          console.log('Retrieved full session customer_details:', JSON.stringify(fullSession.customer_details, null, 2));
+        } catch (error) {
+          console.warn('Could not retrieve full session, using webhook session:', error);
         }
 
         // Extract all order information
