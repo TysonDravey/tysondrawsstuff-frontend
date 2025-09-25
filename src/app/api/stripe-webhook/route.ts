@@ -305,13 +305,13 @@ export async function POST(request: NextRequest) {
 
           // Shipping information - use fullSession for complete details
           shippingAddress: fullSession.shipping_details?.address ? {
-            name: fullSession.shipping_details.name || fullSession.customer_details?.name,
-            line1: fullSession.shipping_details.address.line1,
-            line2: fullSession.shipping_details.address.line2 || '',
-            city: fullSession.shipping_details.address.city,
-            state: fullSession.shipping_details.address.state,
-            postal_code: fullSession.shipping_details.address.postal_code,
-            country: fullSession.shipping_details.address.country,
+            name: fullSession.shipping_details.name || fullSession.customer_details?.name || undefined,
+            line1: fullSession.shipping_details.address.line1 || undefined,
+            line2: fullSession.shipping_details.address.line2 || undefined,
+            city: fullSession.shipping_details.address.city || undefined,
+            state: fullSession.shipping_details.address.state || undefined,
+            postal_code: fullSession.shipping_details.address.postal_code || undefined,
+            country: fullSession.shipping_details.address.country || undefined,
           } : null,
 
           // Product information from metadata
