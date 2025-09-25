@@ -306,9 +306,23 @@ export async function POST(request: NextRequest) {
           customerEmail: fullSession.customer_details?.email || '',
           customerPhone: fullSession.customer_details?.phone || '',
 
-          // Shipping information - try multiple possible locations
+          // Shipping information - found in customer_details.address!
           shippingAddress: (() => {
-            // First try shipping_details.address
+            // The address is actually in customer_details.address when shipping collection is enabled
+            if (fullSession.customer_details?.address) {
+              const addr = fullSession.customer_details.address;
+              return {
+                name: fullSession.customer_details.name || undefined,
+                line1: addr.line1 || undefined,
+                line2: addr.line2 || undefined,
+                city: addr.city || undefined,
+                state: addr.state || undefined,
+                postal_code: addr.postal_code || undefined,
+                country: addr.country || undefined,
+              };
+            }
+
+            // Fallback: try shipping_details.address (if it exists)
             if (fullSession.shipping_details?.address) {
               return {
                 name: fullSession.shipping_details.name || fullSession.customer_details?.name || undefined,
@@ -318,21 +332,6 @@ export async function POST(request: NextRequest) {
                 state: fullSession.shipping_details.address.state || undefined,
                 postal_code: fullSession.shipping_details.address.postal_code || undefined,
                 country: fullSession.shipping_details.address.country || undefined,
-              };
-            }
-
-            // Try shipping_cost.shipping_address as fallback
-            const shippingCost = fullSession.shipping_cost as { shipping_address?: { line1?: string; line2?: string; city?: string; state?: string; postal_code?: string; country?: string; } } | undefined;
-            if (shippingCost?.shipping_address) {
-              const addr = shippingCost.shipping_address;
-              return {
-                name: fullSession.customer_details?.name || undefined,
-                line1: addr.line1 || undefined,
-                line2: addr.line2 || undefined,
-                city: addr.city || undefined,
-                state: addr.state || undefined,
-                postal_code: addr.postal_code || undefined,
-                country: addr.country || undefined,
               };
             }
 
