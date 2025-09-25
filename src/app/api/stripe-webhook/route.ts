@@ -273,6 +273,19 @@ export async function POST(request: NextRequest) {
         console.log('Processing completed checkout session:', session.id);
         console.log('Session shipping_details:', JSON.stringify(session.shipping_details, null, 2));
 
+        // Retrieve full session with shipping details if not present in webhook
+        let fullSession = session;
+        if (!session.shipping_details && session.id) {
+          try {
+            fullSession = await stripe.checkout.sessions.retrieve(session.id, {
+              expand: ['shipping_details']
+            });
+            console.log('Retrieved full session shipping_details:', JSON.stringify(fullSession.shipping_details, null, 2));
+          } catch (error) {
+            console.warn('Could not retrieve full session:', error);
+          }
+        }
+
         // Extract all order information
         const orderData = {
           // Stripe identifiers
@@ -286,19 +299,19 @@ export async function POST(request: NextRequest) {
           paymentStatus: 'paid',
 
           // Customer information
-          customerName: session.customer_details?.name || '',
-          customerEmail: session.customer_details?.email || '',
-          customerPhone: session.customer_details?.phone || '',
+          customerName: fullSession.customer_details?.name || '',
+          customerEmail: fullSession.customer_details?.email || '',
+          customerPhone: fullSession.customer_details?.phone || '',
 
-          // Shipping information
-          shippingAddress: session.shipping_details?.address ? {
-            name: session.shipping_details.name,
-            line1: session.shipping_details.address.line1,
-            line2: session.shipping_details.address.line2,
-            city: session.shipping_details.address.city,
-            state: session.shipping_details.address.state,
-            postal_code: session.shipping_details.address.postal_code,
-            country: session.shipping_details.address.country,
+          // Shipping information - use fullSession for complete details
+          shippingAddress: fullSession.shipping_details?.address ? {
+            name: fullSession.shipping_details.name || fullSession.customer_details?.name,
+            line1: fullSession.shipping_details.address.line1,
+            line2: fullSession.shipping_details.address.line2 || '',
+            city: fullSession.shipping_details.address.city,
+            state: fullSession.shipping_details.address.state,
+            postal_code: fullSession.shipping_details.address.postal_code,
+            country: fullSession.shipping_details.address.country,
           } : null,
 
           // Product information from metadata
