@@ -65,7 +65,7 @@ interface OrderData {
 // Save order to local JSON file (fallback logging)
 async function saveOrderToLocalFile(orderData: OrderData) {
   try {
-    const ordersDir = path.join(process.cwd(), 'tmp');
+    const ordersDir = '/tmp';
     const ordersFile = path.join(ordersDir, 'orders.json');
 
     // Create tmp directory if it doesn't exist
@@ -310,11 +310,15 @@ export async function POST(request: NextRequest) {
           orderNotes: session.custom_fields?.find(field => field.key === 'order_notes')?.text?.value || '',
         };
 
-        // Save order locally (for backup/logging)
-        await saveOrderToLocalFile(orderData);
-
-        // Send email notification
+        // Send email notification (primary goal)
         await sendOrderNotificationEmail(orderData);
+
+        // Save order locally (for backup/logging) - optional
+        try {
+          await saveOrderToLocalFile(orderData);
+        } catch (fileError) {
+          console.warn('Could not save order to local file (non-critical):', fileError);
+        }
 
         console.log('Order processed successfully:', session.id);
         break;
