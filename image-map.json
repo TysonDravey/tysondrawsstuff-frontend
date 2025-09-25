@@ -1,87 +1,5 @@
 {
   "products": {
-    "standoff-original-art": [
-      {
-        "original": "/uploads/standoff_original_art_0_b60514b445.png",
-        "static": "/products/standoff-original-art/image1.png",
-        "alt": "Standoff - Original Art",
-        "width": 900,
-        "height": 1200
-      },
-      {
-        "original": "/uploads/standoff_original_art_1_f1a2bb4b03.png",
-        "static": "/products/standoff-original-art/image2.png",
-        "alt": "Standoff - Original Art",
-        "width": 1200,
-        "height": 800
-      },
-      {
-        "original": "/uploads/standoff_original_art_2_ad6e8b70b4.png",
-        "static": "/products/standoff-original-art/image3.png",
-        "alt": "Standoff - Original Art",
-        "width": 1200,
-        "height": 902
-      }
-    ],
-    "shocked-original-art": [
-      {
-        "original": "/uploads/shocked_original_art_0_823e37bb2c.png",
-        "static": "/products/shocked-original-art/image1.png",
-        "alt": "Shocked Original Art",
-        "width": 900,
-        "height": 1200
-      }
-    ],
-    "handy-original-art": [
-      {
-        "original": "/uploads/handy_original_art_0_d807f3a023.png",
-        "static": "/products/handy-original-art/image1.png",
-        "alt": "Handy- Original Art",
-        "width": 900,
-        "height": 1200
-      }
-    ],
-    "miss-krampus-original-art": [
-      {
-        "original": "/uploads/miss_krampus_original_art_0_fbb3636fb1.png",
-        "static": "/products/miss-krampus-original-art/image1.png",
-        "alt": "Miss Krampus  - Original Art",
-        "width": 900,
-        "height": 1200
-      }
-    ],
-    "glint-original-art-krampus": [
-      {
-        "original": "/uploads/glint_original_art_krampus_0_c4157ddb5f.png",
-        "static": "/products/glint-original-art-krampus/image1.png",
-        "alt": "Glint - Original Art - Krampus",
-        "width": 1200,
-        "height": 900
-      },
-      {
-        "original": "/uploads/glint_original_art_krampus_1_9d5b78b87b.jpg",
-        "static": "/products/glint-original-art-krampus/image2.jpg",
-        "alt": "Glint - Original Art - Krampus",
-        "width": 1000,
-        "height": 1000
-      },
-      {
-        "original": "/uploads/glint_original_art_krampus_2_1f65e95ee4.jpg",
-        "static": "/products/glint-original-art-krampus/image3.jpg",
-        "alt": "Glint - Original Art - Krampus",
-        "width": 1000,
-        "height": 1000
-      }
-    ],
-    "the-controller-original-art": [
-      {
-        "original": "/uploads/the_controller_original_art_0_eada02ed79.png",
-        "static": "/products/the-controller-original-art/image1.png",
-        "alt": "The Controller - Original Art",
-        "width": 900,
-        "height": 1200
-      }
-    ],
     "bats-original-art": [
       {
         "original": "/uploads/bats_original_art_0_277fb84f70.png",
@@ -172,42 +90,6 @@
         "height": 1000
       }
     ],
-    "leap-original-art": [
-      {
-        "original": "/uploads/leap_original_art_0_9c5b32ab44.png",
-        "static": "/products/leap-original-art/image1.png",
-        "alt": "Leap - Original Art",
-        "width": 900,
-        "height": 1200
-      }
-    ],
-    "lady-krampus-original-art": [
-      {
-        "original": "/uploads/lady_krampus_original_art_0_bdc254d250.png",
-        "static": "/products/lady-krampus-original-art/image1.png",
-        "alt": "Lady Krampus - Original Art",
-        "width": 900,
-        "height": 1200
-      }
-    ],
-    "blinky-original-art": [
-      {
-        "original": "/uploads/blinky_original_art_0_ae34f4e7c4.png",
-        "static": "/products/blinky-original-art/image1.png",
-        "alt": "Blinky - Original Art",
-        "width": 1200,
-        "height": 900
-      }
-    ],
-    "blinkys-disguise-poster": [
-      {
-        "original": "/uploads/blinkys_disguise_poster_0_c0e50c4055.jpg",
-        "static": "/products/blinkys-disguise-poster/image1.jpg",
-        "alt": "Blinky's Disguise Poster",
-        "width": 1000,
-        "height": 1000
-      }
-    ],
     "bookmarks": [
       {
         "original": "/uploads/bookmarks_0_7decf907b4.png",
@@ -235,6 +117,68 @@
         "height": 1200
       }
     ],
+    "tyson-draws-stuff-the-art-of-kirk-brillon": [
+      {
+        "original": "/uploads/tyson_draws_stuff_the_art_of_kirk_brillon_0_37e5e45dd2.png",
+        "static": "/products/tyson-draws-stuff-the-art-of-kirk-brillon/image1.png",
+        "alt": "Tyson Draws Stuff - The Art of Kirk Brillon",
+        "width": 909,
+        "height": 600
+      },
+      {
+        "original": "/uploads/tyson_draws_stuff_the_art_of_kirk_brillon_3_27ed9fb56e.png",
+        "static": "/products/tyson-draws-stuff-the-art-of-kirk-brillon/image2.png",
+        "alt": "Tyson Draws Stuff - The Art of Kirk Brillon",
+        "width": 1000,
+        "height": 1000
+      },
+      {
+        "original": "/uploads/tyson_draws_stuff_the_art_of_kirk_brillon_4_6bb715b4a5.jpg",
+        "static": "/products/tyson-draws-stuff-the-art-of-kirk-brillon/image3.jpg",
+        "alt": "Tyson Draws Stuff - The Art of Kirk Brillon",
+        "width": 680,
+        "height": 680
+      }
+    ],
+    "postcards": [
+      {
+        "original": "/uploads/TDS_The_Controller_2000_beefb9f720.png",
+        "static": "/products/postcards/image1.png",
+        "alt": "Postcards",
+        "width": 1500,
+        "height": 2000
+      },
+      {
+        "original": "/uploads/TDS_lighthouse_2000_4097423c48.png",
+        "static": "/products/postcards/image2.png",
+        "alt": "Postcards",
+        "width": 2000,
+        "height": 1500
+      },
+      {
+        "original": "/uploads/TDS_Pied_Piper_2000_e39a7bf0cb.png",
+        "static": "/products/postcards/image3.png",
+        "alt": "Postcards",
+        "width": 2000,
+        "height": 1400
+      },
+      {
+        "original": "/uploads/blinkys_desguise_2000_e5fa60115b.png",
+        "static": "/products/postcards/image4.png",
+        "alt": "Postcards",
+        "width": 1500,
+        "height": 2000
+      }
+    ],
+    "blinkys-disguise-poster": [
+      {
+        "original": "/uploads/blinkys_disguise_poster_0_c0e50c4055.jpg",
+        "static": "/products/blinkys-disguise-poster/image1.jpg",
+        "alt": "Blinky's Disguise Poster",
+        "width": 1000,
+        "height": 1000
+      }
+    ],
     "a-real-fun-gal-original-art": [
       {
         "original": "/uploads/a_real_fun_gal_original_art_0_465145adb5.png",
@@ -258,27 +202,104 @@
         "height": 800
       }
     ],
-    "tyson-draws-stuff-the-art-of-kirk-brillon": [
+    "product": [
       {
-        "original": "/uploads/tyson_draws_stuff_the_art_of_kirk_brillon_0_37e5e45dd2.png",
-        "static": "/products/tyson-draws-stuff-the-art-of-kirk-brillon/image1.png",
-        "alt": "Tyson Draws Stuff - The Art of Kirk Brillon",
-        "width": 909,
-        "height": 600
+        "original": "/uploads/TDS_chums_2000_51092cfc50.png",
+        "static": "/products/product/image1.png",
+        "alt": "Chums",
+        "width": 2000,
+        "height": 1500
+      }
+    ],
+    "the-controller-original-art": [
+      {
+        "original": "/uploads/the_controller_original_art_0_eada02ed79.png",
+        "static": "/products/the-controller-original-art/image1.png",
+        "alt": "The Controller - Original Art",
+        "width": 900,
+        "height": 1200
+      }
+    ],
+    "glint-original-art-krampus": [
+      {
+        "original": "/uploads/glint_original_art_krampus_0_c4157ddb5f.png",
+        "static": "/products/glint-original-art-krampus/image1.png",
+        "alt": "Glint - Original Art - Krampus",
+        "width": 1200,
+        "height": 900
       },
       {
-        "original": "/uploads/tyson_draws_stuff_the_art_of_kirk_brillon_3_27ed9fb56e.png",
-        "static": "/products/tyson-draws-stuff-the-art-of-kirk-brillon/image2.png",
-        "alt": "Tyson Draws Stuff - The Art of Kirk Brillon",
+        "original": "/uploads/glint_original_art_krampus_1_9d5b78b87b.jpg",
+        "static": "/products/glint-original-art-krampus/image2.jpg",
+        "alt": "Glint - Original Art - Krampus",
         "width": 1000,
         "height": 1000
       },
       {
-        "original": "/uploads/tyson_draws_stuff_the_art_of_kirk_brillon_4_6bb715b4a5.jpg",
-        "static": "/products/tyson-draws-stuff-the-art-of-kirk-brillon/image3.jpg",
-        "alt": "Tyson Draws Stuff - The Art of Kirk Brillon",
-        "width": 680,
-        "height": 680
+        "original": "/uploads/glint_original_art_krampus_2_1f65e95ee4.jpg",
+        "static": "/products/glint-original-art-krampus/image3.jpg",
+        "alt": "Glint - Original Art - Krampus",
+        "width": 1000,
+        "height": 1000
+      }
+    ],
+    "handy-original-art": [
+      {
+        "original": "/uploads/handy_original_art_0_d807f3a023.png",
+        "static": "/products/handy-original-art/image1.png",
+        "alt": "Handy- Original Art",
+        "width": 900,
+        "height": 1200
+      }
+    ],
+    "lady-krampus-original-art": [
+      {
+        "original": "/uploads/lady_krampus_original_art_0_bdc254d250.png",
+        "static": "/products/lady-krampus-original-art/image1.png",
+        "alt": "Lady Krampus - Original Art",
+        "width": 900,
+        "height": 1200
+      }
+    ],
+    "miss-krampus-original-art": [
+      {
+        "original": "/uploads/miss_krampus_original_art_0_fbb3636fb1.png",
+        "static": "/products/miss-krampus-original-art/image1.png",
+        "alt": "Miss Krampus  - Original Art",
+        "width": 900,
+        "height": 1200
+      }
+    ],
+    "shocked-original-art": [
+      {
+        "original": "/uploads/shocked_original_art_0_823e37bb2c.png",
+        "static": "/products/shocked-original-art/image1.png",
+        "alt": "Shocked Original Art",
+        "width": 900,
+        "height": 1200
+      }
+    ],
+    "standoff-original-art": [
+      {
+        "original": "/uploads/standoff_original_art_0_b60514b445.png",
+        "static": "/products/standoff-original-art/image1.png",
+        "alt": "Standoff - Original Art",
+        "width": 900,
+        "height": 1200
+      },
+      {
+        "original": "/uploads/standoff_original_art_1_f1a2bb4b03.png",
+        "static": "/products/standoff-original-art/image2.png",
+        "alt": "Standoff - Original Art",
+        "width": 1200,
+        "height": 800
+      },
+      {
+        "original": "/uploads/standoff_original_art_2_ad6e8b70b4.png",
+        "static": "/products/standoff-original-art/image3.png",
+        "alt": "Standoff - Original Art",
+        "width": 1200,
+        "height": 902
       }
     ]
   },
@@ -292,5 +313,5 @@
       "description": "Artist profile photo"
     }
   },
-  "lastSync": "2025-09-24T00:51:19.719Z"
+  "lastSync": "2025-09-25T14:27:53.597Z"
 }
