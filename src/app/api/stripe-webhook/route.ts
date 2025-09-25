@@ -322,8 +322,9 @@ export async function POST(request: NextRequest) {
             }
 
             // Try shipping_cost.shipping_address as fallback
-            if ((fullSession as any).shipping_cost?.shipping_address) {
-              const addr = (fullSession as any).shipping_cost.shipping_address;
+            const shippingCost = fullSession.shipping_cost as { shipping_address?: { line1?: string; line2?: string; city?: string; state?: string; postal_code?: string; country?: string; } } | undefined;
+            if (shippingCost?.shipping_address) {
+              const addr = shippingCost.shipping_address;
               return {
                 name: fullSession.customer_details?.name || undefined,
                 line1: addr.line1 || undefined,
