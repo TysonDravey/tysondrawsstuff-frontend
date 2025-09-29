@@ -135,14 +135,17 @@ export default async function ShowPage({ params }: ShowPageProps) {
     return `${formatDate(startDate)} - ${formatDate(endDate)}`;
   };
 
-  const isCurrentShow = (startDate: string, endDate: string) => {
+  const getShowStatus = (startDate: string, endDate: string) => {
     const now = new Date();
     const start = new Date(startDate);
     const end = new Date(endDate);
-    return now >= start && now <= end;
+
+    if (now < start) return 'upcoming';
+    if (now >= start && now <= end) return 'current';
+    return 'past';
   };
 
-  const isCurrent = isCurrentShow(show.startDate, show.endDate);
+  const showStatus = getShowStatus(show.startDate, show.endDate);
 
   return (
     <Layout categories={categories}>
@@ -177,11 +180,17 @@ export default async function ShowPage({ params }: ShowPageProps) {
                 {/* Title and Status */}
                 <div>
                   <div className="mb-3">
-                    {isCurrent ? (
+                    {showStatus === 'upcoming' && (
+                      <span className="inline-block bg-blue-100 text-blue-800 text-sm font-medium px-3 py-1 rounded-full">
+                        Upcoming Show
+                      </span>
+                    )}
+                    {showStatus === 'current' && (
                       <span className="inline-block bg-green-100 text-green-800 text-sm font-medium px-3 py-1 rounded-full">
                         Current Show
                       </span>
-                    ) : (
+                    )}
+                    {showStatus === 'past' && (
                       <span className="inline-block bg-gray-100 text-gray-800 text-sm font-medium px-3 py-1 rounded-full">
                         Past Show
                       </span>
@@ -259,7 +268,7 @@ export default async function ShowPage({ params }: ShowPageProps) {
               </div>
 
               {products.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                   {products.map((product) => {
                     const productImages = getProductImages(product.slug, product.images || []);
                     const firstImage = productImages[0];
@@ -272,7 +281,7 @@ export default async function ShowPage({ params }: ShowPageProps) {
                       >
                         {/* Product Image */}
                         {firstImage && (
-                          <div className="aspect-square bg-gray-100 overflow-hidden relative">
+                          <div className="aspect-[4/3] bg-gray-100 overflow-hidden relative">
                             <Image
                               src={firstImage.src}
                               alt={firstImage.alt}

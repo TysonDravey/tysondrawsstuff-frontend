@@ -30,15 +30,19 @@ export default async function ShowsPage() {
     return `${formatDate(startDate)} - ${formatDate(endDate)}`;
   };
 
-  const isCurrentShow = (startDate: string, endDate: string) => {
+  const getShowStatus = (startDate: string, endDate: string) => {
     const now = new Date();
     const start = new Date(startDate);
     const end = new Date(endDate);
-    return now >= start && now <= end;
+
+    if (now < start) return 'upcoming';
+    if (now >= start && now <= end) return 'current';
+    return 'past';
   };
 
-  const currentShows = shows.filter(show => isCurrentShow(show.startDate, show.endDate));
-  const pastShows = shows.filter(show => !isCurrentShow(show.startDate, show.endDate));
+  const upcomingShows = shows.filter(show => getShowStatus(show.startDate, show.endDate) === 'upcoming');
+  const currentShows = shows.filter(show => getShowStatus(show.startDate, show.endDate) === 'current');
+  const pastShows = shows.filter(show => getShowStatus(show.startDate, show.endDate) === 'past');
 
   return (
     <Layout categories={categories}>
@@ -52,6 +56,79 @@ export default async function ShowsPage() {
               Discover Tyson&apos;s artwork at galleries, art shows, and exhibitions. Special show pricing and exclusive pieces available at each event.
             </p>
           </div>
+
+          {/* Upcoming Shows */}
+          {upcomingShows.length > 0 && (
+            <section className="mb-12">
+              <h2 className="text-2xl font-bold mb-6 text-foreground">Upcoming Shows</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {upcomingShows.map((show) => (
+                  <Link
+                    key={show.id}
+                    href={`/shows/${show.slug}`}
+                    className="group block bg-card border border-border rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300"
+                  >
+                    {/* Show Logo */}
+                    {show.logo && (
+                      <div className="aspect-video bg-gray-100 overflow-hidden relative">
+                        <Image
+                          src={getStaticAssetUrl(show.logo.url)}
+                          alt={show.logo.alternativeText || show.title}
+                          fill
+                          className="object-contain group-hover:scale-105 transition-transform duration-300"
+                        />
+                      </div>
+                    )}
+
+                    <div className="p-6">
+                      {/* Upcoming Badge */}
+                      <div className="mb-3">
+                        <span className="inline-block bg-blue-100 text-blue-800 text-xs font-medium px-2 py-1 rounded-full">
+                          Upcoming Show
+                        </span>
+                      </div>
+
+                      <h3 className="text-xl font-bold mb-2 text-card-foreground group-hover:text-primary transition-colors">
+                        {show.title}
+                      </h3>
+
+                      {show.location && (
+                        <p className="text-muted-foreground mb-2 flex items-center">
+                          <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                          </svg>
+                          {show.location}
+                        </p>
+                      )}
+
+                      <p className="text-sm text-muted-foreground mb-3">
+                        {formatDateRange(show.startDate, show.endDate)}
+                      </p>
+
+                      {show.description && (
+                        <div
+                          className="text-sm text-muted-foreground line-clamp-3"
+                          dangerouslySetInnerHTML={{
+                            __html: show.description.length > 150
+                              ? show.description.substring(0, 150) + '...'
+                              : show.description
+                          }}
+                        />
+                      )}
+
+                      <div className="mt-4 flex items-center text-primary text-sm font-medium">
+                        View Details
+                        <svg className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
 
           {/* Current Shows */}
           {currentShows.length > 0 && (
