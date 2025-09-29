@@ -4,106 +4,81 @@ const https = require('https');
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
-const { URL } = require('url');
+const { promisify } = require('util');
 
-// Load environment variables from .env.local
-const envPath = path.join(__dirname, '..', '.env.local');
-if (fs.existsSync(envPath)) {
-  const envContent = fs.readFileSync(envPath, 'utf8');
-  envContent.split('\n').forEach(line => {
-    const [key, ...values] = line.split('=');
-    if (key && values.length && !key.startsWith('#')) {
-      process.env[key.trim()] = values.join('=').trim();
-    }
-  });
-}
+const writeFile = promisify(fs.writeFile);
+const readFile = promisify(fs.readFile);
+const mkdir = promisify(fs.mkdir);
+const readdir = promisify(fs.readdir);
+const stat = promisify(fs.stat);
+const unlink = promisify(fs.unlink);
+const rmdir = promisify(fs.rmdir);
 
 // Configuration
-const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1339';
-const STRAPI_TOKEN = process.env.STRAPI_API_TOKEN;
+const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1337';
+const STRAPI_API_TOKEN = process.env.STRAPI_API_TOKEN;
 const PUBLIC_DIR = path.join(__dirname, '..', 'public');
 const PRODUCTS_DIR = path.join(PUBLIC_DIR, 'products');
-const STATIC_DIR = path.join(PUBLIC_DIR, 'static');
-const IMAGE_MAP_FILE = path.join(__dirname, '..', 'image-map.json');
+const IMAGE_MAP_FILE = path.join(PUBLIC_DIR, 'image-map.json');
 
-// Ensure directories exist
-function ensureDirectories() {
-  [PUBLIC_DIR, PRODUCTS_DIR, STATIC_DIR].forEach(dir => {
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-  });
+// Timeout for HTTP requests
+const REQUEST_TIMEOUT = 15000; // Reduced timeout for faster failure detection
+
+console.log('🎨 Starting image sync process...');
+console.log(`📡 Strapi URL: ${STRAPI_URL}`);
+
+// Check if existing images and map exist
+function hasExistingImages() {
+  return fs.existsSync(PRODUCTS_DIR) && fs.existsSync(IMAGE_MAP_FILE);
 }
 
-// Download file from URL
-function downloadFile(url, filepath) {
-  return new Promise((resolve, reject) => {
-    console.log(`Downloading: ${url} -> ${filepath}`);
+// Get count of existing images
+async function getExistingImageCount() {
+  if (!fs.existsSync(PRODUCTS_DIR)) return 0;
 
-    const protocol = url.startsWith('https') ? https : http;
-    const request = protocol.get(url, (response) => {
-      if (response.statusCode === 200) {
-        const file = fs.createWriteStream(filepath);
-        response.pipe(file);
-        file.on('finish', () => {
-          file.close();
-          console.log(`✓ Downloaded: ${path.basename(filepath)}`);
-          resolve(filepath);
-        });
-      } else if (response.statusCode === 302 || response.statusCode === 301) {
-        // Handle redirects
-        downloadFile(response.headers.location, filepath).then(resolve).catch(reject);
-      } else {
-        reject(new Error(`Failed to download ${url}: ${response.statusCode}`));
-      }
-    }).on('error', reject);
-
-    // Set timeout
-    request.setTimeout(30000, () => {
-      request.destroy();
-      reject(new Error(`Download timeout for ${url}`));
-    });
-  });
-}
-
-// Get file extension from URL or content-type
-function getFileExtension(url, contentType = '') {
   try {
-    // Handle relative URLs
-    if (url.startsWith('/')) {
-      return path.extname(url);
+    let count = 0;
+    const dirs = await readdir(PRODUCTS_DIR);
+
+    for (const dir of dirs) {
+      const dirPath = path.join(PRODUCTS_DIR, dir);
+      const dirStats = await stat(dirPath);
+      if (dirStats.isDirectory()) {
+        const files = await readdir(dirPath);
+        count += files.length;
+      }
     }
-    const urlExt = path.extname(new URL(url).pathname);
-    if (urlExt) return urlExt;
-  } catch (error) {
-    // If URL parsing fails, try to extract extension from string
-    const match = url.match(/\.([a-zA-Z0-9]+)(\?|$)/);
-    if (match) return '.' + match[1];
+
+    return count;
+  } catch {
+    return 0;
+  }
+}
+
+// Fetch data from Strapi API with robust error handling
+async function fetchFromStrapi(endpoint) {
+  const url = `${STRAPI_URL}/api/${endpoint}`;
+  console.log(`📊 Attempting to fetch: ${url}`);
+
+  const protocol = url.startsWith('https') ? https : http;
+  const options = {
+    timeout: REQUEST_TIMEOUT,
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  };
+
+  if (STRAPI_API_TOKEN) {
+    options.headers['Authorization'] = `Bearer ${STRAPI_API_TOKEN}`;
   }
 
-  if (contentType.includes('jpeg') || contentType.includes('jpg')) return '.jpg';
-  if (contentType.includes('png')) return '.png';
-  if (contentType.includes('webp')) return '.webp';
-  if (contentType.includes('gif')) return '.gif';
-
-  return '.jpg'; // Default fallback
-}
-
-// Fetch data from Strapi API
-async function fetchFromStrapi(endpoint) {
   return new Promise((resolve, reject) => {
-    const url = `${STRAPI_URL}/api/${endpoint}`;
-    console.log(`Fetching: ${url}`);
-
-    const protocol = url.startsWith('https') ? https : http;
-    const options = {
-      headers: {
-        'Authorization': `Bearer ${STRAPI_TOKEN}`,
-        'Content-Type': 'application/json'
-      }
-    };
-
     const request = protocol.get(url, options, (response) => {
+      if (response.statusCode !== 200) {
+        reject(new Error(`HTTP ${response.statusCode}: ${response.statusMessage}`));
+        return;
+      }
+
       let data = '';
       response.on('data', chunk => data += chunk);
       response.on('end', () => {
@@ -111,141 +86,311 @@ async function fetchFromStrapi(endpoint) {
           const parsed = JSON.parse(data);
           resolve(parsed);
         } catch (error) {
-          reject(new Error(`Failed to parse JSON from ${url}: ${error.message}`));
+          reject(new Error(`Failed to parse JSON: ${error.message}`));
         }
       });
-    }).on('error', reject);
+    });
 
-    request.setTimeout(10000, () => {
+    request.on('error', reject);
+    request.on('timeout', () => {
       request.destroy();
-      reject(new Error(`API request timeout for ${url}`));
+      reject(new Error(`Request timeout after ${REQUEST_TIMEOUT}ms`));
     });
   });
 }
 
-// Main sync function
-async function syncImages() {
-  console.log('🎨 Starting image sync...');
+// Download image from URL to file path
+async function downloadImage(imageUrl, filePath) {
+  return new Promise((resolve, reject) => {
+    const fullUrl = imageUrl.startsWith('http') ? imageUrl : `${STRAPI_URL}${imageUrl}`;
 
+    const protocol = fullUrl.startsWith('https') ? https : http;
+    const request = protocol.get(fullUrl, { timeout: REQUEST_TIMEOUT }, (response) => {
+      if (response.statusCode === 301 || response.statusCode === 302) {
+        // Handle redirects
+        downloadImage(response.headers.location, filePath).then(resolve).catch(reject);
+        return;
+      }
+
+      if (response.statusCode !== 200) {
+        reject(new Error(`HTTP ${response.statusCode}: ${response.statusMessage}`));
+        return;
+      }
+
+      const fileStream = fs.createWriteStream(filePath);
+      response.pipe(fileStream);
+
+      fileStream.on('finish', () => {
+        fileStream.close();
+        resolve();
+      });
+
+      fileStream.on('error', reject);
+    });
+
+    request.on('error', reject);
+    request.on('timeout', () => {
+      request.destroy();
+      reject(new Error('Image download timeout'));
+    });
+  });
+}
+
+// Get file extension from URL
+function getImageExtension(url) {
   try {
-    ensureDirectories();
-
-    // Initialize image map
-    const imageMap = {
-      products: {},
-      static: {},
-      lastSync: new Date().toISOString()
-    };
-
-    // 1. Fetch all products with images
-    console.log('\n📦 Fetching products...');
-    const productsResponse = await fetchFromStrapi('products?populate=*');
-    const products = productsResponse.data || [];
-
-    console.log(`Found ${products.length} products`);
-
-    // 2. Process each product
-    for (const product of products) {
-      const productSlug = product.slug;
-      const productDir = path.join(PRODUCTS_DIR, productSlug);
-
-      // Ensure product directory exists
-      if (!fs.existsSync(productDir)) {
-        fs.mkdirSync(productDir, { recursive: true });
-      }
-
-      console.log(`\n📸 Processing product: ${product.title} (${productSlug})`);
-
-      if (product.images && product.images.length > 0) {
-        imageMap.products[productSlug] = [];
-
-        for (let i = 0; i < product.images.length; i++) {
-          const image = product.images[i];
-          const imageUrl = `${STRAPI_URL}${image.url}`;
-          const extension = getFileExtension(image.url);
-          const filename = `image${i + 1}${extension}`;
-          const filepath = path.join(productDir, filename);
-          const staticPath = `/products/${productSlug}/${filename}`;
-
-          try {
-            await downloadFile(imageUrl, filepath);
-
-            // Add to image map
-            imageMap.products[productSlug].push({
-              original: image.url,
-              static: staticPath,
-              alt: image.alternativeText || product.title,
-              width: image.width,
-              height: image.height
-            });
-
-          } catch (error) {
-            console.error(`❌ Failed to download ${imageUrl}:`, error.message);
-          }
-        }
-      } else {
-        console.log(`  No images found for ${productSlug}`);
-      }
+    // Handle relative URLs
+    if (url.startsWith('/')) {
+      const ext = path.extname(url);
+      return ext || '.jpg';
     }
 
-    // 3. Download static assets (logo, etc.)
-    console.log('\n🖼️  Processing static assets...');
-    const staticAssets = [
-      {
-        url: '/uploads/tysondrawsstuff_web_logo_06_e9ebe2d054.png',
-        filename: 'logo.png',
-        description: 'Site logo'
-      },
-      {
-        url: '/uploads/Tyson_Puppet_head_07_small_01_d6740d04c4.png',
-        filename: 'artist-photo.png',
-        description: 'Artist profile photo'
-      }
-      // Add more static assets here as needed
-    ];
+    // Parse full URLs
+    const urlObj = new URL(url);
+    const ext = path.extname(urlObj.pathname).toLowerCase();
 
-    for (const asset of staticAssets) {
-      const assetUrl = `${STRAPI_URL}${asset.url}`;
-      const filepath = path.join(STATIC_DIR, asset.filename);
-      const staticPath = `/static/${asset.filename}`;
-
-      try {
-        await downloadFile(assetUrl, filepath);
-
-        imageMap.static[asset.url] = {
-          static: staticPath,
-          description: asset.description
-        };
-
-      } catch (error) {
-        console.error(`❌ Failed to download ${assetUrl}:`, error.message);
-      }
+    if (ext && ['.jpg', '.jpeg', '.png', '.gif', '.webp'].includes(ext)) {
+      return ext;
     }
 
-    // 4. Save image map
-    fs.writeFileSync(IMAGE_MAP_FILE, JSON.stringify(imageMap, null, 2));
-    console.log(`\n💾 Image map saved to: ${IMAGE_MAP_FILE}`);
-
-    // 5. Summary
-    const totalProducts = Object.keys(imageMap.products).length;
-    const totalImages = Object.values(imageMap.products).reduce((sum, imgs) => sum + imgs.length, 0);
-    const totalStatic = Object.keys(imageMap.static).length;
-
-    console.log('\n✅ Image sync completed!');
-    console.log(`   Products: ${totalProducts}`);
-    console.log(`   Product images: ${totalImages}`);
-    console.log(`   Static assets: ${totalStatic}`);
-    console.log(`   Total files: ${totalImages + totalStatic}`);
-
+    return '.jpg'; // Default fallback
   } catch (error) {
-    console.error('❌ Image sync failed:', error);
-    process.exit(1);
+    // If URL parsing fails, try to extract extension from string
+    const match = url.match(/\.([a-zA-Z0-9]+)(\?|$)/);
+    if (match && ['.jpg', '.jpeg', '.png', '.gif', '.webp'].includes('.' + match[1].toLowerCase())) {
+      return '.' + match[1].toLowerCase();
+    }
+    return '.jpg';
   }
 }
 
+// Clean up old product directories that no longer exist
+async function cleanOldProducts(currentSlugs) {
+  try {
+    if (!fs.existsSync(PRODUCTS_DIR)) {
+      return;
+    }
+
+    const existingDirs = await readdir(PRODUCTS_DIR);
+
+    for (const dir of existingDirs) {
+      if (!currentSlugs.includes(dir)) {
+        const dirPath = path.join(PRODUCTS_DIR, dir);
+
+        try {
+          const stats = await stat(dirPath);
+          if (stats.isDirectory()) {
+            console.log(`🗑️  Removing old product directory: ${dir}`);
+
+            // Remove all files in directory first
+            const files = await readdir(dirPath);
+            for (const file of files) {
+              await unlink(path.join(dirPath, file));
+            }
+            await rmdir(dirPath);
+          }
+        } catch (error) {
+          console.warn(`⚠️  Could not remove directory ${dir}:`, error.message);
+        }
+      }
+    }
+  } catch (error) {
+    console.warn('⚠️  Error cleaning old products:', error.message);
+  }
+}
+
+// Fallback: Use existing images and image map
+async function useFallbackImages() {
+  const existingCount = await getExistingImageCount();
+
+  console.log('\n⚠️  Strapi unavailable - using existing images');
+
+  if (existingCount > 0) {
+    console.log(`📁 Found ${existingCount} existing images in /public/products/`);
+
+    // Verify image map exists
+    if (fs.existsSync(IMAGE_MAP_FILE)) {
+      try {
+        const existingMap = await readFile(IMAGE_MAP_FILE, 'utf8');
+        const imageMapData = JSON.parse(existingMap);
+        const productCount = Object.keys(imageMapData).length;
+
+        console.log(`📝 Using existing image map with ${productCount} products`);
+        console.log('✅ Build will continue with cached images');
+        return true;
+      } catch (error) {
+        console.warn('⚠️  Could not read existing image map:', error.message);
+      }
+    }
+
+    // If images exist but no map, create empty map
+    console.log('📝 Creating minimal image map for existing images');
+    await writeFile(IMAGE_MAP_FILE, JSON.stringify({}, null, 2));
+    console.log('✅ Build will continue with existing images');
+    return true;
+  } else {
+    // No existing images - create empty map to prevent build errors
+    console.log('📭 No existing images found');
+
+    await mkdir(PUBLIC_DIR, { recursive: true });
+    await mkdir(PRODUCTS_DIR, { recursive: true });
+    await writeFile(IMAGE_MAP_FILE, JSON.stringify({}, null, 2));
+
+    console.log('📝 Created empty image map - build will continue without images');
+    return true;
+  }
+}
+
+// Main sync function
+async function syncImages() {
+  try {
+    console.log('🔍 Checking Strapi connectivity...');
+
+    // Test Strapi connectivity with a quick health check
+    let strapiAvailable = true;
+    let products = [];
+
+    try {
+      const productsResponse = await fetchFromStrapi('products?populate=*&pagination[limit]=100&sort=id:desc');
+      products = productsResponse.data || [];
+      console.log(`✅ Strapi connected - found ${products.length} products`);
+    } catch (error) {
+      strapiAvailable = false;
+      console.log(`❌ Strapi connection failed: ${error.message}`);
+
+      // Use fallback and exit successfully
+      await useFallbackImages();
+      return; // Exit gracefully without error
+    }
+
+    if (products.length === 0) {
+      console.log('⚠️  No products found in Strapi');
+      await useFallbackImages();
+      return;
+    }
+
+    // Strapi is available - proceed with fresh sync
+    console.log('\n🔄 Syncing fresh images from Strapi...');
+
+    // Ensure public and products directories exist
+    await mkdir(PUBLIC_DIR, { recursive: true });
+    await mkdir(PRODUCTS_DIR, { recursive: true });
+
+    const imageMap = {};
+    const currentSlugs = [];
+    let totalDownloaded = 0;
+    let totalErrors = 0;
+
+    // Process each product
+    for (const product of products) {
+      const slug = product.slug;
+      if (!slug) {
+        console.warn('⚠️  Product missing slug:', product.title || product.id);
+        continue;
+      }
+
+      currentSlugs.push(slug);
+      console.log(`\n🖼️  Processing product: ${product.title} (${slug})`);
+
+      const productDir = path.join(PRODUCTS_DIR, slug);
+      await mkdir(productDir, { recursive: true });
+
+      const images = product.images || [];
+      const localImages = [];
+
+      if (images.length === 0) {
+        console.log('  📭 No images found for this product');
+        imageMap[slug] = [];
+        continue;
+      }
+
+      // Download each image (always overwrite existing)
+      for (let i = 0; i < images.length; i++) {
+        const image = images[i];
+
+        try {
+          const imageUrl = image.url;
+          const extension = getImageExtension(imageUrl);
+          const fileName = `image-${i + 1}${extension}`;
+          const filePath = path.join(productDir, fileName);
+          const publicPath = `/products/${slug}/${fileName}`;
+
+          console.log(`  📥 Downloading: ${path.basename(imageUrl)}`);
+          await downloadImage(imageUrl, filePath);
+          console.log(`  ✅ Saved: ${fileName}`);
+
+          localImages.push({
+            id: image.id,
+            url: publicPath,
+            alternativeText: image.alternativeText || '',
+            width: image.width || 800,
+            height: image.height || 600,
+            originalUrl: imageUrl
+          });
+
+          totalDownloaded++;
+
+        } catch (error) {
+          totalErrors++;
+          console.error(`  ❌ Failed to download image ${i + 1}: ${error.message}`);
+        }
+      }
+
+      imageMap[slug] = localImages;
+      console.log(`  ✅ Downloaded ${localImages.length}/${images.length} images`);
+    }
+
+    // Clean up old product directories
+    await cleanOldProducts(currentSlugs);
+
+    // Write new image map only if we successfully processed products
+    console.log('\n📝 Writing image map...');
+    await writeFile(IMAGE_MAP_FILE, JSON.stringify(imageMap, null, 2));
+
+    console.log(`\n🎉 Image sync complete!`);
+    console.log(`   📊 Processed ${products.length} products`);
+    console.log(`   ✅ Downloaded ${totalDownloaded} images successfully`);
+    if (totalErrors > 0) {
+      console.log(`   ⚠️  ${totalErrors} image download failures`);
+    }
+    console.log(`   📁 Images saved to: ${PRODUCTS_DIR}`);
+    console.log(`   📝 Image map: ${IMAGE_MAP_FILE}`);
+
+  } catch (error) {
+    console.error('💥 Unexpected error during sync:', error.message);
+
+    // Even on unexpected errors, try to use fallback
+    console.log('🔄 Attempting to use existing images as fallback...');
+    await useFallbackImages();
+  }
+}
+
+// Always exit with success code to prevent build failures
+process.on('uncaughtException', async (error) => {
+  console.error('💥 Uncaught exception:', error.message);
+  console.log('🔄 Using fallback images...');
+  await useFallbackImages();
+  process.exit(0);
+});
+
+process.on('unhandledRejection', async (error) => {
+  console.error('💥 Unhandled rejection:', error.message);
+  console.log('🔄 Using fallback images...');
+  await useFallbackImages();
+  process.exit(0);
+});
+
 // Run the sync
 if (require.main === module) {
-  syncImages();
+  syncImages().then(() => {
+    console.log('✨ Image sync process finished successfully');
+    process.exit(0);
+  }).catch(async (error) => {
+    console.error('💥 Final error:', error.message);
+    console.log('🔄 Using fallback images...');
+    await useFallbackImages();
+    process.exit(0);
+  });
 }
 
 module.exports = { syncImages };
