@@ -150,9 +150,38 @@ export default async function ProductPage({ params }: ProductPageProps) {
                   <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 lg:mb-4 leading-tight text-card-foreground">
                     {product.title}
                   </h1>
-                  <p className="text-3xl sm:text-4xl lg:text-5xl font-bold text-primary">
-                    ${product.price.toFixed(2)} <span className="text-sm sm:text-base text-muted-foreground font-normal">CAD</span>
-                  </p>
+
+                  {/* Show Badge if product is at a show */}
+                  {product.currentShow && (
+                    <div className="mb-4">
+                      <Link
+                        href={`/shows/${product.currentShow.slug}`}
+                        className="inline-flex items-center bg-amber-100 text-amber-800 text-sm font-medium px-3 py-1 rounded-full border border-amber-200 hover:bg-amber-200 transition-colors"
+                      >
+                        <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        Available at {product.currentShow.title}
+                      </Link>
+                    </div>
+                  )}
+
+                  {/* Pricing Display */}
+                  {product.currentShow && product.showPrice ? (
+                    <div className="space-y-2">
+                      <p className="text-lg text-muted-foreground line-through">
+                        Online Price: ${product.price.toFixed(2)} CAD
+                      </p>
+                      <p className="text-3xl sm:text-4xl lg:text-5xl font-bold text-amber-600">
+                        Show Price: ${product.showPrice.toFixed(2)} <span className="text-sm sm:text-base text-muted-foreground font-normal">CAD</span>
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="text-3xl sm:text-4xl lg:text-5xl font-bold text-primary">
+                      ${product.price.toFixed(2)} <span className="text-sm sm:text-base text-muted-foreground font-normal">CAD</span>
+                    </p>
+                  )}
                 </div>
 
                 {/* Category */}
@@ -178,8 +207,40 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
               {/* Purchase Section */}
               <div className="bg-card border border-border rounded-lg p-6">
-                <h3 className="text-lg font-semibold mb-4 text-card-foreground">Purchase</h3>
-                <BuyButton productSlug={product.slug} price={product.price} />
+                <h3 className="text-lg font-semibold mb-4 text-card-foreground">
+                  {product.currentShow ? 'Availability' : 'Purchase'}
+                </h3>
+
+                {product.currentShow ? (
+                  <div className="space-y-4">
+                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                      <div className="flex items-start space-x-3">
+                        <svg className="w-5 h-5 text-amber-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <div>
+                          <h4 className="font-medium text-amber-800">Available at Show</h4>
+                          <p className="text-sm text-amber-700 mt-1">
+                            This artwork is currently available at <strong>{product.currentShow.title}</strong>.
+                            Online purchasing is temporarily unavailable.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <Link
+                      href={`/shows/${product.currentShow.slug}`}
+                      className="inline-flex items-center justify-center w-full bg-amber-600 hover:bg-amber-700 text-white font-medium py-3 px-6 rounded-lg transition-colors"
+                    >
+                      <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      View Show Details
+                    </Link>
+                  </div>
+                ) : (
+                  <BuyButton productSlug={product.slug} price={product.price} />
+                )}
               </div>
 
             </div>

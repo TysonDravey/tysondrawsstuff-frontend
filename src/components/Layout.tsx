@@ -58,6 +58,14 @@ export default function Layout({ children, categories = [] }: LayoutProps) {
               >
                 Shop All
               </Link>
+              <Link
+                href="/shows"
+                className={`font-medium transition-colors ${
+                  isActiveLink('/shows') ? 'text-primary' : 'text-foreground hover:text-primary'
+                }`}
+              >
+                Shows
+              </Link>
 
               {/* Categories Dropdown */}
               <div className="relative group">
@@ -136,6 +144,15 @@ export default function Layout({ children, categories = [] }: LayoutProps) {
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Shop All
+                </Link>
+                <Link
+                  href="/shows"
+                  className={`block py-2 font-medium transition-colors ${
+                    isActiveLink('/shows') ? 'text-primary' : 'text-foreground hover:text-primary'
+                  }`}
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  Shows
                 </Link>
 
                 {/* Mobile Categories */}
