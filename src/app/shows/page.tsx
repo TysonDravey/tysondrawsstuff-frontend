@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import Layout from '@/components/Layout';
 import { fetchShows, fetchCategoriesWithProducts } from '@/lib/api';
 import { getStaticAssetUrl } from '@/lib/images';
@@ -48,7 +49,7 @@ export default async function ShowsPage() {
               Shows & Exhibitions
             </h1>
             <p className="text-lg text-muted-foreground max-w-2xl">
-              Discover Tyson's artwork at galleries, art shows, and exhibitions. Special show pricing and exclusive pieces available at each event.
+              Discover Tyson&apos;s artwork at galleries, art shows, and exhibitions. Special show pricing and exclusive pieces available at each event.
             </p>
           </div>
 
@@ -65,11 +66,12 @@ export default async function ShowsPage() {
                   >
                     {/* Show Logo */}
                     {show.logo && (
-                      <div className="aspect-video bg-gray-100 overflow-hidden">
-                        <img
+                      <div className="aspect-video bg-gray-100 overflow-hidden relative">
+                        <Image
                           src={getStaticAssetUrl(show.logo.url)}
                           alt={show.logo.alternativeText || show.title}
-                          className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+                          fill
+                          className="object-contain group-hover:scale-105 transition-transform duration-300"
                         />
                       </div>
                     )}
@@ -137,11 +139,12 @@ export default async function ShowsPage() {
                   >
                     {/* Show Logo */}
                     {show.logo && (
-                      <div className="aspect-video bg-gray-100 overflow-hidden">
-                        <img
+                      <div className="aspect-video bg-gray-100 overflow-hidden relative">
+                        <Image
                           src={getStaticAssetUrl(show.logo.url)}
                           alt={show.logo.alternativeText || show.title}
-                          className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+                          fill
+                          className="object-contain group-hover:scale-105 transition-transform duration-300"
                         />
                       </div>
                     )}

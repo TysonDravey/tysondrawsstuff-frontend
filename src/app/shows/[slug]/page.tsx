@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import type { Metadata } from 'next';
 import Layout from '@/components/Layout';
 import {
@@ -163,11 +164,12 @@ export default async function ShowPage({ params }: ShowPageProps) {
               <div className="bg-card border border-border rounded-lg p-6 space-y-6 sticky top-8">
                 {/* Logo */}
                 {show.logo && (
-                  <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden">
-                    <img
+                  <div className="aspect-square bg-gray-100 rounded-lg overflow-hidden relative">
+                    <Image
                       src={getStaticAssetUrl(show.logo.url)}
                       alt={show.logo.alternativeText || show.title}
-                      className="w-full h-full object-contain"
+                      fill
+                      className="object-contain"
                     />
                   </div>
                 )}
@@ -270,11 +272,12 @@ export default async function ShowPage({ params }: ShowPageProps) {
                       >
                         {/* Product Image */}
                         {firstImage && (
-                          <div className="aspect-square bg-gray-100 overflow-hidden">
-                            <img
+                          <div className="aspect-square bg-gray-100 overflow-hidden relative">
+                            <Image
                               src={firstImage.src}
                               alt={firstImage.alt}
-                              className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+                              fill
+                              className="object-contain group-hover:scale-105 transition-transform duration-300"
                             />
                           </div>
                         )}
