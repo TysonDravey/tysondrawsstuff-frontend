@@ -1,9 +1,11 @@
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
+import type { Metadata } from 'next';
 import Layout from '@/components/Layout';
 import { fetchProductBySlug, fetchProductSlugs, fetchCategoriesWithProducts } from '@/lib/api';
 import BuyButton from '@/components/BuyButton';
 import ImageGallery from '@/components/ImageGallery';
+import { getProductImages } from '@/lib/images';
 
 interface ProductPageProps {
   params: Promise<{
@@ -19,6 +21,60 @@ export async function generateStaticParams() {
   return slugs.map((slug) => ({
     slug: slug,
   }));
+}
+
+export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const product = await fetchProductBySlug(slug);
+
+  if (!product) {
+    return {
+      title: 'Product Not Found | Tyson Draws Stuff',
+      description: 'This product could not be found.',
+    };
+  }
+
+  // Get product images and use first one for OG image
+  const productImages = getProductImages(slug, product.images || []);
+  const firstImage = productImages[0];
+
+  // Truncate description to ~150 characters for meta description
+  const stripHtml = (html: string) => html.replace(/<[^>]*>/g, '');
+  const metaDescription = product.description
+    ? stripHtml(product.description).substring(0, 150).trim() + (product.description.length > 150 ? '...' : '')
+    : `Original artwork by Tyson Brillon - ${product.title}. Available for purchase.`;
+
+  const ogImage = firstImage?.src || '/images/og-default.jpg';
+  const fullTitle = `${product.title} | Tyson Draws Stuff`;
+
+  return {
+    title: fullTitle,
+    description: metaDescription,
+    openGraph: {
+      title: fullTitle,
+      description: metaDescription,
+      type: 'article',
+      url: `https://tysondrawsstuff.com/shop/${slug}`,
+      siteName: 'Tyson Draws Stuff',
+      images: [
+        {
+          url: ogImage,
+          width: firstImage?.width || 1200,
+          height: firstImage?.height || 630,
+          alt: product.title,
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: fullTitle,
+      description: metaDescription,
+      images: [ogImage],
+    },
+    alternates: {
+      canonical: `https://tysondrawsstuff.com/shop/${slug}`,
+    },
+  };
 }
 
 export default async function ProductPage({ params }: ProductPageProps) {
