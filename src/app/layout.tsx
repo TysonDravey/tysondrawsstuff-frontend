@@ -14,14 +14,25 @@ const nunitoSans = Nunito_Sans({
   weight: ["400", "600", "700"],
 });
 
+// Get the current deployment URL for metadata
+const getBaseUrl = () => {
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`;
+  }
+  if (process.env.NODE_ENV === 'development') {
+    return 'http://localhost:3000';
+  }
+  return 'https://tysondrawsstuff.com';
+};
+
 export const metadata: Metadata = {
   title: "Tyson Draws Stuff | Original Art, Prints, and Books",
   description: "Explore original art, posters, merch, and books by Tyson Brillon. Unique artwork and prints available for purchase.",
-  metadataBase: new URL("https://tysondrawsstuff.com"),
+  metadataBase: new URL(getBaseUrl()),
   openGraph: {
     title: "Tyson Draws Stuff | Original Art, Prints, and Books",
     description: "Explore original art, posters, merch, and books by Tyson Brillon. Unique artwork and prints available for purchase.",
-    url: "https://tysondrawsstuff.com",
+    url: getBaseUrl(),
     siteName: "Tyson Draws Stuff",
     images: [
       {
