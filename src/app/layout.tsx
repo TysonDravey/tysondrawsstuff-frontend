@@ -31,6 +31,9 @@ export const metadata: Metadata = {
   title: "Tyson Draws Stuff | Original Art, Prints, and Books",
   description: "Explore original art, posters, merch, and books by Tyson Brillon. Unique artwork and prints available for purchase.",
   metadataBase: new URL(getBaseUrl()),
+  icons: {
+    icon: "/favicon.ico",
+  },
   openGraph: {
     title: "Tyson Draws Stuff | Original Art, Prints, and Books",
     description: "Explore original art, posters, merch, and books by Tyson Brillon. Unique artwork and prints available for purchase.",
