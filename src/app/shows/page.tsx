@@ -35,8 +35,13 @@ export default async function ShowsPage() {
     const start = new Date(startDate);
     const end = new Date(endDate);
 
-    if (now < start) return 'upcoming';
-    if (now >= start && now <= end) return 'current';
+    // Set time to beginning of day for comparison
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const startDay = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+    const endDay = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+
+    if (today < startDay) return 'upcoming';
+    if (today >= startDay && today <= endDay) return 'current';
     return 'past';
   };
 
