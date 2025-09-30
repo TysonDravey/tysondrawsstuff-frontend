@@ -2,12 +2,20 @@
 
 import { useState } from 'react';
 
+// Extend the global window object to include gtag
+declare global {
+  interface Window {
+    gtag: (command: string, targetId: string, config?: Record<string, unknown>) => void;
+  }
+}
+
 interface BuyButtonProps {
   productSlug: string;
   price: number;
+  productTitle: string;
 }
 
-export default function BuyButton({ productSlug, price }: BuyButtonProps) {
+export default function BuyButton({ productSlug, price, productTitle }: BuyButtonProps) {
   const [loading, setLoading] = useState(false);
 
   // Check if we're in test mode
@@ -15,6 +23,23 @@ export default function BuyButton({ productSlug, price }: BuyButtonProps) {
 
   const handleBuyNow = async () => {
     setLoading(true);
+
+    // Track GA4 begin_checkout event before redirecting to Stripe
+    if (typeof window !== "undefined" && window.gtag) {
+      window.gtag("event", "begin_checkout", {
+        currency: "CAD",
+        value: price,
+        items: [
+          {
+            item_id: productSlug,
+            item_name: productTitle,
+            price: price,
+            quantity: 1,
+          },
+        ],
+      });
+      console.log('GA4 begin_checkout event sent:', { productSlug, productTitle, price });
+    }
 
     try {
       const response = await fetch('/api/checkout', {

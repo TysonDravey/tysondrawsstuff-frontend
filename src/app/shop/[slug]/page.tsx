@@ -239,7 +239,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
                     </Link>
                   </div>
                 ) : (
-                  <BuyButton productSlug={product.slug} price={product.price} />
+                  <BuyButton
+                    productSlug={product.slug}
+                    price={product.price}
+                    productTitle={product.title}
+                  />
                 )}
               </div>
 
