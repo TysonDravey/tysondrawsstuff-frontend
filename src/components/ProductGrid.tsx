@@ -47,8 +47,17 @@ export default function ProductGrid({ products }: ProductGridProps) {
                   </div>
                 )}
 
+                {/* Show Badge */}
+                {product.currentShow && product.showPrice && (
+                  <div className="absolute top-3 right-3">
+                    <span className="bg-blue-600 text-white text-xs font-semibold px-2 py-1 rounded">
+                      At Show
+                    </span>
+                  </div>
+                )}
+
                 {/* Category Badge */}
-                {product.category && (
+                {product.category && !(product.currentShow && product.showPrice) && (
                   <div className="absolute top-3 right-3">
                     <span className="bg-secondary text-secondary-foreground text-xs font-medium px-2 py-1 rounded">
                       {product.category.name}
@@ -61,9 +70,26 @@ export default function ProductGrid({ products }: ProductGridProps) {
                 <h2 className="text-lg font-semibold text-card-foreground mb-3 line-clamp-2 group-hover:text-primary transition-colors">
                   {product.title}
                 </h2>
-                <p className="text-2xl font-bold text-primary">
-                  ${product.price.toFixed(2)}
-                </p>
+                {/* Pricing */}
+                {product.currentShow && product.showPrice ? (
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <p className="text-lg text-muted-foreground line-through">
+                        ${product.price.toFixed(2)}
+                      </p>
+                      <p className="text-2xl font-bold text-blue-600">
+                        ${product.showPrice.toFixed(2)}
+                      </p>
+                    </div>
+                    <p className="text-xs text-blue-600 font-medium">
+                      Show Special at {product.currentShow.title}
+                    </p>
+                  </div>
+                ) : (
+                  <p className="text-2xl font-bold text-primary">
+                    ${product.price.toFixed(2)}
+                  </p>
+                )}
               </div>
             </div>
           </Link>
