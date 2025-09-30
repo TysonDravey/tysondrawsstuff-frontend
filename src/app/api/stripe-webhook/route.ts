@@ -6,11 +6,23 @@ import { writeFile, mkdir } from 'fs/promises';
 import { existsSync } from 'fs';
 import path from 'path';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-08-27.basil',
-});
+function initializeStripe() {
+  const secretKey = process.env.STRIPE_SECRET_KEY;
+  if (!secretKey) {
+    throw new Error('STRIPE_SECRET_KEY environment variable is not set');
+  }
+  return new Stripe(secretKey, {
+    apiVersion: '2025-08-27.basil',
+  });
+}
 
-const WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET!;
+function getWebhookSecret() {
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  if (!webhookSecret) {
+    throw new Error('STRIPE_WEBHOOK_SECRET environment variable is not set');
+  }
+  return webhookSecret;
+}
 
 // Email configuration
 const EMAIL_CONFIG = {
@@ -228,22 +240,27 @@ View in Stripe: https://dashboard.stripe.com/test/checkout/sessions/${orderData.
 }
 
 export async function POST(request: NextRequest) {
-  const body = await request.text();
-  const headersList = await headers();
-  const signature = headersList.get('stripe-signature');
-
-  if (!signature) {
-    return NextResponse.json(
-      { error: 'Missing stripe-signature header' },
-      { status: 400 }
-    );
-  }
-
-  let event: Stripe.Event;
-
   try {
-    // Verify webhook signature
-    event = stripe.webhooks.constructEvent(body, signature, WEBHOOK_SECRET);
+    // Initialize Stripe and get webhook secret only when the function is called
+    const stripe = initializeStripe();
+    const WEBHOOK_SECRET = getWebhookSecret();
+
+    const body = await request.text();
+    const headersList = await headers();
+    const signature = headersList.get('stripe-signature');
+
+    if (!signature) {
+      return NextResponse.json(
+        { error: 'Missing stripe-signature header' },
+        { status: 400 }
+      );
+    }
+
+    let event: Stripe.Event;
+
+    try {
+      // Verify webhook signature
+      event = stripe.webhooks.constructEvent(body, signature, WEBHOOK_SECRET);
   } catch (error) {
     console.error('Webhook signature verification failed:', error);
     return NextResponse.json(
@@ -388,6 +405,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       { error: 'Webhook processing failed', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 200 } // Return 200 to prevent Stripe retries
+    );
+  }
+  } catch (initError) {
+    console.error('Failed to initialize Stripe:', initError);
+    return NextResponse.json(
+      { error: 'Configuration error' },
+      { status: 500 }
     );
   }
 }
