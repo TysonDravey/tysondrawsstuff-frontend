@@ -36,8 +36,17 @@ export default function ProductCard({ product, featured = false }: ProductCardPr
               </div>
             )}
 
+            {/* Show Badge */}
+            {product.currentShow && product.showPrice && (
+              <div className="absolute top-3 right-3">
+                <span className="bg-primary text-primary-foreground text-xs font-semibold px-2 py-1 rounded">
+                  At Show
+                </span>
+              </div>
+            )}
+
             {/* Category Badge */}
-            {product.category && (
+            {product.category && !(product.currentShow && product.showPrice) && (
               <div className="absolute top-3 right-3">
                 <span className="bg-secondary text-secondary-foreground text-xs font-medium px-2 py-1 rounded">
                   {product.category.name}
@@ -51,15 +60,26 @@ export default function ProductCard({ product, featured = false }: ProductCardPr
               {product.title}
             </h3>
 
-            <div className="flex items-center justify-between">
+            {/* Pricing */}
+            {product.currentShow && product.showPrice ? (
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <p className="text-lg text-muted-foreground line-through">
+                    ${product.price.toFixed(2)}
+                  </p>
+                  <p className="text-2xl font-bold text-primary">
+                    ${product.showPrice.toFixed(2)}
+                  </p>
+                </div>
+                <p className="text-xs text-primary font-medium">
+                  Show Special at {product.currentShow.title}
+                </p>
+              </div>
+            ) : (
               <p className="text-2xl font-bold text-primary">
                 ${product.price.toFixed(2)}
               </p>
-
-              <button className="bg-primary text-primary-foreground px-4 py-2 rounded font-medium hover:bg-orange-600 transition-colors">
-                Buy Now
-              </button>
-            </div>
+            )}
 
             {/* Description for featured products */}
             {featured && product.description && (
@@ -70,6 +90,18 @@ export default function ProductCard({ product, featured = false }: ProductCardPr
                     : 'Product description available'
                   }
                 </p>
+              </div>
+            )}
+
+            {/* View Item button for featured products */}
+            {featured && (
+              <div className="mt-4 pt-3 border-t border-border">
+                <span className="inline-flex items-center text-primary hover:text-orange-600 transition-colors font-medium text-sm">
+                  View Item
+                  <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </span>
               </div>
             )}
           </div>

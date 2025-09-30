@@ -6,11 +6,23 @@ import { writeFile, mkdir } from 'fs/promises';
 import { existsSync } from 'fs';
 import path from 'path';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2025-08-27.basil',
-});
+function initializeStripe() {
+  const secretKey = process.env.STRIPE_SECRET_KEY;
+  if (!secretKey) {
+    throw new Error('STRIPE_SECRET_KEY environment variable is not set');
+  }
+  return new Stripe(secretKey, {
+    apiVersion: '2025-08-27.basil',
+  });
+}
 
-const WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET!;
+function getWebhookSecret() {
+  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  if (!webhookSecret) {
+    throw new Error('STRIPE_WEBHOOK_SECRET environment variable is not set');
+  }
+  return webhookSecret;
+}
 
 // Email configuration
 const EMAIL_CONFIG = {
@@ -99,6 +111,63 @@ async function saveOrderToLocalFile(orderData: OrderData) {
     return newOrder;
   } catch (error) {
     console.error('Error saving order to local file:', error);
+    throw error;
+  }
+}
+
+// Send GA4 purchase event via Measurement Protocol
+async function sendGA4PurchaseEvent(orderData: OrderData) {
+  try {
+    const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
+    const GA_API_SECRET = process.env.GA_API_SECRET;
+
+    if (!GA_ID || !GA_API_SECRET) {
+      console.log('GA4 purchase tracking skipped - missing environment variables');
+      return;
+    }
+
+    const payload = {
+      client_id: `stripe_session_${orderData.stripeSessionId}`,
+      events: [
+        {
+          name: 'purchase',
+          params: {
+            transaction_id: orderData.stripeSessionId,
+            currency: orderData.currency.toUpperCase(),
+            value: orderData.orderTotal,
+            items: [
+              {
+                item_id: orderData.productSlug,
+                item_name: orderData.productTitle,
+                price: parseFloat(orderData.productPrice),
+                quantity: 1,
+              },
+            ],
+          },
+        },
+      ],
+    };
+
+    const response = await fetch(
+      `https://www.google-analytics.com/mp/collect?measurement_id=${GA_ID}&api_secret=${GA_API_SECRET}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      }
+    );
+
+    if (response.ok) {
+      console.log('GA4 purchase event sent successfully:', orderData.stripeSessionId);
+    } else {
+      console.error('GA4 purchase event failed:', response.status, response.statusText);
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error sending GA4 purchase event:', error);
     throw error;
   }
 }
@@ -228,22 +297,27 @@ View in Stripe: https://dashboard.stripe.com/test/checkout/sessions/${orderData.
 }
 
 export async function POST(request: NextRequest) {
-  const body = await request.text();
-  const headersList = await headers();
-  const signature = headersList.get('stripe-signature');
-
-  if (!signature) {
-    return NextResponse.json(
-      { error: 'Missing stripe-signature header' },
-      { status: 400 }
-    );
-  }
-
-  let event: Stripe.Event;
-
   try {
-    // Verify webhook signature
-    event = stripe.webhooks.constructEvent(body, signature, WEBHOOK_SECRET);
+    // Initialize Stripe and get webhook secret only when the function is called
+    const stripe = initializeStripe();
+    const WEBHOOK_SECRET = getWebhookSecret();
+
+    const body = await request.text();
+    const headersList = await headers();
+    const signature = headersList.get('stripe-signature');
+
+    if (!signature) {
+      return NextResponse.json(
+        { error: 'Missing stripe-signature header' },
+        { status: 400 }
+      );
+    }
+
+    let event: Stripe.Event;
+
+    try {
+      // Verify webhook signature
+      event = stripe.webhooks.constructEvent(body, signature, WEBHOOK_SECRET);
   } catch (error) {
     console.error('Webhook signature verification failed:', error);
     return NextResponse.json(
@@ -351,6 +425,13 @@ export async function POST(request: NextRequest) {
         // Send email notification (primary goal)
         await sendOrderNotificationEmail(orderData);
 
+        // Send GA4 purchase event
+        try {
+          await sendGA4PurchaseEvent(orderData);
+        } catch (gaError) {
+          console.warn('GA4 purchase tracking failed (non-critical):', gaError);
+        }
+
         // Save order locally (for backup/logging) - optional
         try {
           await saveOrderToLocalFile(orderData);
@@ -388,6 +469,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       { error: 'Webhook processing failed', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 200 } // Return 200 to prevent Stripe retries
+    );
+  }
+  } catch (initError) {
+    console.error('Failed to initialize Stripe:', initError);
+    return NextResponse.json(
+      { error: 'Configuration error' },
+      { status: 500 }
     );
   }
 }

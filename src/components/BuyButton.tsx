@@ -44,13 +44,8 @@ export default function BuyButton({ productSlug, price }: BuyButtonProps) {
     }
   };
 
-  const handleAddToCart = () => {
-    // Placeholder for cart functionality
-    alert('Add to cart functionality coming soon!');
-  };
-
   return (
-    <div className="space-y-4">
+    <div>
       <button
         onClick={handleBuyNow}
         disabled={loading}
@@ -66,13 +61,6 @@ export default function BuyButton({ productSlug, price }: BuyButtonProps) {
             )}
           </>
         )}
-      </button>
-
-      <button
-        onClick={handleAddToCart}
-        className="w-full border border-border text-card-foreground py-3 px-6 rounded-lg hover:bg-muted transition-colors"
-      >
-        Add to Cart
       </button>
     </div>
   );
