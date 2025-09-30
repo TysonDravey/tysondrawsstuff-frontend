@@ -69,8 +69,8 @@ export function getProductImages(productSlug: string, strapiImages: StrapiImage[
     }));
   }
 
-  // Fallback to Strapi images only if we have environment variable
-  if (typeof window !== 'undefined' || process.env.NEXT_PUBLIC_STRAPI_URL) {
+  // Fallback to Strapi images only if we have environment variable AND static images don't exist
+  if (process.env.NEXT_PUBLIC_STRAPI_URL && strapiImages.length > 0) {
     const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1339';
     return strapiImages.map((img) => ({
       src: `${strapiUrl}${img.url}`,
@@ -80,7 +80,7 @@ export function getProductImages(productSlug: string, strapiImages: StrapiImage[
     }));
   }
 
-  // Return empty array if no env var and no static images
+  // Return empty array if no static images and no Strapi fallback
   return [];
 }
 
