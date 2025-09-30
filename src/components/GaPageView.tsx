@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname, useSearchParams } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, Suspense } from 'react';
 
 // Extend the global window object to include gtag
 declare global {
@@ -10,7 +10,7 @@ declare global {
   }
 }
 
-export default function GaPageView() {
+function GaPageViewComponent() {
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
@@ -42,4 +42,12 @@ export default function GaPageView() {
   }, [pathname, searchParams]);
 
   return null;
+}
+
+export default function GaPageView() {
+  return (
+    <Suspense fallback={null}>
+      <GaPageViewComponent />
+    </Suspense>
+  );
 }
