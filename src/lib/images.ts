@@ -12,16 +12,11 @@ interface LocalImage {
 
 type ImageMap = Record<string, LocalImage[]>;
 
-let imageMap: ImageMap | null = null;
+// Import image map on both server and client
+let imageMap: ImageMap;
 try {
-  if (typeof window === 'undefined') {
-    // Server-side: try to load the image map
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    imageMap = require('../../public/image-map.json') as ImageMap;
-  } else {
-    // Client-side: image map not needed as we're using static paths
-    imageMap = {};
-  }
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  imageMap = require('../../public/image-map.json') as ImageMap;
 } catch {
   // Fallback if image map can't be loaded
   imageMap = {};
@@ -33,13 +28,13 @@ try {
  */
 export function getProductImageUrl(productSlug: string, strapiImage: StrapiImage, index = 0): string {
   // Try to get static image first
-  const productImages = imageMap?.[productSlug];
+  const productImages = imageMap[productSlug];
   if (productImages && productImages[index]) {
     return productImages[index].url;
   }
 
   // Fallback to Strapi URL only if we have environment variable
-  if (typeof window !== 'undefined' || process.env.NEXT_PUBLIC_STRAPI_URL) {
+  if (process.env.NEXT_PUBLIC_STRAPI_URL) {
     const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1339';
     return `${strapiUrl}${strapiImage.url}`;
   }
@@ -57,7 +52,7 @@ export function getProductImages(productSlug: string, strapiImages: StrapiImage[
   width?: number;
   height?: number;
 }> {
-  const productImages = imageMap?.[productSlug];
+  const productImages = imageMap[productSlug];
 
   if (productImages && productImages.length > 0) {
     // Use static images
@@ -69,8 +64,8 @@ export function getProductImages(productSlug: string, strapiImages: StrapiImage[
     }));
   }
 
-  // Fallback to Strapi images only if we have environment variable
-  if (typeof window !== 'undefined' || process.env.NEXT_PUBLIC_STRAPI_URL) {
+  // Fallback to Strapi images only if we have environment variable AND static images don't exist
+  if (process.env.NEXT_PUBLIC_STRAPI_URL && strapiImages.length > 0) {
     const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1339';
     return strapiImages.map((img) => ({
       src: `${strapiUrl}${img.url}`,
@@ -80,7 +75,7 @@ export function getProductImages(productSlug: string, strapiImages: StrapiImage[
     }));
   }
 
-  // Return empty array if no env var and no static images
+  // Return empty array if no static images and no Strapi fallback
   return [];
 }
 
@@ -90,7 +85,7 @@ export function getProductImages(productSlug: string, strapiImages: StrapiImage[
  */
 export function getStaticAssetUrl(strapiPath: string): string {
   // Fallback to Strapi URL only if we have environment variable
-  if (typeof window !== 'undefined' || process.env.NEXT_PUBLIC_STRAPI_URL) {
+  if (process.env.NEXT_PUBLIC_STRAPI_URL) {
     const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1339';
     return `${strapiUrl}${strapiPath}`;
   }
@@ -110,5 +105,5 @@ export function getLogoUrl(): string {
  * Check if we're using static images (image map exists)
  */
 export function isUsingStaticImages(): boolean {
-  return !!(imageMap && Object.keys(imageMap).length > 0);
+  return Object.keys(imageMap).length > 0;
 }
