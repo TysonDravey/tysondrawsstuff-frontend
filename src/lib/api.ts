@@ -43,6 +43,22 @@ export interface Category {
   publishedAt: string;
 }
 
+export interface Show {
+  id: number;
+  documentId: string;
+  title: string;
+  slug: string;
+  location?: string;
+  startDate: string;
+  endDate: string;
+  logo?: StrapiImage;
+  description?: string;
+  website?: string;
+  createdAt: string;
+  updatedAt: string;
+  publishedAt: string;
+}
+
 export interface Product {
   id: number;
   documentId: string;
@@ -53,6 +69,8 @@ export interface Product {
   featured: boolean;
   images?: StrapiImage[];
   category?: Category;
+  currentShow?: Show;
+  showPrice?: number;
   createdAt: string;
   updatedAt: string;
   publishedAt: string;
@@ -284,5 +302,66 @@ export async function fetchCategoryBySlug(slug: string): Promise<Category | null
   } catch {
     console.warn(`Strapi not available during build for category ${slug}, returning null`);
     return null;
+  }
+}
+
+// Show API functions
+export async function fetchShows(): Promise<Show[]> {
+  try {
+    const response = await fetchWithTimeout(`${STRAPI_URL}/api/shows?populate=*&sort=startDate:desc`);
+
+    if (!response.ok) {
+      console.warn('Failed to fetch shows, returning empty array');
+      return [];
+    }
+
+    const result: StrapiResponse<Show[]> = await response.json();
+    return result.data;
+  } catch (error) {
+    console.warn('Strapi not available during build for shows, returning empty array', error instanceof Error ? error.message : '');
+    return [];
+  }
+}
+
+export async function fetchShowBySlug(slug: string): Promise<Show | null> {
+  try {
+    const response = await fetchWithTimeout(`${STRAPI_URL}/api/shows?filters[slug][$eq]=${slug}&populate=*`);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const result: StrapiResponse<Show[]> = await response.json();
+    return result.data.length > 0 ? result.data[0] : null;
+  } catch {
+    console.warn(`Strapi not available during build for show ${slug}, returning null`);
+    return null;
+  }
+}
+
+export async function fetchShowSlugs(): Promise<string[]> {
+  try {
+    const shows = await fetchShows();
+    return shows.map(show => show.slug);
+  } catch {
+    console.warn('Error fetching show slugs, returning empty array');
+    return [];
+  }
+}
+
+export async function fetchProductsByShow(showSlug: string): Promise<Product[]> {
+  try {
+    const response = await fetchWithTimeout(`${STRAPI_URL}/api/products?populate=*&filters[currentShow][slug][$eq]=${showSlug}`);
+
+    if (!response.ok) {
+      console.warn(`Failed to fetch products for show ${showSlug}, returning empty array`);
+      return [];
+    }
+
+    const result: StrapiResponse<Product[]> = await response.json();
+    return result.data;
+  } catch {
+    console.warn(`Strapi not available during build for show ${showSlug}, returning empty array`);
+    return [];
   }
 }

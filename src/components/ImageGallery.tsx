@@ -2,6 +2,10 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
+import Lightbox from 'yet-another-react-lightbox';
+import Thumbnails from 'yet-another-react-lightbox/plugins/thumbnails';
+import 'yet-another-react-lightbox/styles.css';
+import 'yet-another-react-lightbox/plugins/thumbnails.css';
 import { StrapiImage } from '@/lib/api';
 import { getProductImages } from '@/lib/images';
 
@@ -13,6 +17,7 @@ interface ImageGalleryProps {
 
 export default function ImageGallery({ images, productTitle, productSlug }: ImageGalleryProps) {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
 
   // Get processed images (static or Strapi fallback)
   const processedImages = getProductImages(productSlug, images);
@@ -31,7 +36,10 @@ export default function ImageGallery({ images, productTitle, productSlug }: Imag
   return (
     <div className="space-y-4">
       {/* Main Image Display */}
-      <div className="w-full bg-gray-100 rounded-lg overflow-hidden">
+      <div
+        className="relative w-full bg-gray-100 rounded-lg overflow-hidden cursor-pointer group"
+        onClick={() => setLightboxOpen(true)}
+      >
         <Image
           src={selectedImage.src}
           alt={selectedImage.alt || `${productTitle} - Image ${selectedImageIndex + 1}`}
@@ -44,9 +52,14 @@ export default function ImageGallery({ images, productTitle, productSlug }: Imag
             maxHeight: '80vh',
             objectFit: 'contain'
           }}
-          className="rounded-lg"
+          className="rounded-lg transition-opacity group-hover:opacity-90"
           priority={selectedImageIndex === 0}
         />
+        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="bg-black bg-opacity-50 text-white px-3 py-1 rounded text-sm">
+            Click to expand
+          </div>
+        </div>
       </div>
 
       {/* Thumbnail Gallery */}
@@ -55,8 +68,11 @@ export default function ImageGallery({ images, productTitle, productSlug }: Imag
           {processedImages.map((image, index) => (
             <button
               key={index}
-              onClick={() => setSelectedImageIndex(index)}
-              className={`relative flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-md overflow-hidden border-2 transition-all duration-200 ${
+              onClick={(e) => {
+                e.stopPropagation();
+                setSelectedImageIndex(index);
+              }}
+              className={`relative flex-shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-md overflow-hidden border-2 transition-all duration-200 cursor-pointer ${
                 index === selectedImageIndex
                   ? 'border-blue-500 ring-2 ring-blue-300 shadow-lg scale-105'
                   : 'border-gray-300 hover:border-gray-400 hover:shadow-md'
@@ -86,6 +102,32 @@ export default function ImageGallery({ images, productTitle, productSlug }: Imag
           </p>
         )}
       </div>
+
+      {/* Lightbox */}
+      <Lightbox
+        open={lightboxOpen}
+        close={() => setLightboxOpen(false)}
+        index={selectedImageIndex}
+        slides={processedImages.map((img) => ({
+          src: img.src,
+          alt: img.alt || `${productTitle} - Image`,
+          width: img.width,
+          height: img.height,
+        }))}
+        on={{
+          view: ({ index }: { index: number }) => setSelectedImageIndex(index),
+        }}
+        plugins={[Thumbnails]}
+        thumbnails={{
+          position: 'bottom',
+          width: 120,
+          height: 80,
+          border: 1,
+          borderRadius: 4,
+          padding: 4,
+          gap: 16,
+        }}
+      />
     </div>
   );
 }
