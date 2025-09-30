@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import { Nunito, Nunito_Sans } from "next/font/google";
+import Script from "next/script";
+import GaPageView from "@/components/GaPageView";
 import "./globals.css";
 
 const nunito = Nunito({
@@ -72,11 +74,36 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
+
   return (
     <html lang="en">
       <body
         className={`${nunito.variable} ${nunitoSans.variable} antialiased`}
       >
+        {/* Google Analytics 4 Scripts */}
+        {GA_ID && (
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
+              strategy="afterInteractive"
+            />
+            <Script id="google-analytics" strategy="afterInteractive">
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', '${GA_ID}', {
+                  page_title: document.title,
+                  page_location: window.location.href,
+                  page_path: window.location.pathname + window.location.search
+                });
+              `}
+            </Script>
+            <GaPageView />
+          </>
+        )}
+
         {children}
       </body>
     </html>
