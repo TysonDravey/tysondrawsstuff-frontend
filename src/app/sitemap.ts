@@ -4,19 +4,9 @@ import { fetchProductSlugs, fetchShowSlugs, fetchCategories } from '@/lib/api';
 // Revalidate sitemap every hour
 export const revalidate = 3600;
 
-// Get the current deployment URL
-function getBaseUrl(): string {
-  if (process.env.VERCEL_URL) {
-    return `https://${process.env.VERCEL_URL}`;
-  }
-  if (process.env.NODE_ENV === 'development') {
-    return 'http://localhost:3000';
-  }
-  return 'https://tysondrawsstuff.com';
-}
-
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = getBaseUrl();
+  // Always use production domain for sitemap URLs
+  const baseUrl = 'https://tysondrawsstuff.com';
   const now = new Date();
 
   try {
