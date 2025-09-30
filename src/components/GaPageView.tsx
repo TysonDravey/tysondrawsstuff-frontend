@@ -6,7 +6,7 @@ import { useEffect } from 'react';
 // Extend the global window object to include gtag
 declare global {
   interface Window {
-    gtag: (...args: any[]) => void;
+    gtag: (command: string, targetId: string, config?: Record<string, unknown>) => void;
   }
 }
 
