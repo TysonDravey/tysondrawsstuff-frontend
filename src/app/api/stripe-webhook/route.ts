@@ -115,6 +115,63 @@ async function saveOrderToLocalFile(orderData: OrderData) {
   }
 }
 
+// Send GA4 purchase event via Measurement Protocol
+async function sendGA4PurchaseEvent(orderData: OrderData) {
+  try {
+    const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
+    const GA_API_SECRET = process.env.GA_API_SECRET;
+
+    if (!GA_ID || !GA_API_SECRET) {
+      console.log('GA4 purchase tracking skipped - missing environment variables');
+      return;
+    }
+
+    const payload = {
+      client_id: `stripe_session_${orderData.stripeSessionId}`,
+      events: [
+        {
+          name: 'purchase',
+          params: {
+            transaction_id: orderData.stripeSessionId,
+            currency: orderData.currency.toUpperCase(),
+            value: orderData.orderTotal,
+            items: [
+              {
+                item_id: orderData.productSlug,
+                item_name: orderData.productTitle,
+                price: parseFloat(orderData.productPrice),
+                quantity: 1,
+              },
+            ],
+          },
+        },
+      ],
+    };
+
+    const response = await fetch(
+      `https://www.google-analytics.com/mp/collect?measurement_id=${GA_ID}&api_secret=${GA_API_SECRET}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      }
+    );
+
+    if (response.ok) {
+      console.log('GA4 purchase event sent successfully:', orderData.stripeSessionId);
+    } else {
+      console.error('GA4 purchase event failed:', response.status, response.statusText);
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Error sending GA4 purchase event:', error);
+    throw error;
+  }
+}
+
 // Send order notification email
 async function sendOrderNotificationEmail(orderData: OrderData) {
   try {
@@ -367,6 +424,13 @@ export async function POST(request: NextRequest) {
 
         // Send email notification (primary goal)
         await sendOrderNotificationEmail(orderData);
+
+        // Send GA4 purchase event
+        try {
+          await sendGA4PurchaseEvent(orderData);
+        } catch (gaError) {
+          console.warn('GA4 purchase tracking failed (non-critical):', gaError);
+        }
 
         // Save order locally (for backup/logging) - optional
         try {
