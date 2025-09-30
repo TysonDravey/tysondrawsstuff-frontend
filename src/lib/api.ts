@@ -90,7 +90,7 @@ export interface StrapiResponse<T> {
 
 export async function fetchProducts(): Promise<Product[]> {
   try {
-    const response = await fetchWithTimeout(`${STRAPI_URL}/api/products?populate=*&pagination[limit]=100`);
+    const response = await fetchWithTimeout(`${STRAPI_URL}/api/products?populate=*&pagination[limit]=100&sort[0]=updatedAt:desc`);
 
     if (!response.ok) {
       console.warn('Failed to fetch products, returning empty array');
@@ -107,7 +107,7 @@ export async function fetchProducts(): Promise<Product[]> {
 
 export async function fetchProductsPaginated(page: number = 1, limit: number = 16): Promise<{ products: Product[], pagination: { page: number, pageSize: number, pageCount: number, total: number } }> {
   try {
-    const response = await fetchWithTimeout(`${STRAPI_URL}/api/products?populate=*&pagination[page]=${page}&pagination[pageSize]=${limit}`);
+    const response = await fetchWithTimeout(`${STRAPI_URL}/api/products?populate=*&pagination[page]=${page}&pagination[pageSize]=${limit}&sort[0]=updatedAt:desc`);
 
     if (!response.ok) {
       console.warn('Failed to fetch paginated products, returning empty array');
@@ -197,7 +197,7 @@ export function getStrapiImageUrl(image: StrapiImage, format?: string): string {
 
 export async function fetchFeaturedProducts(): Promise<Product[]> {
   try {
-    const response = await fetchWithTimeout(`${STRAPI_URL}/api/products?populate=*&filters[featured][$eq]=true`);
+    const response = await fetchWithTimeout(`${STRAPI_URL}/api/products?populate=*&filters[featured][$eq]=true&sort[0]=updatedAt:desc`);
 
     if (!response.ok) {
       console.warn('Failed to fetch featured products, returning empty array');
@@ -214,7 +214,7 @@ export async function fetchFeaturedProducts(): Promise<Product[]> {
 
 export async function fetchProductsByCategory(categorySlug: string): Promise<Product[]> {
   try {
-    const response = await fetchWithTimeout(`${STRAPI_URL}/api/products?populate=*&filters[category][slug][$eq]=${categorySlug}`);
+    const response = await fetchWithTimeout(`${STRAPI_URL}/api/products?populate=*&filters[category][slug][$eq]=${categorySlug}&sort[0]=updatedAt:desc`);
 
     if (!response.ok) {
       console.warn(`Failed to fetch products for category ${categorySlug}, returning empty array`);
@@ -231,7 +231,7 @@ export async function fetchProductsByCategory(categorySlug: string): Promise<Pro
 
 export async function fetchProductsByCategoryPaginated(categorySlug: string, page: number = 1, limit: number = 16): Promise<{ products: Product[], pagination: { page: number, pageSize: number, pageCount: number, total: number } }> {
   try {
-    const response = await fetchWithTimeout(`${STRAPI_URL}/api/products?populate=*&filters[category][slug][$eq]=${categorySlug}&pagination[page]=${page}&pagination[pageSize]=${limit}`);
+    const response = await fetchWithTimeout(`${STRAPI_URL}/api/products?populate=*&filters[category][slug][$eq]=${categorySlug}&pagination[page]=${page}&pagination[pageSize]=${limit}&sort[0]=updatedAt:desc`);
 
     if (!response.ok) {
       console.warn(`Failed to fetch paginated products for category ${categorySlug}, returning empty array`);
@@ -351,7 +351,7 @@ export async function fetchShowSlugs(): Promise<string[]> {
 
 export async function fetchProductsByShow(showSlug: string): Promise<Product[]> {
   try {
-    const response = await fetchWithTimeout(`${STRAPI_URL}/api/products?populate=*&filters[currentShow][slug][$eq]=${showSlug}`);
+    const response = await fetchWithTimeout(`${STRAPI_URL}/api/products?populate=*&filters[currentShow][slug][$eq]=${showSlug}&sort[0]=updatedAt:desc`);
 
     if (!response.ok) {
       console.warn(`Failed to fetch products for show ${showSlug}, returning empty array`);
