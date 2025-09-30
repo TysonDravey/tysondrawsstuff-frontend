@@ -92,6 +92,18 @@ export default function ProductCard({ product, featured = false }: ProductCardPr
                 </p>
               </div>
             )}
+
+            {/* View Item button for featured products */}
+            {featured && (
+              <div className="mt-4 pt-3 border-t border-border">
+                <span className="inline-flex items-center text-primary hover:text-orange-600 transition-colors font-medium text-sm">
+                  View Item
+                  <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </span>
+              </div>
+            )}
           </div>
         </div>
       </Link>
