@@ -86,6 +86,13 @@ export async function POST(request: NextRequest) {
         productSlug: product.slug,
         productTitle: product.title,
         productPrice: product.price.toString(),
+        // GA4 product data for purchase tracking
+        products: JSON.stringify([{
+          item_id: product.slug,
+          item_name: product.title,
+          price: product.price,
+          quantity: 1,
+        }]),
       },
 
       // Custom fields for additional information (optional)

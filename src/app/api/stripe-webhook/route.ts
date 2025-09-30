@@ -116,7 +116,7 @@ async function saveOrderToLocalFile(orderData: OrderData) {
 }
 
 // Send GA4 purchase event via Measurement Protocol
-async function sendGA4PurchaseEvent(orderData: OrderData) {
+async function sendGA4PurchaseEvent(session: Stripe.Checkout.Session) {
   try {
     const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
     const GA_API_SECRET = process.env.GA_API_SECRET;
@@ -126,23 +126,39 @@ async function sendGA4PurchaseEvent(orderData: OrderData) {
       return;
     }
 
+    // Parse products from metadata or fallback to single product
+    let items;
+    try {
+      items = session.metadata?.products ? JSON.parse(session.metadata.products) : [
+        {
+          item_id: session.metadata?.productSlug || '',
+          item_name: session.metadata?.productTitle || '',
+          price: parseFloat(session.metadata?.productPrice || '0'),
+          quantity: 1,
+        },
+      ];
+    } catch (parseError) {
+      console.warn('Could not parse GA4 products metadata, using fallback:', parseError);
+      items = [
+        {
+          item_id: session.metadata?.productSlug || '',
+          item_name: session.metadata?.productTitle || '',
+          price: parseFloat(session.metadata?.productPrice || '0'),
+          quantity: 1,
+        },
+      ];
+    }
+
     const payload = {
-      client_id: `stripe_session_${orderData.stripeSessionId}`,
+      client_id: `stripe_${session.id}`,
       events: [
         {
           name: 'purchase',
           params: {
-            transaction_id: orderData.stripeSessionId,
-            currency: orderData.currency.toUpperCase(),
-            value: orderData.orderTotal,
-            items: [
-              {
-                item_id: orderData.productSlug,
-                item_name: orderData.productTitle,
-                price: parseFloat(orderData.productPrice),
-                quantity: 1,
-              },
-            ],
+            transaction_id: session.id,
+            currency: (session.currency || 'cad').toUpperCase(),
+            value: (session.amount_total || 0) / 100, // Convert cents to dollars
+            items: items,
           },
         },
       ],
@@ -160,7 +176,8 @@ async function sendGA4PurchaseEvent(orderData: OrderData) {
     );
 
     if (response.ok) {
-      console.log('GA4 purchase event sent successfully:', orderData.stripeSessionId);
+      console.log('GA4 purchase event sent successfully:', session.id);
+      console.log('GA4 payload:', JSON.stringify(payload, null, 2));
     } else {
       console.error('GA4 purchase event failed:', response.status, response.statusText);
     }
@@ -427,7 +444,7 @@ export async function POST(request: NextRequest) {
 
         // Send GA4 purchase event
         try {
-          await sendGA4PurchaseEvent(orderData);
+          await sendGA4PurchaseEvent(session);
         } catch (gaError) {
           console.warn('GA4 purchase tracking failed (non-critical):', gaError);
         }
