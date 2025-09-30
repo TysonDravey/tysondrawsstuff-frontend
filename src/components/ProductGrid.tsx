@@ -50,7 +50,7 @@ export default function ProductGrid({ products }: ProductGridProps) {
                 {/* Show Badge */}
                 {product.currentShow && product.showPrice && (
                   <div className="absolute top-3 right-3">
-                    <span className="bg-blue-600 text-white text-xs font-semibold px-2 py-1 rounded">
+                    <span className="bg-primary text-primary-foreground text-xs font-semibold px-2 py-1 rounded">
                       At Show
                     </span>
                   </div>
@@ -77,11 +77,11 @@ export default function ProductGrid({ products }: ProductGridProps) {
                       <p className="text-lg text-muted-foreground line-through">
                         ${product.price.toFixed(2)}
                       </p>
-                      <p className="text-2xl font-bold text-blue-600">
+                      <p className="text-2xl font-bold text-primary">
                         ${product.showPrice.toFixed(2)}
                       </p>
                     </div>
-                    <p className="text-xs text-blue-600 font-medium">
+                    <p className="text-xs text-primary font-medium">
                       Show Special at {product.currentShow.title}
                     </p>
                   </div>
