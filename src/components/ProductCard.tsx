@@ -60,32 +60,26 @@ export default function ProductCard({ product, featured = false }: ProductCardPr
               {product.title}
             </h3>
 
-            <div className="flex items-center justify-between">
-              {/* Pricing */}
-              {product.currentShow && product.showPrice ? (
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2">
-                    <p className="text-lg text-muted-foreground line-through">
-                      ${product.price.toFixed(2)}
-                    </p>
-                    <p className="text-2xl font-bold text-primary">
-                      ${product.showPrice.toFixed(2)}
-                    </p>
-                  </div>
-                  <p className="text-xs text-primary font-medium">
-                    Show Special at {product.currentShow.title}
+            {/* Pricing */}
+            {product.currentShow && product.showPrice ? (
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <p className="text-lg text-muted-foreground line-through">
+                    ${product.price.toFixed(2)}
+                  </p>
+                  <p className="text-2xl font-bold text-primary">
+                    ${product.showPrice.toFixed(2)}
                   </p>
                 </div>
-              ) : (
-                <p className="text-2xl font-bold text-primary">
-                  ${product.price.toFixed(2)}
+                <p className="text-xs text-primary font-medium">
+                  Show Special at {product.currentShow.title}
                 </p>
-              )}
-
-              <button className="bg-primary text-primary-foreground px-4 py-2 rounded font-medium hover:bg-orange-600 transition-colors">
-                Buy Now
-              </button>
-            </div>
+              </div>
+            ) : (
+              <p className="text-2xl font-bold text-primary">
+                ${product.price.toFixed(2)}
+              </p>
+            )}
 
             {/* Description for featured products */}
             {featured && product.description && (
