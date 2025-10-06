@@ -66,11 +66,23 @@ export function getProductImages(productSlug: string, strapiImages: StrapiImage[
 }
 
 /**
- * Get static URL for static assets (logo, etc.)
- * Uses only static files from /public folder
+ * Get static URL for static assets (show logos, etc.)
+ * Extracts filename from Strapi path and looks for it in /public/static/
  */
 export function getStaticAssetUrl(strapiPath: string): string {
-  // No Strapi fallback - return placeholder
+  if (!strapiPath) {
+    return '/images/placeholder.jpg';
+  }
+
+  // Extract filename from Strapi URL path
+  // e.g., "/uploads/show_logo_123.jpg" -> "show_logo_123.jpg"
+  const filename = strapiPath.split('/').pop();
+
+  if (filename) {
+    // Return path to static folder
+    return `/static/${filename}`;
+  }
+
   return '/images/placeholder.jpg';
 }
 

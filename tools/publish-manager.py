@@ -13,6 +13,7 @@ import json
 import requests
 import time
 from pathlib import Path
+from PIL import Image, ImageTk
 
 class PublishManager:
     def __init__(self, root):
@@ -37,6 +38,39 @@ class PublishManager:
         self.load_config()
 
     def setup_ui(self):
+        # Add logo header
+        header_frame = ttk.Frame(self.root)
+        header_frame.pack(fill=tk.X, padx=10, pady=(10, 5))
+
+        # Try to load the logo
+        try:
+            logo_path = self.frontend_dir / "public" / "static" / "logo.png"
+
+            if logo_path.exists():
+                img = Image.open(logo_path)
+                # Resize to fit header (max height 80px)
+                aspect_ratio = img.width / img.height
+                new_height = 80
+                new_width = int(new_height * aspect_ratio)
+                img = img.resize((new_width, new_height), Image.Resampling.LANCZOS)
+
+                photo = ImageTk.PhotoImage(img)
+                logo_label = ttk.Label(header_frame, image=photo)
+                logo_label.image = photo  # Keep a reference
+                logo_label.pack(side=tk.LEFT, padx=10)
+
+                # Title next to logo
+                title_label = ttk.Label(header_frame,
+                                       text="TysonDrawsStuff\nPublishing Manager",
+                                       font=("Arial", 14, "bold"))
+                title_label.pack(side=tk.LEFT, padx=10)
+        except Exception as e:
+            # If logo loading fails, just show title
+            title_label = ttk.Label(header_frame,
+                                   text="TysonDrawsStuff Publishing Manager",
+                                   font=("Arial", 14, "bold"))
+            title_label.pack(side=tk.LEFT, padx=10)
+
         # Create notebook for tabs
         notebook = ttk.Notebook(self.root)
         notebook.pack(fill=tk.BOTH, expand=True, padx=10, pady=10)
@@ -302,14 +336,28 @@ class PublishManager:
     def start_strapi(self):
         """Start Strapi backend"""
         if self.strapi_process is None or self.strapi_process.poll() is not None:
-            self.log("Starting Strapi backend...")
-            self.strapi_process = self.run_command("npm run develop",
-                                                 cwd=self.backend_dir,
-                                                 capture_output=False)
-            self.strapi_status.set("Starting...")
+            self.log("Starting Strapi backend on port 1339...")
 
-            # Check if started successfully after a delay
-            self.root.after(8000, self.check_strapi_status)
+            # Start completely detached to avoid buffer issues
+            # Output goes to null to prevent pipe buffer filling
+            try:
+                self.strapi_process = subprocess.Popen(
+                    "npm run develop",
+                    shell=True,
+                    cwd=self.backend_dir,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                    stdin=subprocess.DEVNULL,
+                    creationflags=subprocess.CREATE_NEW_CONSOLE if os.name == 'nt' else 0
+                )
+                self.strapi_status.set("Starting...")
+                self.log("✅ Strapi process started in separate window")
+
+                # Check if started successfully after a delay
+                self.root.after(8000, self.check_strapi_status)
+            except Exception as e:
+                self.log(f"❌ Failed to start Strapi: {e}")
+                self.strapi_process = None
         else:
             self.log("Strapi is already running")
 

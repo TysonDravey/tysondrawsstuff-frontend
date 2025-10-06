@@ -19,6 +19,7 @@ const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1337'
 const STRAPI_API_TOKEN = process.env.STRAPI_API_TOKEN;
 const PUBLIC_DIR = path.join(__dirname, '..', 'public');
 const PRODUCTS_DIR = path.join(PUBLIC_DIR, 'products');
+const STATIC_DIR = path.join(PUBLIC_DIR, 'static');
 const IMAGE_MAP_FILE = path.join(PUBLIC_DIR, 'image-map.json');
 
 // Timeout for HTTP requests
@@ -343,17 +344,57 @@ async function syncImages() {
     // Clean up old product directories
     await cleanOldProducts(currentSlugs);
 
+    // Sync show logos to static directory
+    console.log('\n🎪 Syncing show logos...');
+    let showCount = 0;
+    let showLogoCount = 0;
+
+    try {
+      const showsResponse = await fetchFromStrapi('shows?populate=*');
+      const shows = showsResponse.data || [];
+      showCount = shows.length;
+
+      if (shows.length > 0) {
+        await mkdir(STATIC_DIR, { recursive: true });
+
+        for (const show of shows) {
+          if (show.logo && show.logo.url) {
+            try {
+              const logoUrl = show.logo.url;
+              const fileName = path.basename(logoUrl.split('?')[0]); // Remove query params
+              const filePath = path.join(STATIC_DIR, fileName);
+
+              console.log(`  📥 Downloading show logo: ${show.title}`);
+              await downloadImage(logoUrl, filePath);
+              console.log(`  ✅ Saved: ${fileName}`);
+              showLogoCount++;
+            } catch (error) {
+              console.error(`  ❌ Failed to download logo for ${show.title}: ${error.message}`);
+            }
+          }
+        }
+
+        console.log(`  ✅ Downloaded ${showLogoCount}/${showCount} show logos`);
+      } else {
+        console.log('  📭 No shows found');
+      }
+    } catch (error) {
+      console.warn(`  ⚠️  Could not sync show logos: ${error.message}`);
+    }
+
     // Write new image map only if we successfully processed products
     console.log('\n📝 Writing image map...');
     await writeFile(IMAGE_MAP_FILE, JSON.stringify(imageMap, null, 2));
 
     console.log(`\n🎉 Image sync complete!`);
     console.log(`   📊 Processed ${products.length} products`);
-    console.log(`   ✅ Downloaded ${totalDownloaded} images successfully`);
+    console.log(`   ✅ Downloaded ${totalDownloaded} product images successfully`);
+    console.log(`   🎪 Downloaded ${showLogoCount} show logos`);
     if (totalErrors > 0) {
       console.log(`   ⚠️  ${totalErrors} image download failures`);
     }
-    console.log(`   📁 Images saved to: ${PRODUCTS_DIR}`);
+    console.log(`   📁 Product images: ${PRODUCTS_DIR}`);
+    console.log(`   🎪 Show logos: ${STATIC_DIR}`);
     console.log(`   📝 Image map: ${IMAGE_MAP_FILE}`);
 
   } catch (error) {
