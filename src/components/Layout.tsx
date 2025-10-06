@@ -31,7 +31,7 @@ export default function Layout({ children, categories = [] }: LayoutProps) {
             <div className="flex items-center">
               <Link href="/" className="hover:opacity-80 transition-opacity">
                 <Image
-                  src={`${process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1339'}/uploads/tysondrawsstuff_web_logo_06_e9ebe2d054.png`}
+                  src="/static/logo.png"
                   alt="Tyson Draws Stuff"
                   width={50}
                   height={50}

@@ -24,7 +24,7 @@ try {
 
 /**
  * Get static image URL for a product image
- * Falls back to Strapi URL if static image not found
+ * Uses only static images - no Strapi fallback for fully static site
  */
 export function getProductImageUrl(productSlug: string, strapiImage: StrapiImage, index = 0): string {
   // Try to get static image first
@@ -33,18 +33,14 @@ export function getProductImageUrl(productSlug: string, strapiImage: StrapiImage
     return productImages[index].url;
   }
 
-  // Fallback to Strapi URL only if we have environment variable
-  if (process.env.NEXT_PUBLIC_STRAPI_URL) {
-    const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1339';
-    return `${strapiUrl}${strapiImage.url}`;
-  }
-
-  // If no env var and no static image, return a placeholder
+  // No fallback to Strapi - site is fully static
+  // Return placeholder if image not found in static files
   return '/images/placeholder.jpg';
 }
 
 /**
  * Get all static images for a product
+ * Uses only static images - no Strapi fallback for fully static site
  */
 export function getProductImages(productSlug: string, strapiImages: StrapiImage[] = []): Array<{
   src: string;
@@ -64,41 +60,26 @@ export function getProductImages(productSlug: string, strapiImages: StrapiImage[
     }));
   }
 
-  // Fallback to Strapi images only if we have environment variable AND static images don't exist
-  if (process.env.NEXT_PUBLIC_STRAPI_URL && strapiImages.length > 0) {
-    const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1339';
-    return strapiImages.map((img) => ({
-      src: `${strapiUrl}${img.url}`,
-      alt: img.alternativeText || '',
-      width: img.width,
-      height: img.height
-    }));
-  }
-
-  // Return empty array if no static images and no Strapi fallback
+  // No fallback to Strapi - site is fully static
+  // Return empty array if images not found in static files
   return [];
 }
 
 /**
  * Get static URL for static assets (logo, etc.)
- * For now, fallback to Strapi URL since static assets aren't synced yet
+ * Uses only static files from /public folder
  */
 export function getStaticAssetUrl(strapiPath: string): string {
-  // Fallback to Strapi URL only if we have environment variable
-  if (process.env.NEXT_PUBLIC_STRAPI_URL) {
-    const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1339';
-    return `${strapiUrl}${strapiPath}`;
-  }
-
-  // If no env var and no static asset, return placeholder
+  // No Strapi fallback - return placeholder
   return '/images/placeholder.jpg';
 }
 
 /**
  * Get the site logo URL
+ * Logo is served from /public/static/logo.png
  */
 export function getLogoUrl(): string {
-  return getStaticAssetUrl('/uploads/tysondrawsstuff_web_logo_06_e9ebe2d054.png');
+  return '/static/logo.png';
 }
 
 /**

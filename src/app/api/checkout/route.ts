@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
-import { fetchProductBySlug } from '@/lib/api';
+import fs from 'fs';
+import path from 'path';
+import { type Product } from '@/lib/api';
 
 function initializeStripe() {
   const secretKey = process.env.STRIPE_SECRET_KEY;
@@ -10,6 +12,18 @@ function initializeStripe() {
   return new Stripe(secretKey, {
     apiVersion: '2025-08-27.basil',
   });
+}
+
+function getProductBySlug(slug: string): Product | null {
+  try {
+    const productsPath = path.join(process.cwd(), 'public', 'products-data.json');
+    const productsData = fs.readFileSync(productsPath, 'utf-8');
+    const products: Record<string, Product> = JSON.parse(productsData);
+    return products[slug] || null;
+  } catch (error) {
+    console.error('Error reading products data:', error);
+    return null;
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -27,8 +41,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Fetch product from Strapi
-    const product = await fetchProductBySlug(productSlug);
+    // Fetch product from static data (exported at build time)
+    const product = getProductBySlug(productSlug);
 
     if (!product) {
       return NextResponse.json(
@@ -51,7 +65,7 @@ export async function POST(request: NextRequest) {
               name: product.title,
               description: product.description ? product.description.replace(/<[^>]*>/g, '') : undefined,
               images: product.images && product.images.length > 0
-                ? [`${process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1339'}${product.images[0].url}`]
+                ? [`${request.nextUrl.origin}${product.images[0].url}`]
                 : undefined,
             },
             unit_amount: priceInCents,

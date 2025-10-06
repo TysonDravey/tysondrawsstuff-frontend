@@ -189,10 +189,14 @@ export function getStrapiImageUrl(image: StrapiImage, format?: string): string {
     }
   }
 
+  // If URL is already absolute (http/https), return as-is
   if (url.startsWith('http')) {
     return url;
   }
-  return `${STRAPI_URL}${url}`;
+
+  // For relative URLs, return as-is (they should be static files in /public)
+  // This function is only called at build time, so static generation will work
+  return url;
 }
 
 export async function fetchFeaturedProducts(): Promise<Product[]> {
