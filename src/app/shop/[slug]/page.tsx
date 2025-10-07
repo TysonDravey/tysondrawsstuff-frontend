@@ -6,6 +6,7 @@ import { fetchProductBySlug, fetchProductSlugs, fetchCategoriesWithProducts } fr
 import BuyButton from '@/components/BuyButton';
 import ImageGallery from '@/components/ImageGallery';
 import { getProductImages } from '@/lib/images';
+import { marked } from 'marked';
 
 interface ProductPageProps {
   params: Promise<{
@@ -200,7 +201,12 @@ export default async function ProductPage({ params }: ProductPageProps) {
                   <h3 className="text-lg sm:text-xl font-semibold mb-4 text-card-foreground">Description</h3>
                   <div
                     className="text-muted-foreground leading-relaxed prose prose-sm max-w-none"
-                    dangerouslySetInnerHTML={{ __html: product.description }}
+                    dangerouslySetInnerHTML={{
+                      __html: marked(product.description, {
+                        breaks: true,
+                        gfm: true,
+                      }) as string
+                    }}
                   />
                 </div>
               )}

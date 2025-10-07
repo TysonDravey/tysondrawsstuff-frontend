@@ -16,6 +16,7 @@
   "dependencies": {
     "@stripe/stripe-js": "^7.9.0",
     "@types/nodemailer": "^7.0.1",
+    "marked": "^16.4.0",
     "next": "15.5.3",
     "nodemailer": "^7.0.6",
     "react": "19.1.0",
