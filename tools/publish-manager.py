@@ -149,9 +149,9 @@ class PublishManager:
         button_frame = ttk.Frame(branch_frame)
         button_frame.grid(row=1, column=0, columnspan=2, pady=5, sticky=tk.W)
 
-        ttk.Button(button_frame, text="Switch to Preview", command=self.switch_to_preview).pack(side=tk.LEFT, padx=(0, 5))
+        ttk.Button(button_frame, text="Switch to Develop", command=self.switch_to_develop).pack(side=tk.LEFT, padx=(0, 5))
         ttk.Button(button_frame, text="Switch to Main", command=self.switch_to_main).pack(side=tk.LEFT, padx=(0, 5))
-        ttk.Button(button_frame, text="Merge Preview→Main", command=self.merge_preview_to_main).pack(side=tk.LEFT)
+        ttk.Button(button_frame, text="Merge Develop→Main", command=self.merge_develop_to_main).pack(side=tk.LEFT)
 
         # Bulk Image Uploader Section
         uploader_frame = ttk.LabelFrame(parent, text="Bulk Image Uploader", padding=10)
@@ -187,11 +187,11 @@ class PublishManager:
         branch_frame.pack(fill=tk.X, pady=5)
 
         ttk.Label(branch_frame, text="Current Branch:", font=("Arial", 10, "bold")).pack(side=tk.LEFT, padx=5)
-        self.branch_label = ttk.Label(branch_frame, text="preview", font=("Courier", 12, "bold"), foreground="green")
+        self.branch_label = ttk.Label(branch_frame, text="develop", font=("Courier", 12, "bold"), foreground="green")
         self.branch_label.pack(side=tk.LEFT, padx=5)
 
         ttk.Button(branch_frame, text="🔄 Refresh", command=self.update_branch_display).pack(side=tk.LEFT, padx=5)
-        ttk.Button(branch_frame, text="🔀 Switch to Preview", command=self.switch_to_preview).pack(side=tk.LEFT, padx=5)
+        ttk.Button(branch_frame, text="🔀 Switch to Develop", command=self.switch_to_develop).pack(side=tk.LEFT, padx=5)
 
         # Git Section
         git_frame = ttk.LabelFrame(parent, text="Git Operations", padding=10)
