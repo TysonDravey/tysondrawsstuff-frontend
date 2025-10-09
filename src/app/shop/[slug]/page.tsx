@@ -2,9 +2,10 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import Layout from '@/components/Layout';
-import { fetchProductBySlug, fetchProductSlugs, fetchCategoriesWithProducts } from '@/lib/api';
+import { fetchProductBySlug, fetchProductSlugs, fetchCategoriesWithProducts, fetchProductsByCategory, fetchProductsByShow, type Product } from '@/lib/api';
 import BuyButton from '@/components/BuyButton';
 import ImageGallery from '@/components/ImageGallery';
+import ProductNavigation from '@/components/ProductNavigation';
 import { getProductImages } from '@/lib/images';
 import { marked } from 'marked';
 
@@ -116,6 +117,18 @@ export default async function ProductPage({ params }: ProductPageProps) {
       );
     }
     notFound();
+  }
+
+  // Fetch related products for navigation
+  let relatedProducts: Product[] = [];
+  let context: 'category' | 'show' = 'category';
+
+  if (product.currentShow) {
+    relatedProducts = await fetchProductsByShow(product.currentShow.slug);
+    context = 'show';
+  } else if (product.category) {
+    relatedProducts = await fetchProductsByCategory(product.category.slug);
+    context = 'category';
   }
 
   return (
@@ -280,6 +293,17 @@ export default async function ProductPage({ params }: ProductPageProps) {
                   />
                 )}
               </div>
+
+              {/* Product Navigation */}
+              {relatedProducts.length > 1 && (
+                <div className="bg-card border border-border rounded-lg p-6">
+                  <ProductNavigation
+                    currentProduct={product}
+                    allProducts={relatedProducts}
+                    context={context}
+                  />
+                </div>
+              )}
 
             </div>
           </div>
