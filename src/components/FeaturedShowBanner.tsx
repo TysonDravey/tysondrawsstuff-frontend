@@ -38,12 +38,12 @@ export default function FeaturedShowBanner({ show, products }: FeaturedShowBanne
   };
 
   return (
-    <section className="py-12 bg-gradient-to-br from-red-50 to-rose-50 border-y border-red-200">
+    <section className="py-12 bg-gradient-to-br from-red-50 to-orange-50 border-y border-[#640006]/20">
       <div className="container mx-auto px-4">
         <div className="max-w-6xl mx-auto">
           {/* Header */}
           <div className="text-center mb-8">
-            <span className="inline-block bg-red-600 text-white text-sm font-bold px-4 py-2 rounded-full mb-4">
+            <span className="inline-block bg-[#640006] text-white text-sm font-bold px-4 py-2 rounded-full mb-4">
               🎨 CURRENT SHOW
             </span>
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">
@@ -55,7 +55,7 @@ export default function FeaturedShowBanner({ show, products }: FeaturedShowBanne
             {/* Show Logo */}
             {show.logo && (
               <div className="lg:col-span-1">
-                <div className="aspect-square bg-white rounded-lg overflow-hidden shadow-lg border-2 border-red-200 relative max-w-xs mx-auto lg:mx-0">
+                <div className="aspect-square bg-white rounded-lg overflow-hidden shadow-lg border-2 border-[#640006]/20 relative max-w-xs mx-auto lg:mx-0">
                   <Image
                     src={getStaticAssetUrl(show.logo.url)}
                     alt={show.logo.alternativeText || show.title}
@@ -69,12 +69,12 @@ export default function FeaturedShowBanner({ show, products }: FeaturedShowBanne
             {/* Show Info & Product Gallery */}
             <div className={show.logo ? 'lg:col-span-2' : 'lg:col-span-3'}>
               {/* Show Details */}
-              <div className="bg-white rounded-lg shadow-lg p-6 mb-6 border-2 border-red-200">
+              <div className="bg-white rounded-lg shadow-lg p-6 mb-6 border-2 border-[#640006]/20">
                 <div className="space-y-4">
                   {/* Location */}
                   {show.location && (
                     <div className="flex items-start space-x-3">
-                      <svg className="w-6 h-6 text-red-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-6 h-6 text-[#640006] mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                       </svg>
@@ -87,7 +87,7 @@ export default function FeaturedShowBanner({ show, products }: FeaturedShowBanne
 
                   {/* Dates */}
                   <div className="flex items-start space-x-3">
-                    <svg className="w-6 h-6 text-red-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-6 h-6 text-[#640006] mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                     </svg>
                     <div>
@@ -100,7 +100,7 @@ export default function FeaturedShowBanner({ show, products }: FeaturedShowBanne
                   <div className="pt-4">
                     <Link
                       href={`/shows/${show.slug}`}
-                      className="inline-flex items-center justify-center w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-3 px-6 rounded-lg transition-colors"
+                      className="inline-flex items-center justify-center w-full bg-[#640006] hover:bg-[#800008] text-white font-semibold py-3 px-6 rounded-lg transition-colors"
                     >
                       View Show Details
                       <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -113,7 +113,7 @@ export default function FeaturedShowBanner({ show, products }: FeaturedShowBanne
 
               {/* Product Gallery */}
               {products.length > 0 && (
-                <div className="bg-white rounded-lg shadow-lg p-6 border-2 border-red-200">
+                <div className="bg-white rounded-lg shadow-lg p-6 border-2 border-[#640006]/20">
                   <h3 className="text-xl font-bold text-gray-900 mb-4 text-center">
                     Featured Artwork from this Show
                   </h3>
@@ -149,7 +149,7 @@ export default function FeaturedShowBanner({ show, products }: FeaturedShowBanne
                           {products[currentImageIndex].title}
                         </p>
                         {products[currentImageIndex].showPrice ? (
-                          <p className="text-red-600 font-bold text-xl">
+                          <p className="text-[#640006] font-bold text-xl">
                             Show Price: ${products[currentImageIndex].showPrice.toFixed(2)}
                           </p>
                         ) : (
@@ -170,7 +170,7 @@ export default function FeaturedShowBanner({ show, products }: FeaturedShowBanne
                           onClick={() => setCurrentImageIndex(index)}
                           className={`w-2 h-2 rounded-full transition-all ${
                             index === currentImageIndex
-                              ? 'bg-red-600 w-8'
+                              ? 'bg-[#640006] w-8'
                               : 'bg-gray-300 hover:bg-gray-400'
                           }`}
                           aria-label={`View product ${index + 1}`}
