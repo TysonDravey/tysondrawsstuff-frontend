@@ -67,6 +67,7 @@ export interface Product {
   description?: string;
   slug: string;
   featured: boolean;
+  sold: boolean;
   images?: StrapiImage[];
   category?: Category;
   currentShow?: Show;

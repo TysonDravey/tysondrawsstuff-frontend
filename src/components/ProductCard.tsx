@@ -27,8 +27,17 @@ export default function ProductCard({ product, featured = false }: ProductCardPr
               </div>
             )}
 
+            {/* SOLD Overlay */}
+            {product.sold && (
+              <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                <div className="bg-red-600 text-white text-3xl font-bold px-8 py-4 rounded-lg transform -rotate-12 shadow-2xl border-4 border-white">
+                  SOLD
+                </div>
+              </div>
+            )}
+
             {/* Featured Badge */}
-            {(featured || product.featured) && (
+            {(featured || product.featured) && !product.sold && (
               <div className="absolute top-3 left-3">
                 <span className="bg-primary text-primary-foreground text-xs font-semibold px-3 py-1 rounded-full">
                   Featured
@@ -37,7 +46,7 @@ export default function ProductCard({ product, featured = false }: ProductCardPr
             )}
 
             {/* Show Badge */}
-            {product.currentShow && product.showPrice && (
+            {product.currentShow && product.showPrice && !product.sold && (
               <div className="absolute top-3 right-3">
                 <span className="bg-primary text-primary-foreground text-xs font-semibold px-2 py-1 rounded">
                   At Show
@@ -46,7 +55,7 @@ export default function ProductCard({ product, featured = false }: ProductCardPr
             )}
 
             {/* Category Badge */}
-            {product.category && !(product.currentShow && product.showPrice) && (
+            {product.category && !(product.currentShow && product.showPrice) && !product.sold && (
               <div className="absolute top-3 right-3">
                 <span className="bg-secondary text-secondary-foreground text-xs font-medium px-2 py-1 rounded">
                   {product.category.name}

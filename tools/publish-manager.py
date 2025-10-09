@@ -436,22 +436,25 @@ class PublishManager:
         # Run backup in a separate thread to avoid blocking UI
         def run_backup():
             try:
-                # Run the backup script
+                # Run the backup script with UTF-8 encoding
                 result = subprocess.run(
                     ["node", "scripts/backup.js"],
                     cwd=self.backend_dir,
                     capture_output=True,
                     text=True,
+                    encoding='utf-8',
+                    errors='replace',  # Replace invalid characters instead of failing
                     timeout=60
                 )
 
                 # Display output in logs
-                self.root.after(0, lambda: self.log(result.stdout))
+                output = result.stdout
+                self.root.after(0, lambda o=output: self.log(o))
 
                 if result.returncode == 0:
                     # Parse the output to find backup location
                     backup_path = None
-                    for line in result.stdout.split('\n'):
+                    for line in output.split('\n'):
                         if 'Backup directory:' in line:
                             backup_path = line.split('Backup directory:')[1].strip()
                             break
@@ -460,16 +463,16 @@ class PublishManager:
                     if backup_path:
                         success_msg += f"\n\nLocation: {backup_path}"
 
-                    self.root.after(0, lambda: messagebox.showinfo(
+                    self.root.after(0, lambda msg=success_msg: messagebox.showinfo(
                         "Backup Complete",
-                        success_msg
+                        msg
                     ))
                 else:
                     error_msg = result.stderr if result.stderr else "Unknown error"
-                    self.root.after(0, lambda: self.log(f"❌ Backup failed: {error_msg}"))
-                    self.root.after(0, lambda: messagebox.showerror(
+                    self.root.after(0, lambda err=error_msg: self.log(f"❌ Backup failed: {err}"))
+                    self.root.after(0, lambda err=error_msg: messagebox.showerror(
                         "Backup Failed",
-                        f"Backup failed with error:\n{error_msg}"
+                        f"Backup failed with error:\n{err}"
                     ))
 
             except subprocess.TimeoutExpired:
@@ -479,10 +482,11 @@ class PublishManager:
                     "Backup process timed out. This may indicate a large database or connection issues."
                 ))
             except Exception as e:
-                self.root.after(0, lambda: self.log(f"❌ Backup error: {str(e)}"))
-                self.root.after(0, lambda: messagebox.showerror(
+                error_str = str(e)
+                self.root.after(0, lambda err=error_str: self.log(f"❌ Backup error: {err}"))
+                self.root.after(0, lambda err=error_str: messagebox.showerror(
                     "Backup Error",
-                    f"An error occurred during backup:\n{str(e)}"
+                    f"An error occurred during backup:\n{err}"
                 ))
 
         # Start backup thread
