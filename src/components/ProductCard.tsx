@@ -29,8 +29,8 @@ export default function ProductCard({ product, featured = false }: ProductCardPr
 
             {/* SOLD Overlay */}
             {product.sold === true && (
-              <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                <div className="bg-red-600 text-white text-3xl font-bold px-8 py-4 rounded-lg transform -rotate-12 shadow-2xl border-4 border-white">
+              <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+                <div className="bg-[#640006] text-white text-3xl font-bold px-8 py-4 rounded-lg transform -rotate-12 shadow-2xl border-4 border-white">
                   SOLD
                 </div>
               </div>
@@ -71,7 +71,7 @@ export default function ProductCard({ product, featured = false }: ProductCardPr
 
             {/* Pricing or SOLD */}
             {product.sold === true ? (
-              <p className="text-2xl font-bold text-red-600">
+              <p className="text-2xl font-bold text-[#640006]">
                 SOLD
               </p>
             ) : product.currentShow && product.showPrice ? (
