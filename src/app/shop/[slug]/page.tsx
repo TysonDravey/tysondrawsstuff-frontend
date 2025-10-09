@@ -175,12 +175,12 @@ export default async function ProductPage({ params }: ProductPageProps) {
                       <p className={`text-lg text-muted-foreground line-through`}>
                         Online Price: ${product.price.toFixed(2)} CAD
                       </p>
-                      <p className={`text-3xl sm:text-4xl lg:text-5xl font-bold ${product.sold ? 'line-through text-gray-400' : 'text-amber-600'}`}>
+                      <p className={`text-3xl sm:text-4xl lg:text-5xl font-bold ${product.sold === true ? 'line-through text-gray-400' : 'text-amber-600'}`}>
                         Show Price: ${product.showPrice.toFixed(2)} <span className="text-sm sm:text-base text-muted-foreground font-normal">CAD</span>
                       </p>
                     </div>
                   ) : (
-                    <p className={`text-3xl sm:text-4xl lg:text-5xl font-bold ${product.sold ? 'line-through text-gray-400' : 'text-primary'}`}>
+                    <p className={`text-3xl sm:text-4xl lg:text-5xl font-bold ${product.sold === true ? 'line-through text-gray-400' : 'text-primary'}`}>
                       ${product.price.toFixed(2)} <span className="text-sm sm:text-base text-muted-foreground font-normal">CAD</span>
                     </p>
                   )}
@@ -215,10 +215,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
               {/* Purchase Section */}
               <div className="bg-card border border-border rounded-lg p-6">
                 <h3 className="text-lg font-semibold mb-4 text-card-foreground">
-                  {product.sold ? 'Status' : product.currentShow ? 'Availability' : 'Purchase'}
+                  {product.sold === true ? 'Status' : product.currentShow ? 'Availability' : 'Purchase'}
                 </h3>
 
-                {product.sold ? (
+                {product.sold === true ? (
                   <div className="space-y-4">
                     <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                       <div className="flex items-start space-x-3">

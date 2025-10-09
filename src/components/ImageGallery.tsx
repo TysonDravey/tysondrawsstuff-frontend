@@ -58,7 +58,7 @@ export default function ImageGallery({ images, productTitle, productSlug, sold =
         />
 
         {/* SOLD Watermark */}
-        {sold && (
+        {sold === true && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <div className="text-white text-6xl md:text-8xl font-bold opacity-40 transform -rotate-12 select-none">
               SOLD
