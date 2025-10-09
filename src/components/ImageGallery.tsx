@@ -13,9 +13,10 @@ interface ImageGalleryProps {
   images: StrapiImage[];
   productTitle: string;
   productSlug: string;
+  sold?: boolean;
 }
 
-export default function ImageGallery({ images, productTitle, productSlug }: ImageGalleryProps) {
+export default function ImageGallery({ images, productTitle, productSlug, sold = false }: ImageGalleryProps) {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
 
@@ -55,6 +56,16 @@ export default function ImageGallery({ images, productTitle, productSlug }: Imag
           className="rounded-lg transition-opacity group-hover:opacity-90"
           priority={selectedImageIndex === 0}
         />
+
+        {/* SOLD Watermark */}
+        {sold && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div className="text-white text-6xl md:text-8xl font-bold opacity-40 transform -rotate-12 select-none">
+              SOLD
+            </div>
+          </div>
+        )}
+
         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
           <div className="bg-black bg-opacity-50 text-white px-3 py-1 rounded text-sm">
             Click to expand

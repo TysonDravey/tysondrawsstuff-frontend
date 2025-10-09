@@ -139,6 +139,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
                 images={product.images || []}
                 productTitle={product.title}
                 productSlug={product.slug}
+                sold={product.sold}
               />
             </div>
 
@@ -171,15 +172,15 @@ export default async function ProductPage({ params }: ProductPageProps) {
                   {/* Pricing Display */}
                   {product.currentShow && product.showPrice ? (
                     <div className="space-y-2">
-                      <p className="text-lg text-muted-foreground line-through">
+                      <p className={`text-lg text-muted-foreground line-through`}>
                         Online Price: ${product.price.toFixed(2)} CAD
                       </p>
-                      <p className="text-3xl sm:text-4xl lg:text-5xl font-bold text-amber-600">
+                      <p className={`text-3xl sm:text-4xl lg:text-5xl font-bold ${product.sold ? 'line-through text-gray-400' : 'text-amber-600'}`}>
                         Show Price: ${product.showPrice.toFixed(2)} <span className="text-sm sm:text-base text-muted-foreground font-normal">CAD</span>
                       </p>
                     </div>
                   ) : (
-                    <p className="text-3xl sm:text-4xl lg:text-5xl font-bold text-primary">
+                    <p className={`text-3xl sm:text-4xl lg:text-5xl font-bold ${product.sold ? 'line-through text-gray-400' : 'text-primary'}`}>
                       ${product.price.toFixed(2)} <span className="text-sm sm:text-base text-muted-foreground font-normal">CAD</span>
                     </p>
                   )}
@@ -228,20 +229,20 @@ export default async function ProductPage({ params }: ProductPageProps) {
                           <h4 className="font-medium text-red-800">This Artwork Has Been Sold</h4>
                           <p className="text-sm text-red-700 mt-1">
                             This piece has found its home and is no longer available for purchase.
-                            Check out more available artwork in the shop!
+                            {product.currentShow ? ` Check out more artwork at ${product.currentShow.title}!` : ' Check out more available artwork in the shop!'}
                           </p>
                         </div>
                       </div>
                     </div>
 
                     <Link
-                      href="/shop"
+                      href={product.currentShow ? `/shows/${product.currentShow.slug}` : '/shop'}
                       className="inline-flex items-center justify-center w-full bg-primary hover:bg-orange-600 text-white font-medium py-3 px-6 rounded-lg transition-colors"
                     >
                       <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                       </svg>
-                      Browse Available Artwork
+                      {product.currentShow ? `Browse More at ${product.currentShow.title}` : 'Browse Available Artwork'}
                     </Link>
                   </div>
                 ) : product.currentShow ? (
