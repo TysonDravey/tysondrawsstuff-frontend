@@ -219,7 +219,7 @@ class PublishManager:
         button_frame.grid(row=1, column=0, columnspan=2, pady=10, sticky=tk.W)
 
         ttk.Button(button_frame, text="🔍 Deploy Preview",
-                  command=self.deploy_preview,
+                  command=self.deploy_develop,
                   style="Accent.TButton").pack(side=tk.LEFT, padx=(0, 10))
 
         ttk.Button(button_frame, text="🚀 Deploy Production",
@@ -239,7 +239,7 @@ class PublishManager:
         workflow_frame.pack(fill=tk.X, pady=5)
 
         ttk.Button(workflow_frame, text="🔄 Sync & Preview Workflow",
-                  command=self.preview_workflow,
+                  command=self.develop_workflow,
                   style="Accent.TButton").pack(side=tk.LEFT, padx=(0, 10))
 
         ttk.Button(workflow_frame, text="🚀 Full Production Pipeline",
@@ -296,8 +296,8 @@ class PublishManager:
                 branch = result.stdout.strip()
                 self.branch_label.config(text=branch)
 
-                # Color code: preview = green, main = red, other = orange
-                if branch == "preview":
+                # Color code: develop = green, main = red, other = orange
+                if branch == "develop":
                     self.branch_label.config(foreground="green")
                 elif branch == "main":
                     self.branch_label.config(foreground="red")
@@ -590,21 +590,21 @@ class PublishManager:
             return branch
         return "unknown"
 
-    def switch_to_preview(self):
-        """Switch to preview branch"""
-        self.log("🔄 Switching to preview branch...")
-        result = self.run_command("git checkout preview")
+    def switch_to_develop(self):
+        """Switch to develop branch"""
+        self.log("🔄 Switching to develop branch...")
+        result = self.run_command("git checkout develop")
         if result and result.returncode == 0:
-            self.log("✅ Switched to preview branch")
+            self.log("✅ Switched to develop branch")
             self.get_current_branch()
         else:
-            # Try to create preview branch
-            create_result = self.run_command("git checkout -b preview")
+            # Try to create develop branch
+            create_result = self.run_command("git checkout -b develop")
             if create_result and create_result.returncode == 0:
-                self.log("✅ Created and switched to preview branch")
+                self.log("✅ Created and switched to develop branch")
                 self.get_current_branch()
             else:
-                self.log("❌ Failed to switch to preview branch")
+                self.log("❌ Failed to switch to develop branch")
 
     def switch_to_main(self):
         """Switch to main/master branch"""
@@ -620,14 +620,14 @@ class PublishManager:
         else:
             self.log("❌ Failed to switch to main branch")
 
-    def merge_preview_to_main(self):
-        """Merge preview branch to main"""
+    def merge_develop_to_main(self):
+        """Merge develop branch to main"""
         if not messagebox.askyesno("Merge Branches",
-                                  "This will merge preview branch into main branch.\n\nContinue?"):
+                                  "This will merge develop branch into main branch.\n\nContinue?"):
             return
 
         def merge_thread():
-            self.log("🔄 Merging preview to main...")
+            self.log("🔄 Merging develop to main...")
 
             # Switch to main
             self.run_command("git checkout main 2>/dev/null || git checkout master")
@@ -635,10 +635,10 @@ class PublishManager:
             # Pull latest
             self.run_command("git pull origin main 2>/dev/null || git pull origin master")
 
-            # Merge preview
-            merge_result = self.run_command("git merge preview")
+            # Merge develop
+            merge_result = self.run_command("git merge develop")
             if merge_result and merge_result.returncode == 0:
-                self.log("✅ Successfully merged preview to main")
+                self.log("✅ Successfully merged develop to main")
 
                 # Push to main
                 push_result = self.run_command("git push origin main 2>/dev/null || git push origin master")
@@ -647,24 +647,24 @@ class PublishManager:
                 else:
                     self.log("⚠️ Merge successful but push failed")
             else:
-                self.log("❌ Failed to merge preview to main - check for conflicts")
+                self.log("❌ Failed to merge develop to main - check for conflicts")
 
             self.get_current_branch()
 
         threading.Thread(target=merge_thread, daemon=True).start()
 
-    def preview_workflow(self):
-        """Run the preview workflow: sync images, commit to preview, deploy preview"""
+    def develop_workflow(self):
+        """Run the develop workflow: sync images, commit to develop, deploy develop"""
         if not messagebox.askyesno("Preview Workflow",
-                                  "This will:\n1. Switch to preview branch\n2. Sync images from Strapi\n3. Commit and push to preview\n4. Deploy to preview\n\nContinue?"):
+                                  "This will:\n1. Switch to develop branch\n2. Sync images from Strapi\n3. Commit and push to develop\n4. Deploy to develop\n\nContinue?"):
             return
 
-        def preview_thread():
+        def develop_thread():
             self.log("=== Starting Preview Workflow ===")
 
-            # 1. Switch to preview
-            self.log("Step 1: Switching to preview branch...")
-            self.switch_to_preview()
+            # 1. Switch to develop
+            self.log("Step 1: Switching to develop branch...")
+            self.switch_to_develop()
             time.sleep(1)
 
             # 2. Sync images
@@ -675,40 +675,40 @@ class PublishManager:
             else:
                 self.log("⚠️ Image sync may have failed")
 
-            # 3. Commit and push to preview
-            self.log("Step 3: Committing changes to preview...")
+            # 3. Commit and push to develop
+            self.log("Step 3: Committing changes to develop...")
             self.run_command("git add .")
-            commit_result = self.run_command('git commit -m "Sync images and content updates for preview"')
+            commit_result = self.run_command('git commit -m "Sync images and content updates for develop"')
             if commit_result and commit_result.returncode == 0:
-                push_result = self.run_command("git push origin preview")
+                push_result = self.run_command("git push origin develop")
                 if push_result and push_result.returncode == 0:
-                    self.log("✅ Changes pushed to preview branch")
+                    self.log("✅ Changes pushed to develop branch")
                 else:
                     self.log("⚠️ Commit successful but push failed")
             else:
                 self.log("ℹ️ No changes to commit or already up to date")
 
-            # 4. Deploy to preview
-            self.log("Step 4: Deploying to preview...")
-            self.deploy_preview()
+            # 4. Deploy to develop
+            self.log("Step 4: Deploying to develop...")
+            self.deploy_develop()
 
             self.log("=== Preview Workflow Complete ===")
-            self.log("🔍 Check Vercel dashboard for preview URL!")
+            self.log("🔍 Check Vercel dashboard for develop URL!")
 
-        threading.Thread(target=preview_thread, daemon=True).start()
+        threading.Thread(target=develop_thread, daemon=True).start()
 
     def production_pipeline(self):
         """Run the full production pipeline: merge to main, deploy to production"""
         if not messagebox.askyesno("Production Pipeline",
-                                  "⚠️ FULL PRODUCTION DEPLOYMENT ⚠️\n\nThis will:\n1. Merge preview → main branch\n2. Deploy to LIVE PRODUCTION site\n\nOnly proceed if preview looks good!\n\nContinue?"):
+                                  "⚠️ FULL PRODUCTION DEPLOYMENT ⚠️\n\nThis will:\n1. Merge develop → main branch\n2. Deploy to LIVE PRODUCTION site\n\nOnly proceed if develop looks good!\n\nContinue?"):
             return
 
         def production_thread():
             self.log("=== Starting Production Pipeline ===")
 
-            # 1. Merge preview to main
-            self.log("Step 1: Merging preview to main...")
-            self.merge_preview_to_main()
+            # 1. Merge develop to main
+            self.log("Step 1: Merging develop to main...")
+            self.merge_develop_to_main()
             time.sleep(3)  # Wait for merge to complete
 
             # 2. Deploy to production
@@ -819,36 +819,36 @@ class PublishManager:
 
         threading.Thread(target=update_thread, daemon=True).start()
 
-    def deploy_preview(self):
-        """Deploy to preview (develop branch)"""
-        deploy_hook = self.get_vercel_deploy_hook('preview')
+    def deploy_develop(self):
+        """Deploy to develop (develop branch)"""
+        deploy_hook = self.get_vercel_deploy_hook('develop')
 
         if not deploy_hook:
-            self.log("⚠️ No Vercel Deploy Hook configured for preview")
+            self.log("⚠️ No Vercel Deploy Hook configured for develop")
             self.log("To set up:")
             self.log("1. Go to Vercel dashboard → Settings → Git → Deploy Hooks")
-            self.log("2. Create a Deploy Hook for preview branch")
+            self.log("2. Create a Deploy Hook for develop branch")
             self.log("3. Add VERCEL_DEPLOY_HOOK_PREVIEW=<url> to frontend/.env.local")
             return
 
         self.deploy_status.set("Deploying Preview...")
-        self.log("🔍 Triggering preview deployment (preview branch)...")
+        self.log("🔍 Triggering develop deployment (develop branch)...")
 
-        def preview_deploy_thread():
+        def develop_deploy_thread():
             try:
                 response = requests.post(deploy_hook, timeout=10)
                 if response.status_code in [200, 201, 202]:
                     self.deploy_status.set("Preview Triggered")
                     self.log("✅ Preview deployment triggered successfully!")
-                    self.log("Check Vercel dashboard for preview URL")
+                    self.log("Check Vercel dashboard for develop URL")
                 else:
                     self.deploy_status.set("Preview Failed")
-                    self.log(f"❌ Failed to trigger preview: HTTP {response.status_code}")
+                    self.log(f"❌ Failed to trigger develop: HTTP {response.status_code}")
             except Exception as e:
                 self.deploy_status.set("Preview Error")
-                self.log(f"❌ Error triggering preview deployment: {e}")
+                self.log(f"❌ Error triggering develop deployment: {e}")
 
-        threading.Thread(target=preview_deploy_thread, daemon=True).start()
+        threading.Thread(target=develop_deploy_thread, daemon=True).start()
 
     def deploy_production(self):
         """Deploy to production (main branch)"""
@@ -890,7 +890,7 @@ class PublishManager:
         """Legacy method - redirect to production deploy"""
         self.deploy_production()
 
-    def get_vercel_deploy_hook(self, environment='preview'):
+    def get_vercel_deploy_hook(self, environment='develop'):
         """Get Vercel Deploy Hook URL from frontend/.env.local"""
         try:
             env_file = self.frontend_dir / ".env.local"
@@ -909,32 +909,32 @@ class PublishManager:
 
         return None
 
-    def switch_to_preview_from_deploy(self):
-        """Switch to preview branch for development work (from deploy tab)"""
-        self.log("🔀 Switching to preview branch...")
+    def switch_to_develop_from_deploy(self):
+        """Switch to develop branch for development work (from deploy tab)"""
+        self.log("🔀 Switching to develop branch...")
 
         def switch_thread():
             try:
-                result = self.run_command("git checkout preview", cwd=self.frontend_dir)
+                result = self.run_command("git checkout develop", cwd=self.frontend_dir)
                 if result and result.returncode == 0:
-                    self.log("✅ Switched to preview branch")
+                    self.log("✅ Switched to develop branch")
                     self.update_branch_display()
                 else:
-                    self.log("❌ Failed to switch to preview branch")
+                    self.log("❌ Failed to switch to develop branch")
             except Exception as e:
                 self.log(f"❌ Error switching branch: {e}")
 
         threading.Thread(target=switch_thread, daemon=True).start()
 
     def promote_to_production(self):
-        """Promote preview branch to production by merging to main"""
+        """Promote develop branch to production by merging to main"""
         import tkinter.messagebox as messagebox
 
         # Confirm action
         confirmed = messagebox.askyesno(
             "Promote to Production",
-            "This will merge the 'preview' branch into 'main' and push to production.\n\n"
-            "Make sure the preview deployment looks good before proceeding.\n\n"
+            "This will merge the 'develop' branch into 'main' and push to production.\n\n"
+            "Make sure the develop deployment looks good before proceeding.\n\n"
             "Continue?"
         )
 
@@ -942,7 +942,7 @@ class PublishManager:
             self.log("ℹ️ Promotion cancelled")
             return
 
-        self.log("🎯 Promoting preview to production...")
+        self.log("🎯 Promoting develop to production...")
 
         def promote_thread():
             try:
@@ -954,30 +954,30 @@ class PublishManager:
                     self.log("💡 Run 'git status' to see uncommitted files")
                     return
 
-                # Make sure we're on preview branch
-                self.run_command("git checkout preview", cwd=self.frontend_dir)
+                # Make sure we're on develop branch
+                self.run_command("git checkout develop", cwd=self.frontend_dir)
 
                 # Pull latest
-                self.run_command("git pull origin preview", cwd=self.frontend_dir)
+                self.run_command("git pull origin develop", cwd=self.frontend_dir)
 
                 # Checkout main
                 result = self.run_command("git checkout main", cwd=self.frontend_dir)
                 if result and result.returncode != 0:
                     self.log("❌ Failed to checkout main branch")
-                    # Always try to get back to preview
-                    self.run_command("git checkout preview", cwd=self.frontend_dir)
+                    # Always try to get back to develop
+                    self.run_command("git checkout develop", cwd=self.frontend_dir)
                     return
 
                 # Pull latest main
                 self.run_command("git pull origin main", cwd=self.frontend_dir)
 
-                # Merge preview into main (use double quotes for Windows compatibility)
-                result = self.run_command('git merge preview -m "Promote preview to production"', cwd=self.frontend_dir)
+                # Merge develop into main (use double quotes for Windows compatibility)
+                result = self.run_command('git merge develop -m "Promote develop to production"', cwd=self.frontend_dir)
                 if result and result.returncode != 0:
-                    self.log("❌ Failed to merge preview into main")
+                    self.log("❌ Failed to merge develop into main")
                     self.log("⚠️ You may need to resolve conflicts manually")
-                    # Always switch back to preview
-                    self.run_command("git checkout preview", cwd=self.frontend_dir)
+                    # Always switch back to develop
+                    self.run_command("git checkout develop", cwd=self.frontend_dir)
                     return
 
                 # Push to main
@@ -989,22 +989,22 @@ class PublishManager:
                 else:
                     self.log("❌ Failed to push to main branch")
 
-                # ALWAYS switch back to preview branch, no matter what
-                self.run_command("git checkout preview", cwd=self.frontend_dir)
-                self.log("🔄 Switched back to preview branch")
+                # ALWAYS switch back to develop branch, no matter what
+                self.run_command("git checkout develop", cwd=self.frontend_dir)
+                self.log("🔄 Switched back to develop branch")
 
                 # Update branch display
                 self.update_branch_display()
 
             except Exception as e:
                 self.log(f"❌ Error during promotion: {e}")
-                # Even on exception, try to get back to preview
+                # Even on exception, try to get back to develop
                 try:
-                    self.run_command("git checkout preview", cwd=self.frontend_dir)
-                    self.log("🔄 Switched back to preview branch")
+                    self.run_command("git checkout develop", cwd=self.frontend_dir)
+                    self.log("🔄 Switched back to develop branch")
                     self.update_branch_display()
                 except:
-                    self.log("⚠️ Could not switch back to preview - please check branch manually")
+                    self.log("⚠️ Could not switch back to develop - please check branch manually")
                     self.update_branch_display()
 
         threading.Thread(target=promote_thread, daemon=True).start()
@@ -1246,11 +1246,11 @@ Recent Products:"""
         self.check_strapi_status()
         self.update_image_stats()
 
-        # Check current git branch and ensure we're on preview for preview workflow
+        # Check current git branch and ensure we're on develop for develop workflow
         current_branch = self.get_current_branch()
-        if current_branch and current_branch != 'preview':
+        if current_branch and current_branch != 'develop':
             self.log(f"⚠️ Currently on '{current_branch}' branch")
-            self.log("💡 Switch to 'preview' branch before making changes for preview")
+            self.log("💡 Switch to 'develop' branch before making changes for develop")
 
     def on_closing(self):
         """Handle application closing"""
