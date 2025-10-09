@@ -69,8 +69,12 @@ export default function ProductCard({ product, featured = false }: ProductCardPr
               {product.title}
             </h3>
 
-            {/* Pricing */}
-            {product.currentShow && product.showPrice ? (
+            {/* Pricing or SOLD */}
+            {product.sold ? (
+              <p className="text-2xl font-bold text-red-600">
+                SOLD
+              </p>
+            ) : product.currentShow && product.showPrice ? (
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
                   <p className="text-lg text-muted-foreground line-through">
