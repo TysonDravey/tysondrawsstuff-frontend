@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import ProductCard from './ProductCard';
 import { type Product } from '@/lib/api';
 
@@ -10,9 +11,9 @@ export default function ProductGrid({ products }: ProductGridProps) {
     return (
       <div className="text-center py-16">
         <p className="text-muted-foreground text-lg mb-6">No products available at the moment.</p>
-        <a href="/" className="text-primary hover:text-orange-600 font-semibold">
+        <Link href="/" className="text-primary hover:text-orange-600 font-semibold">
           ← Back to Home
-        </a>
+        </Link>
       </div>
     );
   }
