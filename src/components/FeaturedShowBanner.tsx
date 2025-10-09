@@ -113,13 +113,9 @@ export default function FeaturedShowBanner({ show, products }: FeaturedShowBanne
 
               {/* Product Gallery */}
               {products.length > 0 && (
-                <div className="bg-white rounded-lg shadow-lg p-6 border-2 border-[#640006]/20">
-                  <h3 className="text-xl font-bold text-gray-900 mb-4 text-center">
-                    Featured Artwork from this Show
-                  </h3>
-
+                <div className="bg-white rounded-lg shadow-lg p-3 border-2 border-[#640006]/20">
                   <Link href={`/shows/${show.slug}`} className="block">
-                    <div className="relative aspect-video bg-gray-100 rounded-lg overflow-hidden mb-4 hover:opacity-90 transition-opacity">
+                    <div className="relative aspect-video bg-gray-100 rounded-lg overflow-hidden hover:opacity-90 transition-opacity">
                       {products.map((product, index) => {
                         const firstImage = product.images?.[0];
                         if (!firstImage) return null;
@@ -135,35 +131,17 @@ export default function FeaturedShowBanner({ show, products }: FeaturedShowBanne
                               src={getProductImageUrl(product.slug, firstImage, 0)}
                               alt={product.title}
                               fill
-                              className="object-contain p-4"
+                              className="object-contain p-2"
                             />
                           </div>
                         );
                       })}
                     </div>
-
-                    {/* Product Info */}
-                    {products[currentImageIndex] && (
-                      <div className="text-center">
-                        <p className="font-semibold text-gray-900 text-lg mb-1">
-                          {products[currentImageIndex].title}
-                        </p>
-                        {products[currentImageIndex].showPrice ? (
-                          <p className="text-[#640006] font-bold text-xl">
-                            Show Price: ${products[currentImageIndex].showPrice.toFixed(2)}
-                          </p>
-                        ) : (
-                          <p className="text-gray-700 font-semibold">
-                            ${products[currentImageIndex].price.toFixed(2)}
-                          </p>
-                        )}
-                      </div>
-                    )}
                   </Link>
 
                   {/* Gallery Indicators */}
                   {products.length > 1 && (
-                    <div className="flex justify-center space-x-2 mt-4">
+                    <div className="flex justify-center space-x-2 mt-2">
                       {products.map((_, index) => (
                         <button
                           key={index}
