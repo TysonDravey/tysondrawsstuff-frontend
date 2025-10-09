@@ -95,6 +95,9 @@ export async function fetchProducts(): Promise<Product[]> {
 
     if (!response.ok) {
       console.warn('Failed to fetch products, returning empty array');
+      if (typeof window === 'undefined') {
+        throw new Error('Failed to fetch products from Strapi. Build aborted to prevent deploying empty content.');
+      }
       return [];
     }
 
@@ -102,6 +105,9 @@ export async function fetchProducts(): Promise<Product[]> {
     return result.data;
   } catch (error) {
     console.warn('Strapi not available during build for products, returning empty array', error instanceof Error ? error.message : '');
+    if (typeof window === 'undefined') {
+      throw new Error('Failed to fetch products from Strapi. Build aborted to prevent deploying empty content.');
+    }
     return [];
   }
 }
@@ -112,6 +118,9 @@ export async function fetchProductsPaginated(page: number = 1, limit: number = 1
 
     if (!response.ok) {
       console.warn('Failed to fetch paginated products, returning empty array');
+      if (typeof window === 'undefined') {
+        throw new Error('Failed to fetch paginated products from Strapi. Build aborted to prevent deploying empty content.');
+      }
       return { products: [], pagination: { page: 1, pageSize: limit, pageCount: 0, total: 0 } };
     }
 
@@ -122,6 +131,9 @@ export async function fetchProductsPaginated(page: number = 1, limit: number = 1
     };
   } catch (error) {
     console.warn('Strapi not available during build for paginated products, returning empty array', error instanceof Error ? error.message : '');
+    if (typeof window === 'undefined') {
+      throw new Error('Failed to fetch paginated products from Strapi. Build aborted to prevent deploying empty content.');
+    }
     return { products: [], pagination: { page: 1, pageSize: limit, pageCount: 0, total: 0 } };
   }
 }
@@ -132,6 +144,9 @@ export async function fetchProductBySlug(slug: string): Promise<Product | null> 
 
     if (!response.ok) {
       console.warn(`Failed to fetch product ${slug}, returning null`);
+      if (typeof window === 'undefined') {
+        throw new Error(`Failed to fetch product ${slug} from Strapi. Build aborted to prevent deploying empty content.`);
+      }
       return null;
     }
 
@@ -139,6 +154,9 @@ export async function fetchProductBySlug(slug: string): Promise<Product | null> 
     return result.data.length > 0 ? result.data[0] : null;
   } catch (error) {
     console.warn(`Strapi not available during build for product ${slug}, returning null`, error instanceof Error ? error.message : '');
+    if (typeof window === 'undefined') {
+      throw new Error(`Failed to fetch product ${slug} from Strapi. Build aborted to prevent deploying empty content.`);
+    }
     return null;
   }
 }
@@ -149,6 +167,9 @@ export async function fetchProductSlugs(): Promise<string[]> {
 
     if (!response.ok) {
       console.warn('Failed to fetch product slugs, returning empty array');
+      if (typeof window === 'undefined') {
+        throw new Error('Failed to fetch product slugs from Strapi. Build aborted to prevent deploying empty content.');
+      }
       return [];
     }
 
@@ -156,6 +177,9 @@ export async function fetchProductSlugs(): Promise<string[]> {
     return result.data.map(product => product.slug);
   } catch (error) {
     console.warn('Strapi not available during build for slugs, returning empty array', error instanceof Error ? error.message : '');
+    if (typeof window === 'undefined') {
+      throw new Error('Failed to fetch product slugs from Strapi. Build aborted to prevent deploying empty content.');
+    }
     return [];
   }
 }
@@ -206,6 +230,9 @@ export async function fetchFeaturedProducts(): Promise<Product[]> {
 
     if (!response.ok) {
       console.warn('Failed to fetch featured products, returning empty array');
+      if (typeof window === 'undefined') {
+        throw new Error('Failed to fetch featured products from Strapi. Build aborted to prevent deploying empty content.');
+      }
       return [];
     }
 
@@ -213,6 +240,9 @@ export async function fetchFeaturedProducts(): Promise<Product[]> {
     return result.data;
   } catch {
     console.warn('Strapi not available during build for featured products, returning empty array');
+    if (typeof window === 'undefined') {
+      throw new Error('Failed to fetch featured products from Strapi. Build aborted to prevent deploying empty content.');
+    }
     return [];
   }
 }
@@ -223,6 +253,9 @@ export async function fetchProductsByCategory(categorySlug: string): Promise<Pro
 
     if (!response.ok) {
       console.warn(`Failed to fetch products for category ${categorySlug}, returning empty array`);
+      if (typeof window === 'undefined') {
+        throw new Error(`Failed to fetch products for category ${categorySlug} from Strapi. Build aborted to prevent deploying empty content.`);
+      }
       return [];
     }
 
@@ -230,6 +263,9 @@ export async function fetchProductsByCategory(categorySlug: string): Promise<Pro
     return result.data;
   } catch {
     console.warn(`Strapi not available during build for category ${categorySlug}, returning empty array`);
+    if (typeof window === 'undefined') {
+      throw new Error(`Failed to fetch products for category ${categorySlug} from Strapi. Build aborted to prevent deploying empty content.`);
+    }
     return [];
   }
 }
@@ -240,6 +276,9 @@ export async function fetchProductsByCategoryPaginated(categorySlug: string, pag
 
     if (!response.ok) {
       console.warn(`Failed to fetch paginated products for category ${categorySlug}, returning empty array`);
+      if (typeof window === 'undefined') {
+        throw new Error(`Failed to fetch paginated products for category ${categorySlug} from Strapi. Build aborted to prevent deploying empty content.`);
+      }
       return { products: [], pagination: { page: 1, pageSize: limit, pageCount: 0, total: 0 } };
     }
 
@@ -250,6 +289,9 @@ export async function fetchProductsByCategoryPaginated(categorySlug: string, pag
     };
   } catch {
     console.warn(`Strapi not available during build for paginated category ${categorySlug}, returning empty array`);
+    if (typeof window === 'undefined') {
+      throw new Error(`Failed to fetch paginated products for category ${categorySlug} from Strapi. Build aborted to prevent deploying empty content.`);
+    }
     return { products: [], pagination: { page: 1, pageSize: limit, pageCount: 0, total: 0 } };
   }
 }
@@ -260,6 +302,9 @@ export async function fetchCategories(): Promise<Category[]> {
 
     if (!response.ok) {
       console.warn('Failed to fetch categories, returning empty array');
+      if (typeof window === 'undefined') {
+        throw new Error('Failed to fetch categories from Strapi. Build aborted to prevent deploying empty content.');
+      }
       return [];
     }
 
@@ -267,6 +312,9 @@ export async function fetchCategories(): Promise<Category[]> {
     return result.data;
   } catch {
     console.warn('Strapi not available during build for categories, returning empty array');
+    if (typeof window === 'undefined') {
+      throw new Error('Failed to fetch categories from Strapi. Build aborted to prevent deploying empty content.');
+    }
     return [];
   }
 }
@@ -299,6 +347,9 @@ export async function fetchCategoryBySlug(slug: string): Promise<Category | null
     const response = await fetchWithTimeout(`${STRAPI_URL}/api/categories?filters[slug][$eq]=${slug}`);
 
     if (!response.ok) {
+      if (typeof window === 'undefined') {
+        throw new Error(`Failed to fetch category ${slug} from Strapi. Build aborted to prevent deploying empty content.`);
+      }
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
@@ -306,6 +357,9 @@ export async function fetchCategoryBySlug(slug: string): Promise<Category | null
     return result.data.length > 0 ? result.data[0] : null;
   } catch {
     console.warn(`Strapi not available during build for category ${slug}, returning null`);
+    if (typeof window === 'undefined') {
+      throw new Error(`Failed to fetch category ${slug} from Strapi. Build aborted to prevent deploying empty content.`);
+    }
     return null;
   }
 }
@@ -317,6 +371,9 @@ export async function fetchShows(): Promise<Show[]> {
 
     if (!response.ok) {
       console.warn('Failed to fetch shows, returning empty array');
+      if (typeof window === 'undefined') {
+        throw new Error('Failed to fetch shows from Strapi. Build aborted to prevent deploying empty content.');
+      }
       return [];
     }
 
@@ -324,6 +381,9 @@ export async function fetchShows(): Promise<Show[]> {
     return result.data;
   } catch (error) {
     console.warn('Strapi not available during build for shows, returning empty array', error instanceof Error ? error.message : '');
+    if (typeof window === 'undefined') {
+      throw new Error('Failed to fetch shows from Strapi. Build aborted to prevent deploying empty content.');
+    }
     return [];
   }
 }
@@ -333,6 +393,9 @@ export async function fetchShowBySlug(slug: string): Promise<Show | null> {
     const response = await fetchWithTimeout(`${STRAPI_URL}/api/shows?filters[slug][$eq]=${slug}&populate=*`);
 
     if (!response.ok) {
+      if (typeof window === 'undefined') {
+        throw new Error(`Failed to fetch show ${slug} from Strapi. Build aborted to prevent deploying empty content.`);
+      }
       throw new Error(`HTTP error! status: ${response.status}`);
     }
 
@@ -340,6 +403,9 @@ export async function fetchShowBySlug(slug: string): Promise<Show | null> {
     return result.data.length > 0 ? result.data[0] : null;
   } catch {
     console.warn(`Strapi not available during build for show ${slug}, returning null`);
+    if (typeof window === 'undefined') {
+      throw new Error(`Failed to fetch show ${slug} from Strapi. Build aborted to prevent deploying empty content.`);
+    }
     return null;
   }
 }
@@ -360,6 +426,9 @@ export async function fetchProductsByShow(showSlug: string): Promise<Product[]> 
 
     if (!response.ok) {
       console.warn(`Failed to fetch products for show ${showSlug}, returning empty array`);
+      if (typeof window === 'undefined') {
+        throw new Error(`Failed to fetch products for show ${showSlug} from Strapi. Build aborted to prevent deploying empty content.`);
+      }
       return [];
     }
 
@@ -367,6 +436,9 @@ export async function fetchProductsByShow(showSlug: string): Promise<Product[]> 
     return result.data;
   } catch {
     console.warn(`Strapi not available during build for show ${showSlug}, returning empty array`);
+    if (typeof window === 'undefined') {
+      throw new Error(`Failed to fetch products for show ${showSlug} from Strapi. Build aborted to prevent deploying empty content.`);
+    }
     return [];
   }
 }
