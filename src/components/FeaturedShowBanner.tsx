@@ -38,15 +38,15 @@ export default function FeaturedShowBanner({ show, products }: FeaturedShowBanne
   };
 
   return (
-    <section className="py-12 bg-gradient-to-br from-red-50 to-orange-50 border-y border-[#640006]/20">
+    <section className="py-12 bg-[#8B0913] border-y border-[#640006]/20">
       <div className="container mx-auto px-4">
         <div className="max-w-6xl mx-auto">
           {/* Header */}
           <div className="text-center mb-8">
             <span className="inline-block bg-[#640006] text-white text-sm font-bold px-4 py-2 rounded-full mb-4">
-              🎨 CURRENT SHOW
+              🎨 NEW SHOW
             </span>
-            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">
+            <h2 className="text-3xl sm:text-4xl font-bold text-[#E89B28] mb-2">
               {show.title}
             </h2>
           </div>
