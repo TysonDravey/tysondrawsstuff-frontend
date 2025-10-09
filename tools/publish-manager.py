@@ -110,6 +110,7 @@ class PublishManager:
         ttk.Button(strapi_frame, text="Start Strapi", command=self.start_strapi).grid(row=2, column=0, pady=5)
         ttk.Button(strapi_frame, text="Stop Strapi", command=self.stop_strapi).grid(row=2, column=1, pady=5)
         ttk.Button(strapi_frame, text="Open Admin", command=self.open_strapi_admin).grid(row=2, column=2, pady=5)
+        ttk.Button(strapi_frame, text="💾 Backup Database", command=self.backup_database).grid(row=3, column=0, columnspan=3, pady=5, sticky=tk.EW)
 
         # Tunnel Section
         tunnel_frame = ttk.LabelFrame(parent, text="Cloudflare Tunnel", padding=10)
@@ -402,6 +403,91 @@ class PublishManager:
         import webbrowser
         webbrowser.open("http://localhost:1339/admin")
         self.log("Opening Strapi admin in browser...")
+
+    def backup_database(self):
+        """Run Strapi database backup"""
+        # Check if Strapi is running
+        try:
+            response = requests.get("http://localhost:1339/api", timeout=3)
+            if response.status_code not in [200, 403, 404]:
+                messagebox.showwarning(
+                    "Strapi Not Running",
+                    "Please start Strapi before running a backup."
+                )
+                return
+        except requests.exceptions.RequestException:
+            messagebox.showwarning(
+                "Strapi Not Running",
+                "Please start Strapi before running a backup."
+            )
+            return
+
+        # Confirm backup
+        if not messagebox.askyesno(
+            "Backup Database",
+            "This will create a backup of all Strapi collections.\n\n" +
+            "Backup will be saved to:\nbackend/backups/[date]/\n\n" +
+            "Continue?"
+        ):
+            return
+
+        self.log("💾 Starting database backup...")
+
+        # Run backup in a separate thread to avoid blocking UI
+        def run_backup():
+            try:
+                # Run the backup script
+                result = subprocess.run(
+                    ["node", "scripts/backup.js"],
+                    cwd=self.backend_dir,
+                    capture_output=True,
+                    text=True,
+                    timeout=60
+                )
+
+                # Display output in logs
+                self.root.after(0, lambda: self.log(result.stdout))
+
+                if result.returncode == 0:
+                    # Parse the output to find backup location
+                    backup_path = None
+                    for line in result.stdout.split('\n'):
+                        if 'Backup directory:' in line:
+                            backup_path = line.split('Backup directory:')[1].strip()
+                            break
+
+                    success_msg = "✅ Database backup completed successfully!"
+                    if backup_path:
+                        success_msg += f"\n\nLocation: {backup_path}"
+
+                    self.root.after(0, lambda: messagebox.showinfo(
+                        "Backup Complete",
+                        success_msg
+                    ))
+                else:
+                    error_msg = result.stderr if result.stderr else "Unknown error"
+                    self.root.after(0, lambda: self.log(f"❌ Backup failed: {error_msg}"))
+                    self.root.after(0, lambda: messagebox.showerror(
+                        "Backup Failed",
+                        f"Backup failed with error:\n{error_msg}"
+                    ))
+
+            except subprocess.TimeoutExpired:
+                self.root.after(0, lambda: self.log("❌ Backup timed out after 60 seconds"))
+                self.root.after(0, lambda: messagebox.showerror(
+                    "Backup Timeout",
+                    "Backup process timed out. This may indicate a large database or connection issues."
+                ))
+            except Exception as e:
+                self.root.after(0, lambda: self.log(f"❌ Backup error: {str(e)}"))
+                self.root.after(0, lambda: messagebox.showerror(
+                    "Backup Error",
+                    f"An error occurred during backup:\n{str(e)}"
+                ))
+
+        # Start backup thread
+        backup_thread = threading.Thread(target=run_backup, daemon=True)
+        backup_thread.start()
 
     def start_tunnel(self):
         """Start Cloudflare tunnel"""
