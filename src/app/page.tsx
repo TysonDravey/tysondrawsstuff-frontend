@@ -2,17 +2,53 @@ import Link from 'next/link';
 import Image from 'next/image';
 import Layout from '@/components/Layout';
 import ProductCard from '@/components/ProductCard';
-import { fetchFeaturedProducts, fetchCategoriesWithProducts, type Product } from '@/lib/api';
+import FeaturedShowBanner from '@/components/FeaturedShowBanner';
+import {
+  fetchFeaturedProducts,
+  fetchCategoriesWithProducts,
+  fetchShows,
+  fetchProductsByShow,
+  type Product,
+  type Show
+} from '@/lib/api';
 import { getLogoUrl } from '@/lib/images';
 // Trigger Vercel deployment with static site generation fixes
 
 // Static export - no revalidation needed
 
+/**
+ * Find show that started within the last 10 days
+ */
+function getRecentShow(shows: Show[]): Show | null {
+  const now = new Date();
+  const tenDaysAgo = new Date(now.getTime() - (10 * 24 * 60 * 60 * 1000));
+
+  // Find shows that started within the last 10 days
+  const recentShows = shows.filter(show => {
+    const startDate = new Date(show.startDate);
+    return startDate >= tenDaysAgo && startDate <= now;
+  });
+
+  // Return the most recent one
+  if (recentShows.length > 0) {
+    return recentShows.sort((a, b) =>
+      new Date(b.startDate).getTime() - new Date(a.startDate).getTime()
+    )[0];
+  }
+
+  return null;
+}
+
 export default async function Home() {
-  const [featuredProducts, categories] = await Promise.all([
+  const [featuredProducts, categories, shows] = await Promise.all([
     fetchFeaturedProducts(),
-    fetchCategoriesWithProducts()
+    fetchCategoriesWithProducts(),
+    fetchShows()
   ]);
+
+  // Check if there's a recent show to feature
+  const recentShow = getRecentShow(shows);
+  const recentShowProducts = recentShow ? await fetchProductsByShow(recentShow.slug) : [];
 
   return (
     <Layout categories={categories}>
@@ -44,6 +80,11 @@ export default async function Home() {
           </div>
         </div>
       </section>
+
+      {/* Featured Show Banner - Only shows if there's a show that started in the last 10 days */}
+      {recentShow && recentShowProducts.length > 0 && (
+        <FeaturedShowBanner show={recentShow} products={recentShowProducts} />
+      )}
 
       {/* Featured Products Section */}
       <section className="py-20 bg-muted">
