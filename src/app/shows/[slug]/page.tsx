@@ -288,6 +288,15 @@ export default async function ShowPage({ params }: ShowPageProps) {
                               fill
                               className="object-contain group-hover:scale-105 transition-transform duration-300"
                             />
+
+                            {/* SOLD Overlay */}
+                            {product.sold === true && (
+                              <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                                <div className="bg-red-600 text-white text-xl font-bold px-4 py-2 rounded-lg transform -rotate-12 shadow-2xl border-2 border-white">
+                                  SOLD
+                                </div>
+                              </div>
+                            )}
                           </div>
                         )}
 
@@ -296,17 +305,23 @@ export default async function ShowPage({ params }: ShowPageProps) {
                             {product.title}
                           </h3>
 
-                          {/* Pricing */}
-                          <div className="space-y-1">
-                            <p className="text-sm text-muted-foreground line-through">
-                              Online Price: ${product.price.toFixed(2)} CAD
+                          {/* Pricing or SOLD */}
+                          {product.sold === true ? (
+                            <p className="text-lg font-bold text-red-600">
+                              SOLD
                             </p>
-                            {product.showPrice && (
-                              <p className="text-lg font-bold text-amber-600">
-                                Show Price: ${product.showPrice.toFixed(2)} CAD
+                          ) : (
+                            <div className="space-y-1">
+                              <p className="text-sm text-muted-foreground line-through">
+                                Online Price: ${product.price.toFixed(2)} CAD
                               </p>
-                            )}
-                          </div>
+                              {product.showPrice && (
+                                <p className="text-lg font-bold text-amber-600">
+                                  Show Price: ${product.showPrice.toFixed(2)} CAD
+                                </p>
+                              )}
+                            </div>
+                          )}
 
                           {/* Category */}
                           {product.category && (
