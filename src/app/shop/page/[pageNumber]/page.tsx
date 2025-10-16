@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import Layout from '@/components/Layout';
 import ProductGrid from '@/components/ProductGrid';
 import Pagination from '@/components/Pagination';
@@ -8,6 +9,29 @@ interface PageProps {
   params: Promise<{
     pageNumber: string;
   }>;
+}
+
+
+const getBaseUrl = () => {
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`;
+  }
+  if (process.env.NODE_ENV === 'development') {
+    return 'http://localhost:3000';
+  }
+  return 'https://tysondrawsstuff.com';
+};
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const resolvedParams = await params;
+  const { pageNumber } = resolvedParams;
+  const baseUrl = getBaseUrl();
+  
+  return {
+    alternates: {
+      canonical: `${baseUrl}/shop/page/${pageNumber}`,
+    },
+  };
 }
 
 // Generate static params for pagination pages

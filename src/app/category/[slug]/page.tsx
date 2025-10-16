@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import Layout from '@/components/Layout';
 import ProductGrid from '@/components/ProductGrid';
@@ -17,6 +18,28 @@ interface CategoryPageProps {
 }
 
 // Static export - no revalidation needed
+
+
+const getBaseUrl = () => {
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`;
+  }
+  if (process.env.NODE_ENV === 'development') {
+    return 'http://localhost:3000';
+  }
+  return 'https://tysondrawsstuff.com';
+};
+
+export async function generateMetadata({ params }: CategoryPageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const baseUrl = getBaseUrl();
+  
+  return {
+    alternates: {
+      canonical: `${baseUrl}/category/${slug}`,
+    },
+  };
+}
 
 export async function generateStaticParams() {
   const categories = await fetchCategories();

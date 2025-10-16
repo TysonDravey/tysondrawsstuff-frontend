@@ -1,8 +1,26 @@
 import Link from 'next/link';
+import type { Metadata } from 'next';
 import Image from 'next/image';
 import Layout from '@/components/Layout';
 import { fetchShows, fetchCategoriesWithProducts } from '@/lib/api';
 import { getStaticAssetUrl } from '@/lib/images';
+
+
+const getBaseUrl = () => {
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`;
+  }
+  if (process.env.NODE_ENV === 'development') {
+    return 'http://localhost:3000';
+  }
+  return 'https://tysondrawsstuff.com';
+};
+
+export const metadata: Metadata = {
+  alternates: {
+    canonical: `${getBaseUrl()}/shows`,
+  },
+};
 
 export default async function ShowsPage() {
   const [shows, categories] = await Promise.all([

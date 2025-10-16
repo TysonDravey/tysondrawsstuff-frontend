@@ -1,9 +1,27 @@
+import type { Metadata } from 'next';
 import Layout from '@/components/Layout';
 import ProductGrid from '@/components/ProductGrid';
 import Pagination from '@/components/Pagination';
 import { fetchProductsPaginated, fetchCategoriesWithProducts } from '@/lib/api';
 
 // Static export - no revalidation needed
+
+
+const getBaseUrl = () => {
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`;
+  }
+  if (process.env.NODE_ENV === 'development') {
+    return 'http://localhost:3000';
+  }
+  return 'https://tysondrawsstuff.com';
+};
+
+export const metadata: Metadata = {
+  alternates: {
+    canonical: `${getBaseUrl()}/shop`,
+  },
+};
 
 export default async function ShopPage() {
   const [{ products, pagination }, categories] = await Promise.all([

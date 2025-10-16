@@ -1,6 +1,24 @@
 import Link from 'next/link';
+import type { Metadata } from 'next';
 import Layout from '@/components/Layout';
 import { fetchCategoriesWithProducts } from '@/lib/api';
+
+
+const getBaseUrl = () => {
+  if (process.env.VERCEL_URL) {
+    return `https://${process.env.VERCEL_URL}`;
+  }
+  if (process.env.NODE_ENV === 'development') {
+    return 'http://localhost:3000';
+  }
+  return 'https://tysondrawsstuff.com';
+};
+
+export const metadata: Metadata = {
+  alternates: {
+    canonical: `${getBaseUrl()}/cancel`,
+  },
+};
 
 export default async function CancelPage() {
   const categories = await fetchCategoriesWithProducts();

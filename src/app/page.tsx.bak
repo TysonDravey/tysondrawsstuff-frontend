@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import type { Metadata } from 'next';
 import Layout from '@/components/Layout';
 import ProductCard from '@/components/ProductCard';
 import FeaturedShowBanner from '@/components/FeaturedShowBanner';
@@ -16,23 +15,6 @@ import { getLogoUrl } from '@/lib/images';
 // Trigger Vercel deployment with static site generation fixes
 
 // Static export - no revalidation needed
-
-
-const getBaseUrl = () => {
-  if (process.env.VERCEL_URL) {
-    return `https://${process.env.VERCEL_URL}`;
-  }
-  if (process.env.NODE_ENV === 'development') {
-    return 'http://localhost:3000';
-  }
-  return 'https://tysondrawsstuff.com';
-};
-
-export const metadata: Metadata = {
-  alternates: {
-    canonical: `${getBaseUrl()}`,
-  },
-};
 
 /**
  * Find show that started within the last 10 days
