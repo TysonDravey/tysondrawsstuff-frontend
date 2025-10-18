@@ -1,3 +1,6 @@
+import fs from 'fs';
+import path from 'path';
+
 const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1339';
 
 // Create a fetch function with timeout for build time
@@ -28,8 +31,6 @@ function loadStaticProducts(): Record<string, Product> {
   try {
     // In Node.js environment (server-side)
     if (typeof window === 'undefined') {
-      const fs = require('fs');
-      const path = require('path');
       const productsPath = path.join(process.cwd(), 'public', 'products-data.json');
       const productsData = fs.readFileSync(productsPath, 'utf-8');
       return JSON.parse(productsData);
@@ -164,7 +165,7 @@ export async function fetchProductBySlug(slug: string): Promise<Product | null> 
     if (staticProducts[slug]) {
       return staticProducts[slug];
     }
-  } catch (error) {
+  } catch {
     console.warn(`Failed to load product ${slug} from static data, trying Strapi...`);
   }
 
@@ -288,7 +289,7 @@ export async function fetchProductsByCategory(categorySlug: string): Promise<Pro
     if (products.length > 0) {
       return products;
     }
-  } catch (error) {
+  } catch {
     console.warn(`Failed to load category ${categorySlug} from static data, trying Strapi...`);
   }
 
@@ -476,7 +477,7 @@ export async function fetchProductsByShow(showSlug: string): Promise<Product[]> 
     if (products.length > 0) {
       return products;
     }
-  } catch (error) {
+  } catch {
     console.warn(`Failed to load show ${showSlug} from static data, trying Strapi...`);
   }
 

@@ -42,7 +42,7 @@ export function getProductImageUrl(productSlug: string, strapiImage: StrapiImage
  * Get all static images for a product
  * Uses only static images - no Strapi fallback for fully static site
  */
-export function getProductImages(productSlug: string, strapiImages: StrapiImage[] = []): Array<{
+export function getProductImages(productSlug: string, _strapiImages: StrapiImage[] = []): Array<{
   src: string;
   alt: string;
   width?: number;
