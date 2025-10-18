@@ -23,6 +23,25 @@ async function fetchWithTimeout(url: string, options: RequestInit = {}, timeout 
   }
 }
 
+// Load products from static JSON file (for runtime when Strapi is not available)
+function loadStaticProducts(): Record<string, Product> {
+  try {
+    // In Node.js environment (server-side)
+    if (typeof window === 'undefined') {
+      const fs = require('fs');
+      const path = require('path');
+      const productsPath = path.join(process.cwd(), 'public', 'products-data.json');
+      const productsData = fs.readFileSync(productsPath, 'utf-8');
+      return JSON.parse(productsData);
+    }
+    // In browser environment, this shouldn't be called
+    return {};
+  } catch (error) {
+    console.warn('Failed to load static products data:', error);
+    return {};
+  }
+}
+
 export interface StrapiImage {
   id: number;
   url: string;
@@ -139,6 +158,17 @@ export async function fetchProductsPaginated(page: number = 1, limit: number = 1
 }
 
 export async function fetchProductBySlug(slug: string): Promise<Product | null> {
+  // Try to load from static data first (for production runtime when Strapi is not available)
+  try {
+    const staticProducts = loadStaticProducts();
+    if (staticProducts[slug]) {
+      return staticProducts[slug];
+    }
+  } catch (error) {
+    console.warn(`Failed to load product ${slug} from static data, trying Strapi...`);
+  }
+
+  // Fall back to Strapi API (for development or build time)
   try {
     const response = await fetchWithTimeout(`${STRAPI_URL}/api/products?filters[slug][$eq]=${slug}&populate=*`);
 
@@ -248,6 +278,21 @@ export async function fetchFeaturedProducts(): Promise<Product[]> {
 }
 
 export async function fetchProductsByCategory(categorySlug: string): Promise<Product[]> {
+  // Try to load from static data first
+  try {
+    const staticProducts = loadStaticProducts();
+    const products = Object.values(staticProducts)
+      .filter(product => product.category?.slug === categorySlug)
+      .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+
+    if (products.length > 0) {
+      return products;
+    }
+  } catch (error) {
+    console.warn(`Failed to load category ${categorySlug} from static data, trying Strapi...`);
+  }
+
+  // Fall back to Strapi API
   try {
     const response = await fetchWithTimeout(`${STRAPI_URL}/api/products?populate=*&filters[category][slug][$eq]=${categorySlug}&sort[0]=updatedAt:desc`);
 
@@ -421,6 +466,21 @@ export async function fetchShowSlugs(): Promise<string[]> {
 }
 
 export async function fetchProductsByShow(showSlug: string): Promise<Product[]> {
+  // Try to load from static data first
+  try {
+    const staticProducts = loadStaticProducts();
+    const products = Object.values(staticProducts)
+      .filter(product => product.currentShow?.slug === showSlug)
+      .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+
+    if (products.length > 0) {
+      return products;
+    }
+  } catch (error) {
+    console.warn(`Failed to load show ${showSlug} from static data, trying Strapi...`);
+  }
+
+  // Fall back to Strapi API
   try {
     const response = await fetchWithTimeout(`${STRAPI_URL}/api/products?populate=*&filters[currentShow][slug][$eq]=${showSlug}&sort[0]=updatedAt:desc`);
 
