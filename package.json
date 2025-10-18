@@ -5,11 +5,12 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "dev:fresh": "npm run sync-images && npm run dev",
-    "prebuild": "node scripts/sync-images.js",
+    "prebuild": "node scripts/sync-images.js && node scripts/export-products.js",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
     "sync-images": "node scripts/sync-images.js",
+    "export-products": "node scripts/export-products.js",
     "tunnel": "node scripts/start-tunnel-and-update.js",
     "update-vercel-env": "node scripts/update-vercel-env.js"
   },
