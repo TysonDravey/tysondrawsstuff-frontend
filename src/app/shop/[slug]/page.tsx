@@ -2,12 +2,19 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import Layout from '@/components/Layout';
-import { fetchProductBySlug, fetchProductSlugs, fetchCategoriesWithProducts, fetchProductsByCategory, fetchProductsByShow, type Product } from '@/lib/api';
+import { fetchProductBySlug, fetchProductSlugs, fetchCategoriesWithProducts, fetchProductsByCategory, fetchProductsByShow, type Product, type Show } from '@/lib/api';
 import BuyButton from '@/components/BuyButton';
 import ImageGallery from '@/components/ImageGallery';
 import ProductNavigation from '@/components/ProductNavigation';
 import { getProductImages } from '@/lib/images';
 import { marked } from 'marked';
+
+// Helper function to check if a show is currently active
+function isShowActive(show: Show): boolean {
+  const now = new Date();
+  const endDate = new Date(show.endDate);
+  return endDate >= now;
+}
 
 interface ProductPageProps {
   params: Promise<{
@@ -119,11 +126,14 @@ export default async function ProductPage({ params }: ProductPageProps) {
     notFound();
   }
 
+  // Check if the show is still active
+  const showIsActive = product.currentShow ? isShowActive(product.currentShow) : false;
+
   // Fetch related products for navigation
   let relatedProducts: Product[] = [];
   let context: 'category' | 'show' = 'category';
 
-  if (product.currentShow) {
+  if (product.currentShow && showIsActive) {
     relatedProducts = await fetchProductsByShow(product.currentShow.slug);
     context = 'show';
   } else if (product.category) {
@@ -166,8 +176,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
                     {product.title}
                   </h1>
 
-                  {/* Show Badge if product is at a show */}
-                  {product.currentShow && (
+                  {/* Show Badge if product is at an ACTIVE show */}
+                  {product.currentShow && showIsActive && (
                     <div className="mb-4">
                       <Link
                         href={`/shows/${product.currentShow.slug}`}
@@ -182,8 +192,8 @@ export default async function ProductPage({ params }: ProductPageProps) {
                     </div>
                   )}
 
-                  {/* Pricing Display */}
-                  {product.currentShow && product.showPrice ? (
+                  {/* Pricing Display - Only show special pricing for ACTIVE shows */}
+                  {product.currentShow && product.showPrice && showIsActive ? (
                     <div className="space-y-2">
                       <p className={`text-lg text-muted-foreground line-through`}>
                         Online Price: ${product.price.toFixed(2)} CAD
@@ -228,7 +238,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
               {/* Purchase Section */}
               <div className="bg-card border border-border rounded-lg p-6">
                 <h3 className="text-lg font-semibold mb-4 text-card-foreground">
-                  {product.sold === true ? 'Status' : product.currentShow ? 'Availability' : 'Purchase'}
+                  {product.sold === true ? 'Status' : (product.currentShow && showIsActive) ? 'Availability' : 'Purchase'}
                 </h3>
 
                 {product.sold === true ? (
@@ -242,23 +252,23 @@ export default async function ProductPage({ params }: ProductPageProps) {
                           <h4 className="font-medium text-red-800">This Artwork Has Been Sold</h4>
                           <p className="text-sm text-red-700 mt-1">
                             This piece has found its home and is no longer available for purchase.
-                            {product.currentShow ? ` Check out more artwork at ${product.currentShow.title}!` : ' Check out more available artwork in the shop!'}
+                            {product.currentShow && showIsActive ? ` Check out more artwork at ${product.currentShow.title}!` : ' Check out more available artwork in the shop!'}
                           </p>
                         </div>
                       </div>
                     </div>
 
                     <Link
-                      href={product.currentShow ? `/shows/${product.currentShow.slug}` : '/shop'}
+                      href={(product.currentShow && showIsActive) ? `/shows/${product.currentShow.slug}` : '/shop'}
                       className="inline-flex items-center justify-center w-full bg-primary hover:bg-orange-600 text-white font-medium py-3 px-6 rounded-lg transition-colors"
                     >
                       <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                       </svg>
-                      {product.currentShow ? `Browse More at ${product.currentShow.title}` : 'Browse Available Artwork'}
+                      {(product.currentShow && showIsActive) ? `Browse More at ${product.currentShow.title}` : 'Browse Available Artwork'}
                     </Link>
                   </div>
-                ) : product.currentShow ? (
+                ) : (product.currentShow && showIsActive) ? (
                   <div className="space-y-4">
                     <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
                       <div className="flex items-start space-x-3">

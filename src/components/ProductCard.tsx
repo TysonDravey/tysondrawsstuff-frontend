@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { type Product } from '@/lib/api';
+import { type Product, type Show } from '@/lib/api';
 import { getProductImageUrl } from '@/lib/images';
 
 interface ProductCardProps {
@@ -8,7 +8,16 @@ interface ProductCardProps {
   featured?: boolean;
 }
 
+// Helper function to check if a show is currently active
+function isShowActive(show: Show): boolean {
+  const now = new Date();
+  const endDate = new Date(show.endDate);
+  return endDate >= now;
+}
+
 export default function ProductCard({ product, featured = false }: ProductCardProps) {
+  // Check if the show is still active
+  const showIsActive = product.currentShow ? isShowActive(product.currentShow) : false;
   return (
     <div className="group">
       <Link href={`/shop/${product.slug}`}>
@@ -45,8 +54,8 @@ export default function ProductCard({ product, featured = false }: ProductCardPr
               </div>
             )}
 
-            {/* Show Badge */}
-            {product.currentShow && product.showPrice && product.sold !== true && (
+            {/* Show Badge - Only for ACTIVE shows */}
+            {product.currentShow && showIsActive && product.showPrice && product.sold !== true && (
               <div className="absolute top-3 right-3">
                 <span className="bg-primary text-primary-foreground text-xs font-semibold px-2 py-1 rounded">
                   At Show
@@ -55,7 +64,7 @@ export default function ProductCard({ product, featured = false }: ProductCardPr
             )}
 
             {/* Category Badge */}
-            {product.category && !(product.currentShow && product.showPrice) && product.sold !== true && (
+            {product.category && !(product.currentShow && showIsActive && product.showPrice) && product.sold !== true && (
               <div className="absolute top-3 right-3">
                 <span className="bg-secondary text-secondary-foreground text-xs font-medium px-2 py-1 rounded">
                   {product.category.name}
@@ -69,12 +78,12 @@ export default function ProductCard({ product, featured = false }: ProductCardPr
               {product.title}
             </h3>
 
-            {/* Pricing or SOLD */}
+            {/* Pricing or SOLD - Only show special pricing for ACTIVE shows */}
             {product.sold === true ? (
               <p className="text-2xl font-bold text-[#640006]">
                 SOLD
               </p>
-            ) : product.currentShow && product.showPrice ? (
+            ) : product.currentShow && showIsActive && product.showPrice ? (
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
                   <p className="text-lg text-muted-foreground line-through">

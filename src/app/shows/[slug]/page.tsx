@@ -305,19 +305,25 @@ export default async function ShowPage({ params }: ShowPageProps) {
                             {product.title}
                           </h3>
 
-                          {/* Pricing or SOLD */}
+                          {/* Pricing or SOLD - Only show special pricing for current shows */}
                           {product.sold === true ? (
                             <p className="text-lg font-bold text-[#640006]">
                               SOLD
                             </p>
                           ) : (
                             <div className="space-y-1">
-                              <p className="text-sm text-muted-foreground line-through">
-                                Online Price: ${product.price.toFixed(2)} CAD
-                              </p>
-                              {product.showPrice && (
-                                <p className="text-lg font-bold text-amber-600">
-                                  Show Price: ${product.showPrice.toFixed(2)} CAD
+                              {showStatus === 'current' && product.showPrice ? (
+                                <>
+                                  <p className="text-sm text-muted-foreground line-through">
+                                    Online Price: ${product.price.toFixed(2)} CAD
+                                  </p>
+                                  <p className="text-lg font-bold text-amber-600">
+                                    Show Price: ${product.showPrice.toFixed(2)} CAD
+                                  </p>
+                                </>
+                              ) : (
+                                <p className="text-lg font-bold text-primary">
+                                  ${product.price.toFixed(2)} CAD
                                 </p>
                               )}
                             </div>
