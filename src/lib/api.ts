@@ -193,6 +193,18 @@ export async function fetchProductBySlug(slug: string): Promise<Product | null> 
 }
 
 export async function fetchProductSlugs(): Promise<string[]> {
+  // Try to load from static data first (for build time when Strapi may not be available)
+  try {
+    const staticProducts = loadStaticProducts();
+    const slugs = Object.keys(staticProducts);
+    if (slugs.length > 0) {
+      return slugs;
+    }
+  } catch {
+    console.warn('Failed to load product slugs from static data, trying Strapi...');
+  }
+
+  // Fall back to Strapi API
   try {
     const response = await fetchWithTimeout(`${STRAPI_URL}/api/products?fields[0]=slug`);
 
