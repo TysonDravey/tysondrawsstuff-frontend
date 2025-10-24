@@ -226,65 +226,37 @@ export default async function ShowsPage() {
             </section>
           )}
 
-          {/* Past Shows */}
+          {/* Past Shows - Smaller and less prominent */}
           {pastShows.length > 0 && (
-            <section>
-              <h2 className="text-2xl font-bold mb-6 text-foreground">Past Shows</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <section className="mt-16 pt-8 border-t border-border">
+              <h2 className="text-xl font-semibold mb-4 text-muted-foreground">Past Shows</h2>
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                 {pastShows.map((show) => (
                   <Link
                     key={show.id}
                     href={`/shows/${show.slug}`}
-                    className="group block bg-card border border-border rounded-lg overflow-hidden hover:shadow-lg transition-all duration-300 opacity-80 hover:opacity-100"
+                    className="group block bg-card border border-border rounded-lg overflow-hidden hover:shadow-md transition-all duration-300 opacity-70 hover:opacity-100"
                   >
                     {/* Show Logo */}
                     {show.logo && (
-                      <div className="aspect-video bg-gray-100 overflow-hidden relative">
+                      <div className="aspect-square bg-gray-100 overflow-hidden relative">
                         <Image
                           src={getStaticAssetUrl(show.logo.url)}
                           alt={show.logo.alternativeText || show.title}
                           fill
-                          className="object-contain group-hover:scale-105 transition-transform duration-300"
+                          className="object-contain p-2"
                         />
                       </div>
                     )}
 
-                    <div className="p-6">
-                      <h3 className="text-xl font-bold mb-2 text-card-foreground group-hover:text-primary transition-colors">
+                    <div className="p-3">
+                      <h3 className="text-sm font-semibold mb-1 text-card-foreground group-hover:text-primary transition-colors line-clamp-2">
                         {show.title}
                       </h3>
 
-                      {show.location && (
-                        <p className="text-muted-foreground mb-2 flex items-center">
-                          <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                          </svg>
-                          {show.location}
-                        </p>
-                      )}
-
-                      <p className="text-sm text-muted-foreground mb-3">
-                        {formatDateRange(show.startDate, show.endDate)}
+                      <p className="text-xs text-muted-foreground">
+                        {new Date(show.startDate).getFullYear()}
                       </p>
-
-                      {show.description && (
-                        <div
-                          className="text-sm text-muted-foreground line-clamp-3"
-                          dangerouslySetInnerHTML={{
-                            __html: show.description.length > 150
-                              ? show.description.substring(0, 150) + '...'
-                              : show.description
-                          }}
-                        />
-                      )}
-
-                      <div className="mt-4 flex items-center text-primary text-sm font-medium">
-                        View Details
-                        <svg className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
-                      </div>
                     </div>
                   </Link>
                 ))}
