@@ -101,18 +101,13 @@ export default function ImageGallery({ images, productTitle, productSlug, sold =
       )}
 
       {/* Image Info */}
-      <div className="text-sm text-gray-600 text-center lg:text-left">
-        {processedImages.length > 1 && (
+      {processedImages.length > 1 && (
+        <div className="text-sm text-gray-600 text-center lg:text-left">
           <p>
             Image {selectedImageIndex + 1} of {processedImages.length}
           </p>
-        )}
-        {selectedImage.width && selectedImage.height && (
-          <p className="text-xs">
-            {selectedImage.width} × {selectedImage.height} pixels
-          </p>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* Lightbox */}
       <Lightbox
