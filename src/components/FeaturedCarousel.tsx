@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from 'embla-carousel-autoplay';
 import ProductCard from './ProductCard';
@@ -11,6 +11,17 @@ interface FeaturedCarouselProps {
 }
 
 export default function FeaturedCarousel({ products }: FeaturedCarouselProps) {
+  const [selectedIndex, setSelectedIndex] = useState(0);
+
+  // Create autoplay plugin with ref to persist across renders
+  const autoplayRef = useRef(
+    Autoplay({
+      delay: 4000,
+      stopOnInteraction: false,
+      stopOnMouseEnter: true,
+    })
+  );
+
   const [emblaRef, emblaApi] = useEmblaCarousel(
     {
       loop: true,
@@ -18,21 +29,30 @@ export default function FeaturedCarousel({ products }: FeaturedCarouselProps) {
       slidesToScroll: 1,
       dragFree: false,
     },
-    [
-      Autoplay({
-        delay: 4000, // 4 seconds between slides
-        stopOnInteraction: true,
-        stopOnMouseEnter: true,
-      })
-    ]
+    [autoplayRef.current]
   );
+
+  const onSelect = useCallback(() => {
+    if (!emblaApi) return;
+    setSelectedIndex(emblaApi.selectedScrollSnap());
+  }, [emblaApi]);
 
   useEffect(() => {
     if (!emblaApi) return;
 
+    onSelect();
+    emblaApi.on('select', onSelect);
+    emblaApi.on('reInit', onSelect);
+
     // Log for debugging
     console.log('Embla Carousel initialized with', products.length, 'products');
-  }, [emblaApi, products.length]);
+    console.log('Autoplay plugin:', autoplayRef.current);
+
+    return () => {
+      emblaApi.off('select', onSelect);
+      emblaApi.off('reInit', onSelect);
+    };
+  }, [emblaApi, onSelect, products.length]);
 
   return (
     <div className="relative max-w-6xl mx-auto">
@@ -57,7 +77,7 @@ export default function FeaturedCarousel({ products }: FeaturedCarouselProps) {
             key={index}
             onClick={() => emblaApi?.scrollTo(index)}
             className={`w-2 h-2 rounded-full transition-all ${
-              index === 0 ? 'bg-primary w-8' : 'bg-gray-300 hover:bg-gray-400'
+              index === selectedIndex ? 'bg-primary w-8' : 'bg-gray-300 hover:bg-gray-400'
             }`}
             aria-label={`Go to slide ${index + 1}`}
           />
