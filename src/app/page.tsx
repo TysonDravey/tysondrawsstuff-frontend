@@ -4,6 +4,7 @@ import type { Metadata } from 'next';
 import Layout from '@/components/Layout';
 import ProductCard from '@/components/ProductCard';
 import FeaturedShowBanner from '@/components/FeaturedShowBanner';
+import FeaturedCarousel from '@/components/FeaturedCarousel';
 import {
   fetchFeaturedProducts,
   fetchCategoriesWithProducts,
@@ -126,9 +127,11 @@ export default async function Home() {
                 Browse all products →
               </Link>
             </div>
+          ) : featuredProducts.length > 3 ? (
+            <FeaturedCarousel products={featuredProducts} />
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-              {featuredProducts.slice(0, 3).map((product: Product) => (
+              {featuredProducts.map((product: Product) => (
                 <ProductCard key={product.id} product={product} featured={true} />
               ))}
             </div>
