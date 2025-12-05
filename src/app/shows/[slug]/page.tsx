@@ -305,14 +305,14 @@ export default async function ShowPage({ params }: ShowPageProps) {
                             {product.title}
                           </h3>
 
-                          {/* Pricing or SOLD - Only show special pricing for current shows */}
+                          {/* Pricing or SOLD */}
                           {product.sold === true ? (
                             <p className="text-lg font-bold text-[#640006]">
                               SOLD
                             </p>
                           ) : (
                             <div className="space-y-1">
-                              {showStatus === 'current' && product.showPrice ? (
+                              {product.showPrice ? (
                                 <>
                                   <p className="text-sm text-muted-foreground line-through">
                                     Online Price: ${product.price.toFixed(2)} CAD
