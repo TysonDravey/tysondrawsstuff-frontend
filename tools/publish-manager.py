@@ -90,6 +90,11 @@ class PublishManager:
         notebook.add(deploy_frame, text="Deploy")
         self.setup_deploy_tab(deploy_frame)
 
+        # Settings Tab (Environment Variables / Key Rotation)
+        settings_frame = ttk.Frame(notebook)
+        notebook.add(settings_frame, text="Settings")
+        self.setup_settings_tab(settings_frame)
+
         # Logs Tab
         logs_frame = ttk.Frame(notebook)
         notebook.add(logs_frame, text="Logs")
@@ -252,6 +257,96 @@ class PublishManager:
 
         # Update branch display on startup
         self.update_branch_display()
+
+    def setup_settings_tab(self, parent):
+        # Environment Variables Section
+        env_frame = ttk.LabelFrame(parent, text="Environment Variables (Vercel)", padding=10)
+        env_frame.pack(fill=tk.BOTH, expand=True, pady=5, padx=5)
+
+        # Instructions
+        ttk.Label(env_frame, text="Manage Stripe and other API keys for Preview and Production environments",
+                  font=("Arial", 9)).pack(anchor=tk.W, pady=(0, 10))
+
+        # Environment selector
+        selector_frame = ttk.Frame(env_frame)
+        selector_frame.pack(fill=tk.X, pady=5)
+
+        ttk.Label(selector_frame, text="Environment:").pack(side=tk.LEFT, padx=(0, 5))
+        self.env_selector = ttk.Combobox(selector_frame, values=["preview", "production"], state="readonly", width=15)
+        self.env_selector.set("preview")
+        self.env_selector.pack(side=tk.LEFT, padx=(0, 10))
+
+        ttk.Button(selector_frame, text="🔄 Refresh", command=self.refresh_vercel_env).pack(side=tk.LEFT, padx=(0, 5))
+
+        # Env vars display
+        self.env_vars_text = scrolledtext.ScrolledText(env_frame, height=10, width=70, font=("Courier", 9))
+        self.env_vars_text.pack(fill=tk.BOTH, expand=True, pady=10)
+
+        # Key Update Section
+        update_frame = ttk.LabelFrame(parent, text="Update Environment Variable", padding=10)
+        update_frame.pack(fill=tk.X, pady=5, padx=5)
+
+        # Key selector
+        key_frame = ttk.Frame(update_frame)
+        key_frame.pack(fill=tk.X, pady=5)
+
+        ttk.Label(key_frame, text="Key:").grid(row=0, column=0, sticky=tk.W, padx=(0, 5))
+        self.key_selector = ttk.Combobox(key_frame, values=[
+            "STRIPE_SECRET_KEY",
+            "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY",
+            "STRIPE_WEBHOOK_SECRET",
+            "GA_API_SECRET",
+            "STRAPI_API_TOKEN",
+            "SMTP_PASS"
+        ], width=35)
+        self.key_selector.grid(row=0, column=1, sticky=tk.W, padx=(0, 10))
+        self.key_selector.bind("<<ComboboxSelected>>", self.on_key_selected)
+
+        # Target environment checkboxes
+        ttk.Label(key_frame, text="Target:").grid(row=0, column=2, sticky=tk.W, padx=(10, 5))
+        self.update_preview_var = tk.BooleanVar(value=True)
+        self.update_production_var = tk.BooleanVar(value=False)
+        ttk.Checkbutton(key_frame, text="Preview", variable=self.update_preview_var).grid(row=0, column=3)
+        ttk.Checkbutton(key_frame, text="Production", variable=self.update_production_var).grid(row=0, column=4)
+
+        # Value entry
+        value_frame = ttk.Frame(update_frame)
+        value_frame.pack(fill=tk.X, pady=5)
+
+        ttk.Label(value_frame, text="New Value:").pack(side=tk.LEFT, padx=(0, 5))
+        self.key_value_entry = ttk.Entry(value_frame, width=50, show="*")
+        self.key_value_entry.pack(side=tk.LEFT, padx=(0, 5), fill=tk.X, expand=True)
+
+        self.show_value_var = tk.BooleanVar(value=False)
+        ttk.Checkbutton(value_frame, text="Show", variable=self.show_value_var,
+                       command=self.toggle_value_visibility).pack(side=tk.LEFT)
+
+        # Update button
+        ttk.Button(update_frame, text="🔑 Update Key on Vercel", command=self.update_vercel_key).pack(pady=10)
+
+        # Quick Links Section
+        links_frame = ttk.LabelFrame(parent, text="Quick Links - Where to Get New Keys", padding=10)
+        links_frame.pack(fill=tk.X, pady=5, padx=5)
+
+        self.key_links = {
+            "STRIPE_SECRET_KEY": "https://dashboard.stripe.com/apikeys",
+            "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY": "https://dashboard.stripe.com/apikeys",
+            "STRIPE_WEBHOOK_SECRET": "https://dashboard.stripe.com/webhooks",
+            "GA_API_SECRET": "https://analytics.google.com/",
+            "STRAPI_API_TOKEN": "http://localhost:1339/admin/settings/api-tokens",
+            "SMTP_PASS": "https://myaccount.google.com/apppasswords"
+        }
+
+        links_grid = ttk.Frame(links_frame)
+        links_grid.pack(fill=tk.X)
+
+        row = 0
+        for key, url in self.key_links.items():
+            ttk.Label(links_grid, text=f"{key}:", font=("Arial", 8)).grid(row=row, column=0, sticky=tk.W, padx=(0, 10))
+            link_btn = ttk.Button(links_grid, text="Open →", width=8,
+                                 command=lambda u=url: self.open_link(u))
+            link_btn.grid(row=row, column=1, sticky=tk.W, pady=1)
+            row += 1
 
     def setup_logs_tab(self, parent):
         self.log_text = scrolledtext.ScrolledText(parent, wrap=tk.WORD)
@@ -1251,6 +1346,181 @@ Recent Products:"""
         if current_branch and current_branch != 'develop':
             self.log(f"⚠️ Currently on '{current_branch}' branch")
             self.log("💡 Switch to 'develop' branch before making changes for develop")
+
+    def refresh_vercel_env(self):
+        """Fetch current environment variables from Vercel"""
+        env = self.env_selector.get()
+        self.log(f"🔄 Fetching {env} environment variables from Vercel...")
+
+        def fetch_thread():
+            try:
+                # Use vercel CLI to list env vars
+                result = subprocess.run(
+                    f"vercel env ls {env}",
+                    shell=True,
+                    cwd=self.frontend_dir,
+                    capture_output=True,
+                    text=True,
+                    encoding='utf-8',
+                    errors='replace',
+                    timeout=30
+                )
+
+                if result.returncode == 0:
+                    output = result.stdout
+                    self.root.after(0, lambda: self.env_vars_text.delete(1.0, tk.END))
+                    self.root.after(0, lambda o=output: self.env_vars_text.insert(tk.END, o))
+                    self.root.after(0, lambda: self.log(f"✅ Fetched {env} environment variables"))
+                else:
+                    error_msg = result.stderr or "Unknown error"
+                    self.root.after(0, lambda: self.env_vars_text.delete(1.0, tk.END))
+                    self.root.after(0, lambda e=error_msg: self.env_vars_text.insert(tk.END,
+                        f"Error fetching env vars:\n{e}\n\n"
+                        "Make sure you're logged in with: vercel login\n"
+                        "And linked to project with: vercel link"))
+                    self.root.after(0, lambda e=error_msg: self.log(f"❌ Failed to fetch env vars: {e}"))
+
+            except subprocess.TimeoutExpired:
+                self.root.after(0, lambda: self.log("❌ Timeout fetching env vars"))
+            except Exception as e:
+                self.root.after(0, lambda err=str(e): self.log(f"❌ Error: {err}"))
+
+        threading.Thread(target=fetch_thread, daemon=True).start()
+
+    def on_key_selected(self, event=None):
+        """Handle key selection - show hint about the key"""
+        key = self.key_selector.get()
+        hints = {
+            "STRIPE_SECRET_KEY": "Secret key from Stripe Dashboard. Use sk_test_ for Preview, sk_live_ for Production.",
+            "NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY": "Publishable key from Stripe. Use pk_test_ for Preview, pk_live_ for Production.",
+            "STRIPE_WEBHOOK_SECRET": "Webhook signing secret (whsec_...). Create separate webhooks for test/live modes.",
+            "GA_API_SECRET": "Google Analytics Measurement Protocol API secret.",
+            "STRAPI_API_TOKEN": "API token from Strapi Admin → Settings → API Tokens.",
+            "SMTP_PASS": "Gmail App Password (16 chars, no spaces)."
+        }
+        hint = hints.get(key, "")
+        if hint:
+            self.log(f"💡 {key}: {hint}")
+
+    def toggle_value_visibility(self):
+        """Toggle showing/hiding the key value"""
+        if self.show_value_var.get():
+            self.key_value_entry.config(show="")
+        else:
+            self.key_value_entry.config(show="*")
+
+    def update_vercel_key(self):
+        """Update an environment variable on Vercel"""
+        key = self.key_selector.get()
+        value = self.key_value_entry.get()
+
+        if not key:
+            messagebox.showwarning("Missing Key", "Please select a key to update.")
+            return
+
+        if not value:
+            messagebox.showwarning("Missing Value", "Please enter a value for the key.")
+            return
+
+        update_preview = self.update_preview_var.get()
+        update_production = self.update_production_var.get()
+
+        if not update_preview and not update_production:
+            messagebox.showwarning("No Target", "Please select at least one target environment (Preview or Production).")
+            return
+
+        # Confirm the update
+        targets = []
+        if update_preview:
+            targets.append("Preview")
+        if update_production:
+            targets.append("Production")
+
+        if not messagebox.askyesno("Confirm Update",
+                                  f"Update {key} on {', '.join(targets)}?\n\n"
+                                  f"Value: {'*' * min(len(value), 20)}..."):
+            return
+
+        self.log(f"🔑 Updating {key} on {', '.join(targets)}...")
+
+        def update_thread():
+            success_count = 0
+            environments = []
+            if update_preview:
+                environments.append("preview")
+            if update_production:
+                environments.append("production")
+
+            for env in environments:
+                try:
+                    # First, try to remove existing var (ignore errors if it doesn't exist)
+                    subprocess.run(
+                        f'vercel env rm {key} {env} -y',
+                        shell=True,
+                        cwd=self.frontend_dir,
+                        capture_output=True,
+                        text=True,
+                        encoding='utf-8',
+                        errors='replace',
+                        timeout=30
+                    )
+
+                    # Add the new value using echo pipe
+                    # Using a temp file approach for Windows compatibility
+                    import tempfile
+                    with tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.txt') as f:
+                        f.write(value)
+                        temp_file = f.name
+
+                    try:
+                        result = subprocess.run(
+                            f'type "{temp_file}" | vercel env add {key} {env}',
+                            shell=True,
+                            cwd=self.frontend_dir,
+                            capture_output=True,
+                            text=True,
+                            encoding='utf-8',
+                            errors='replace',
+                            timeout=30
+                        )
+
+                        if result.returncode == 0:
+                            self.root.after(0, lambda e=env: self.log(f"✅ Updated {key} on {e}"))
+                            success_count += 1
+                        else:
+                            error = result.stderr or result.stdout or "Unknown error"
+                            self.root.after(0, lambda e=env, err=error: self.log(f"❌ Failed to update {key} on {e}: {err}"))
+                    finally:
+                        # Clean up temp file
+                        try:
+                            os.unlink(temp_file)
+                        except:
+                            pass
+
+                except subprocess.TimeoutExpired:
+                    self.root.after(0, lambda e=env: self.log(f"❌ Timeout updating {key} on {e}"))
+                except Exception as e:
+                    self.root.after(0, lambda env=env, err=str(e): self.log(f"❌ Error updating {env}: {err}"))
+
+            # Summary
+            if success_count == len(environments):
+                self.root.after(0, lambda: self.log(f"🎉 Successfully updated {key} on all environments!"))
+                self.root.after(0, lambda: messagebox.showinfo("Success",
+                    f"✅ Updated {key} on {', '.join(environments)}.\n\n"
+                    "⚠️ Remember to redeploy for changes to take effect!"))
+                # Clear the value field for security
+                self.root.after(0, lambda: self.key_value_entry.delete(0, tk.END))
+            else:
+                self.root.after(0, lambda: messagebox.showwarning("Partial Success",
+                    f"Updated {success_count}/{len(environments)} environments.\nCheck logs for details."))
+
+        threading.Thread(target=update_thread, daemon=True).start()
+
+    def open_link(self, url):
+        """Open a URL in the default browser"""
+        import webbrowser
+        webbrowser.open(url)
+        self.log(f"🔗 Opened: {url}")
 
     def on_closing(self):
         """Handle application closing"""
