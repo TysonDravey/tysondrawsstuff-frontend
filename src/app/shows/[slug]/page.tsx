@@ -312,7 +312,7 @@ export default async function ShowPage({ params }: ShowPageProps) {
                             </p>
                           ) : (
                             <div className="space-y-1">
-                              {product.showPrice ? (
+                              {product.showPrice && showStatus !== 'past' ? (
                                 <>
                                   <p className="text-sm text-muted-foreground line-through">
                                     Online Price: ${product.price.toFixed(2)} CAD
