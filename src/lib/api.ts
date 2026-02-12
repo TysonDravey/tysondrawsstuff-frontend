@@ -88,6 +88,7 @@ export interface Product {
   slug: string;
   featured: boolean;
   sold: boolean;
+  hasPoster?: boolean;
   images?: StrapiImage[];
   category?: Category;
   currentShow?: Show;
@@ -107,6 +108,55 @@ export interface StrapiResponse<T> {
       total: number;
     };
   };
+}
+
+export interface GlobalSettings {
+  posterPrice?: number;
+}
+
+// Load site settings from static JSON file (for runtime when Strapi is not available)
+function loadStaticSiteSettings(): GlobalSettings {
+  try {
+    if (typeof window === 'undefined') {
+      const settingsPath = path.join(process.cwd(), 'public', 'site-settings.json');
+      const settingsData = fs.readFileSync(settingsPath, 'utf-8');
+      return JSON.parse(settingsData);
+    }
+    return {};
+  } catch (error) {
+    console.warn('Failed to load static site settings:', error);
+    return {};
+  }
+}
+
+export async function fetchGlobal(): Promise<GlobalSettings> {
+  // Try static data first (for production runtime)
+  try {
+    const staticSettings = loadStaticSiteSettings();
+    if (staticSettings.posterPrice !== undefined) {
+      return staticSettings;
+    }
+  } catch {
+    console.warn('Failed to load global settings from static data, trying Strapi...');
+  }
+
+  // Fall back to Strapi API
+  try {
+    const response = await fetchWithTimeout(`${STRAPI_URL}/api/global`);
+
+    if (!response.ok) {
+      console.warn('Failed to fetch global settings, returning defaults');
+      return {};
+    }
+
+    const result: StrapiResponse<{ posterPrice?: number }> = await response.json();
+    return {
+      posterPrice: result.data.posterPrice,
+    };
+  } catch {
+    console.warn('Strapi not available for global settings, returning defaults');
+    return {};
+  }
 }
 
 export async function fetchProducts(): Promise<Product[]> {

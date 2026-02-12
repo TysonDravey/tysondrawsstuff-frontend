@@ -71,6 +71,7 @@ interface OrderData {
   productTitle: string;
   productPrice: string;
   productSlug: string;
+  variant: string;
   orderNotes: string;
 }
 
@@ -209,8 +210,11 @@ ${orderData.shippingAddress.city}, ${orderData.shippingAddress.state} ${orderDat
 ${orderData.shippingAddress.country}
     ` : 'No shipping address provided';
 
+    const variantLabel = orderData.variant === 'poster' ? 'Poster Print' : 'Original';
+
     const productInfo = `
 Product: ${orderData.productTitle}
+Type: ${variantLabel}
 Price: $${orderData.productPrice} ${orderData.currency.toUpperCase()}
 Product ID: ${orderData.productId}
 Product Slug: ${orderData.productSlug}
@@ -243,6 +247,7 @@ ${orderData.orderNotes}
         <div class="section">
             <h2>💰 Order Summary</h2>
             <p><strong>Order ID:</strong> ${orderData.stripeSessionId}</p>
+            <p><strong>Item Type:</strong> ${variantLabel}</p>
             <p><strong>Total Amount:</strong> <span class="amount">$${orderData.orderTotal} ${orderData.currency.toUpperCase()}</span></p>
             <p><strong>Payment Status:</strong> ✅ PAID</p>
             <p><strong>Order Date:</strong> ${new Date(orderData.orderDate).toLocaleString()}</p>
@@ -284,12 +289,13 @@ ${orderData.orderNotes}
     const mailOptions = {
       from: EMAIL_CONFIG.from,
       to: EMAIL_CONFIG.to,
-      subject: `🎨 New Order: $${orderData.orderTotal} - ${orderData.productTitle}`,
+      subject: `🎨 New Order: $${orderData.orderTotal} - ${orderData.productTitle} (${variantLabel})`,
       html: emailHtml,
       text: `
 New Order Received!
 
 Order ID: ${orderData.stripeSessionId}
+Item Type: ${variantLabel}
 Total: $${orderData.orderTotal} ${orderData.currency.toUpperCase()}
 Customer: ${orderData.customerName} (${orderData.customerEmail})
 Product: ${orderData.productTitle}
@@ -434,6 +440,7 @@ export async function POST(request: NextRequest) {
           productTitle: session.metadata?.productTitle || '',
           productPrice: session.metadata?.productPrice || '0',
           productSlug: session.metadata?.productSlug || '',
+          variant: session.metadata?.variant || 'original',
 
           // Order notes from custom fields
           orderNotes: session.custom_fields?.find(field => field.key === 'order_notes')?.text?.value || '',

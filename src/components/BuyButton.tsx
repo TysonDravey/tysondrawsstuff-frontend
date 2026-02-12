@@ -13,13 +13,18 @@ interface BuyButtonProps {
   productSlug: string;
   price: number;
   productTitle: string;
+  variant?: 'original' | 'poster';
 }
 
-export default function BuyButton({ productSlug, price, productTitle }: BuyButtonProps) {
+export default function BuyButton({ productSlug, price, productTitle, variant = 'original' }: BuyButtonProps) {
   const [loading, setLoading] = useState(false);
 
   // Check if we're in test mode
   const isTestMode = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY?.startsWith('pk_test_');
+
+  const label = variant === 'poster'
+    ? `Buy Poster - $${price.toFixed(2)} CAD`
+    : `Buy Original - $${price.toFixed(2)} CAD`;
 
   const handleBuyNow = async () => {
     setLoading(true);
@@ -33,12 +38,13 @@ export default function BuyButton({ productSlug, price, productTitle }: BuyButto
           {
             item_id: productSlug,
             item_name: productTitle,
+            item_variant: variant,
             price: price,
             quantity: 1,
           },
         ],
       });
-      console.log('GA4 begin_checkout event sent:', { productSlug, productTitle, price });
+      console.log('GA4 begin_checkout event sent:', { productSlug, productTitle, price, variant });
     }
 
     try {
@@ -49,6 +55,7 @@ export default function BuyButton({ productSlug, price, productTitle }: BuyButto
         },
         body: JSON.stringify({
           productSlug,
+          variant,
         }),
       });
 
@@ -74,11 +81,15 @@ export default function BuyButton({ productSlug, price, productTitle }: BuyButto
       <button
         onClick={handleBuyNow}
         disabled={loading}
-        className="w-full bg-primary text-primary-foreground py-3 px-6 rounded-lg hover:bg-orange-600 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed relative"
+        className={`w-full py-3 px-6 rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed relative transition-colors ${
+          variant === 'poster'
+            ? 'bg-blue-600 text-white hover:bg-blue-700'
+            : 'bg-primary text-primary-foreground hover:bg-orange-600'
+        }`}
       >
         {loading ? 'Processing...' : (
           <>
-            Buy Now - ${price.toFixed(2)} CAD
+            {label}
             {isTestMode && (
               <span className="absolute top-1 right-2 text-xs bg-red-500 text-white px-1.5 py-0.5 rounded-full font-bold">
                 TEST

@@ -26,13 +26,24 @@ function getProductBySlug(slug: string): Product | null {
   }
 }
 
+function getSiteSettings(): { posterPrice?: number } {
+  try {
+    const settingsPath = path.join(process.cwd(), 'public', 'site-settings.json');
+    const settingsData = fs.readFileSync(settingsPath, 'utf-8');
+    return JSON.parse(settingsData);
+  } catch (error) {
+    console.error('Error reading site settings:', error);
+    return {};
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     // Initialize Stripe only when the function is called
     const stripe = initializeStripe();
 
     const body = await request.json();
-    const { productSlug } = body;
+    const { productSlug, variant = 'original' } = body;
 
     if (!productSlug) {
       return NextResponse.json(
@@ -51,8 +62,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Determine price and product name based on variant
+    let checkoutPrice = product.price;
+    let productName = product.title;
+
+    if (variant === 'poster') {
+      // Read poster price from site settings
+      const siteSettings = getSiteSettings();
+      if (!siteSettings.posterPrice) {
+        return NextResponse.json(
+          { error: 'Poster pricing not configured' },
+          { status: 400 }
+        );
+      }
+      checkoutPrice = siteSettings.posterPrice;
+      productName = `${product.title} (Poster)`;
+    }
+
     // Convert CAD to cents for Stripe
-    const priceInCents = Math.round(product.price * 100);
+    const priceInCents = Math.round(checkoutPrice * 100);
 
     // Create Stripe checkout session with comprehensive customer data collection
     const session = await stripe.checkout.sessions.create({
@@ -62,7 +90,7 @@ export async function POST(request: NextRequest) {
           price_data: {
             currency: 'cad',
             product_data: {
-              name: product.title,
+              name: productName,
               description: product.description ? product.description.replace(/<[^>]*>/g, '') : undefined,
               images: product.images && product.images.length > 0
                 ? [`${request.nextUrl.origin}${product.images[0].url}`]
@@ -99,12 +127,14 @@ export async function POST(request: NextRequest) {
         productId: product.documentId,
         productSlug: product.slug,
         productTitle: product.title,
-        productPrice: product.price.toString(),
+        productPrice: checkoutPrice.toString(),
+        variant: variant,
         // GA4 product data for purchase tracking
         products: JSON.stringify([{
           item_id: product.slug,
-          item_name: product.title,
-          price: product.price,
+          item_name: productName,
+          item_variant: variant,
+          price: checkoutPrice,
           quantity: 1,
         }]),
       },

@@ -2,7 +2,7 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import Layout from '@/components/Layout';
-import { fetchProductBySlug, fetchProductSlugs, fetchCategoriesWithProducts, fetchProductsByCategory, fetchProductsByShow, type Product, type Show } from '@/lib/api';
+import { fetchProductBySlug, fetchProductSlugs, fetchCategoriesWithProducts, fetchProductsByCategory, fetchProductsByShow, fetchGlobal, type Product, type Show } from '@/lib/api';
 import BuyButton from '@/components/BuyButton';
 import ImageGallery from '@/components/ImageGallery';
 import ProductNavigation from '@/components/ProductNavigation';
@@ -100,9 +100,10 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
 
 export default async function ProductPage({ params }: ProductPageProps) {
   const { slug } = await params;
-  const [product, categories] = await Promise.all([
+  const [product, categories, globalSettings] = await Promise.all([
     fetchProductBySlug(slug),
-    fetchCategoriesWithProducts()
+    fetchCategoriesWithProducts(),
+    fetchGlobal()
   ]);
 
   if (!product) {
@@ -238,9 +239,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
               {/* Purchase Section */}
               <div className="bg-card border border-border rounded-lg p-6">
                 <h3 className="text-lg font-semibold mb-4 text-card-foreground">
-                  {product.sold === true ? 'Status' : (product.currentShow && showIsActive) ? 'Availability' : 'Purchase'}
+                  {product.sold === true && !product.hasPoster ? 'Status' : (product.currentShow && showIsActive && !product.hasPoster) ? 'Availability' : 'Purchase'}
                 </h3>
 
+                {/* Original artwork status/button */}
                 {product.sold === true ? (
                   <div className="space-y-4">
                     <div className="bg-red-50 border border-red-200 rounded-lg p-4">
@@ -249,24 +251,26 @@ export default async function ProductPage({ params }: ProductPageProps) {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                         <div>
-                          <h4 className="font-medium text-red-800">This Artwork Has Been Sold</h4>
+                          <h4 className="font-medium text-red-800">This Original Has Been Sold</h4>
                           <p className="text-sm text-red-700 mt-1">
                             This piece has found its home and is no longer available for purchase.
-                            {product.currentShow && showIsActive ? ` Check out more artwork at ${product.currentShow.title}!` : ' Check out more available artwork in the shop!'}
+                            {product.hasPoster ? ' A poster print is still available below!' : (product.currentShow && showIsActive ? ` Check out more artwork at ${product.currentShow.title}!` : ' Check out more available artwork in the shop!')}
                           </p>
                         </div>
                       </div>
                     </div>
 
-                    <Link
-                      href={(product.currentShow && showIsActive) ? `/shows/${product.currentShow.slug}` : '/shop'}
-                      className="inline-flex items-center justify-center w-full bg-primary hover:bg-orange-600 text-white font-medium py-3 px-6 rounded-lg transition-colors"
-                    >
-                      <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                      </svg>
-                      {(product.currentShow && showIsActive) ? `Browse More at ${product.currentShow.title}` : 'Browse Available Artwork'}
-                    </Link>
+                    {!product.hasPoster && (
+                      <Link
+                        href={(product.currentShow && showIsActive) ? `/shows/${product.currentShow.slug}` : '/shop'}
+                        className="inline-flex items-center justify-center w-full bg-primary hover:bg-orange-600 text-white font-medium py-3 px-6 rounded-lg transition-colors"
+                      >
+                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                        {(product.currentShow && showIsActive) ? `Browse More at ${product.currentShow.title}` : 'Browse Available Artwork'}
+                      </Link>
+                    )}
                   </div>
                 ) : (product.currentShow && showIsActive) ? (
                   <div className="space-y-4">
@@ -276,10 +280,10 @@ export default async function ProductPage({ params }: ProductPageProps) {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                         <div>
-                          <h4 className="font-medium text-amber-800">Available at Show</h4>
+                          <h4 className="font-medium text-amber-800">Original Available at Show</h4>
                           <p className="text-sm text-amber-700 mt-1">
-                            This artwork is currently available at <strong>{product.currentShow.title}</strong>.
-                            Online purchasing is temporarily unavailable.
+                            The original artwork is currently available at <strong>{product.currentShow.title}</strong>.
+                            {product.hasPoster ? ' You can still order a poster print online below!' : ' Online purchasing is temporarily unavailable.'}
                           </p>
                         </div>
                       </div>
@@ -300,7 +304,20 @@ export default async function ProductPage({ params }: ProductPageProps) {
                     productSlug={product.slug}
                     price={product.price}
                     productTitle={product.title}
+                    variant="original"
                   />
+                )}
+
+                {/* Poster buy button - shown when hasPoster is true and posterPrice is set */}
+                {product.hasPoster && globalSettings.posterPrice && (
+                  <div className={product.sold === true || (product.currentShow && showIsActive) ? 'mt-4 pt-4 border-t border-border' : 'mt-4'}>
+                    <BuyButton
+                      productSlug={product.slug}
+                      price={globalSettings.posterPrice}
+                      productTitle={product.title}
+                      variant="poster"
+                    />
+                  </div>
                 )}
               </div>
 
