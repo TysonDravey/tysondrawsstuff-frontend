@@ -83,7 +83,7 @@ export default function BuyButton({ productSlug, price, productTitle, variant = 
         disabled={loading}
         className={`w-full py-3 px-6 rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed relative transition-colors ${
           variant === 'poster'
-            ? 'bg-blue-600 text-white hover:bg-blue-700'
+            ? 'bg-secondary text-secondary-foreground hover:bg-secondary/80 border border-border'
             : 'bg-primary text-primary-foreground hover:bg-orange-600'
         }`}
       >

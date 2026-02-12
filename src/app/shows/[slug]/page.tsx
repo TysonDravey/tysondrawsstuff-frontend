@@ -301,7 +301,7 @@ export default async function ShowPage({ params }: ShowPageProps) {
                             {/* Poster Available Badge */}
                             {product.hasPoster && (
                               <div className="absolute bottom-2 left-2">
-                                <span className="bg-blue-600 text-white text-xs font-semibold px-2 py-0.5 rounded">
+                                <span className="bg-secondary text-secondary-foreground text-xs font-semibold px-2 py-0.5 rounded">
                                   Poster Available
                                 </span>
                               </div>
