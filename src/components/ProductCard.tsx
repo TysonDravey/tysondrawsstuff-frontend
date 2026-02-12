@@ -75,7 +75,7 @@ export default function ProductCard({ product, featured = false }: ProductCardPr
             {/* Poster Available Badge */}
             {product.hasPoster && (
               <div className="absolute bottom-3 left-3">
-                <span className="bg-secondary text-secondary-foreground text-xs font-semibold px-2 py-1 rounded">
+                <span className="bg-[#BFA054] text-white text-xs font-semibold px-2 py-1 rounded">
                   Poster Available
                 </span>
               </div>
