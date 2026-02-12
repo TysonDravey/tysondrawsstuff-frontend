@@ -510,6 +510,55 @@ export async function fetchPosterProducts(): Promise<Product[]> {
   }
 }
 
+export async function fetchPosterProductsPaginated(page: number = 1, limit: number = 16): Promise<{ products: Product[], pagination: { page: number, pageSize: number, pageCount: number, total: number } }> {
+  // Try to load from static data first
+  try {
+    const staticProducts = loadStaticProducts();
+    const allProducts = Object.values(staticProducts)
+      .filter(product => product.hasPoster === true)
+      .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+
+    if (allProducts.length > 0) {
+      const total = allProducts.length;
+      const pageCount = Math.ceil(total / limit);
+      const start = (page - 1) * limit;
+      const products = allProducts.slice(start, start + limit);
+
+      return {
+        products,
+        pagination: { page, pageSize: limit, pageCount, total }
+      };
+    }
+  } catch {
+    console.warn('Failed to load paginated poster products from static data, trying Strapi...');
+  }
+
+  // Fall back to Strapi API
+  try {
+    const response = await fetchWithTimeout(`${STRAPI_URL}/api/products?populate=*&filters[hasPoster][$eq]=true&pagination[page]=${page}&pagination[pageSize]=${limit}&sort[0]=updatedAt:desc`);
+
+    if (!response.ok) {
+      console.warn('Failed to fetch paginated poster products, returning empty array');
+      if (typeof window === 'undefined') {
+        throw new Error('Failed to fetch paginated poster products from Strapi. Build aborted to prevent deploying empty content.');
+      }
+      return { products: [], pagination: { page: 1, pageSize: limit, pageCount: 0, total: 0 } };
+    }
+
+    const result: StrapiResponse<Product[]> = await response.json();
+    return {
+      products: result.data,
+      pagination: result.meta.pagination || { page: 1, pageSize: limit, pageCount: 0, total: 0 }
+    };
+  } catch {
+    console.warn('Strapi not available during build for paginated poster products, returning empty array');
+    if (typeof window === 'undefined') {
+      throw new Error('Failed to fetch paginated poster products from Strapi. Build aborted to prevent deploying empty content.');
+    }
+    return { products: [], pagination: { page: 1, pageSize: limit, pageCount: 0, total: 0 } };
+  }
+}
+
 // Show API functions
 export async function fetchShows(): Promise<Show[]> {
   try {

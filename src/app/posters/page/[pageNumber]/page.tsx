@@ -1,3 +1,4 @@
+import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import Layout from '@/components/Layout';
@@ -9,6 +10,12 @@ import {
   fetchGlobal,
 } from '@/lib/api';
 
+interface PostersPagePaginatedProps {
+  params: Promise<{
+    pageNumber: string;
+  }>;
+}
+
 const getBaseUrl = () => {
   if (process.env.VERCEL_URL) {
     return `https://${process.env.VERCEL_URL}`;
@@ -19,24 +26,57 @@ const getBaseUrl = () => {
   return 'https://tysondrawsstuff.com';
 };
 
-export async function generateMetadata(): Promise<Metadata> {
+export async function generateMetadata({ params }: PostersPagePaginatedProps): Promise<Metadata> {
+  const { pageNumber } = await params;
   const baseUrl = getBaseUrl();
 
   return {
-    title: 'Posters | Tyson Draws Stuff',
+    title: `Posters - Page ${pageNumber} | Tyson Draws Stuff`,
     description: 'High-quality poster prints of original artwork by Kirk Brillon.',
     alternates: {
-      canonical: `${baseUrl}/posters`,
+      canonical: `${baseUrl}/posters/page/${pageNumber}`,
     },
   };
 }
 
-export default async function PostersPage() {
+export async function generateStaticParams() {
+  try {
+    const { pagination } = await fetchPosterProductsPaginated(1, 16);
+    const params = [];
+
+    // Generate params for pages 2 and up (page 1 handled by main posters page)
+    for (let i = 2; i <= pagination.pageCount; i++) {
+      params.push({
+        pageNumber: i.toString(),
+      });
+    }
+
+    return params;
+  } catch {
+    console.warn('Failed to generate static params for posters pagination');
+    return [];
+  }
+}
+
+export default async function PostersPagePaginated({ params }: PostersPagePaginatedProps) {
+  const { pageNumber } = await params;
+  const pageNum = parseInt(pageNumber);
+
+  // Validate page number
+  if (isNaN(pageNum) || pageNum < 1) {
+    notFound();
+  }
+
   const [{ products, pagination }, categories, globalSettings] = await Promise.all([
-    fetchPosterProductsPaginated(1, 16),
+    fetchPosterProductsPaginated(pageNum, 16),
     fetchCategoriesWithProducts(),
     fetchGlobal(),
   ]);
+
+  // If page number is too high, show 404
+  if (pageNum > pagination.pageCount) {
+    notFound();
+  }
 
   const posterPrice = globalSettings.posterPrice;
 
@@ -79,11 +119,9 @@ export default async function PostersPage() {
               <h1 className="text-4xl sm:text-5xl font-bold text-foreground">
                 Posters
               </h1>
-              {pagination.pageCount > 1 && (
-                <div className="text-sm text-muted-foreground">
-                  Page {pagination.page} of {pagination.pageCount} ({pagination.total} total products)
-                </div>
-              )}
+              <div className="text-sm text-muted-foreground">
+                Page {pagination.page} of {pagination.pageCount} ({pagination.total} total products)
+              </div>
             </div>
             <p className="text-xl text-muted-foreground max-w-3xl">
               All of these original artworks are available as high-quality poster prints.
