@@ -79,7 +79,7 @@ export default function Layout({ children, categories = [] }: LayoutProps) {
                 {/* Dropdown Menu */}
                 <div className="absolute top-full left-0 mt-1 w-48 bg-card rounded-md shadow-lg border border-border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
                   <div className="py-2">
-                    {categories.map((category) => (
+                    {categories.filter(c => c.slug !== 'posters').map((category) => (
                       <Link
                         key={category.slug}
                         href={`/category/${category.slug}`}
@@ -92,6 +92,16 @@ export default function Layout({ children, categories = [] }: LayoutProps) {
                         {category.name}
                       </Link>
                     ))}
+                    <Link
+                      href="/posters"
+                      className={`block px-4 py-2 text-sm transition-colors ${
+                        isActiveLink('/posters')
+                          ? 'text-primary bg-muted'
+                          : 'text-card-foreground hover:text-primary hover:bg-muted'
+                      }`}
+                    >
+                      Posters
+                    </Link>
                   </div>
                 </div>
               </div>
@@ -160,7 +170,7 @@ export default function Layout({ children, categories = [] }: LayoutProps) {
                   <div className="text-sm font-medium text-muted-foreground uppercase tracking-wide mb-2">
                     Categories
                   </div>
-                  {categories.map((category) => (
+                  {categories.filter(c => c.slug !== 'posters').map((category) => (
                     <Link
                       key={category.slug}
                       href={`/category/${category.slug}`}
@@ -174,6 +184,17 @@ export default function Layout({ children, categories = [] }: LayoutProps) {
                       {category.name}
                     </Link>
                   ))}
+                  <Link
+                    href="/posters"
+                    className={`block py-2 pl-4 text-sm transition-colors ${
+                      isActiveLink('/posters')
+                        ? 'text-primary'
+                        : 'text-muted-foreground hover:text-primary'
+                    }`}
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    Posters
+                  </Link>
                 </div>
 
                 <Link

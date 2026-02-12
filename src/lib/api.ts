@@ -472,6 +472,44 @@ export async function fetchCategoryBySlug(slug: string): Promise<Category | null
   }
 }
 
+export async function fetchPosterProducts(): Promise<Product[]> {
+  // Try to load from static data first
+  try {
+    const staticProducts = loadStaticProducts();
+    const products = Object.values(staticProducts)
+      .filter(product => product.hasPoster === true)
+      .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+
+    if (products.length > 0) {
+      return products;
+    }
+  } catch {
+    console.warn('Failed to load poster products from static data, trying Strapi...');
+  }
+
+  // Fall back to Strapi API
+  try {
+    const response = await fetchWithTimeout(`${STRAPI_URL}/api/products?populate=*&filters[hasPoster][$eq]=true&sort[0]=updatedAt:desc`);
+
+    if (!response.ok) {
+      console.warn('Failed to fetch poster products, returning empty array');
+      if (typeof window === 'undefined') {
+        throw new Error('Failed to fetch poster products from Strapi. Build aborted to prevent deploying empty content.');
+      }
+      return [];
+    }
+
+    const result: StrapiResponse<Product[]> = await response.json();
+    return result.data;
+  } catch {
+    console.warn('Strapi not available during build for poster products, returning empty array');
+    if (typeof window === 'undefined') {
+      throw new Error('Failed to fetch poster products from Strapi. Build aborted to prevent deploying empty content.');
+    }
+    return [];
+  }
+}
+
 // Show API functions
 export async function fetchShows(): Promise<Show[]> {
   try {
