@@ -161,7 +161,7 @@ export async function fetchGlobal(): Promise<GlobalSettings> {
 
 export async function fetchProducts(): Promise<Product[]> {
   try {
-    const response = await fetchWithTimeout(`${STRAPI_URL}/api/products?populate=*&pagination[limit]=100&sort[0]=updatedAt:desc`);
+    const response = await fetchWithTimeout(`${STRAPI_URL}/api/products?populate=*&pagination[limit]=100&sort[0]=createdAt:desc`);
 
     if (!response.ok) {
       console.warn('Failed to fetch products, returning empty array');
@@ -184,7 +184,7 @@ export async function fetchProducts(): Promise<Product[]> {
 
 export async function fetchProductsPaginated(page: number = 1, limit: number = 16): Promise<{ products: Product[], pagination: { page: number, pageSize: number, pageCount: number, total: number } }> {
   try {
-    const response = await fetchWithTimeout(`${STRAPI_URL}/api/products?populate=*&pagination[page]=${page}&pagination[pageSize]=${limit}&sort[0]=updatedAt:desc`);
+    const response = await fetchWithTimeout(`${STRAPI_URL}/api/products?populate=*&pagination[page]=${page}&pagination[pageSize]=${limit}&sort[0]=createdAt:desc`);
 
     if (!response.ok) {
       console.warn('Failed to fetch paginated products, returning empty array');
@@ -319,7 +319,7 @@ export function getStrapiImageUrl(image: StrapiImage, format?: string): string {
 
 export async function fetchFeaturedProducts(): Promise<Product[]> {
   try {
-    const response = await fetchWithTimeout(`${STRAPI_URL}/api/products?populate=*&filters[featured][$eq]=true&sort[0]=updatedAt:desc`);
+    const response = await fetchWithTimeout(`${STRAPI_URL}/api/products?populate=*&filters[featured][$eq]=true&sort[0]=createdAt:desc`);
 
     if (!response.ok) {
       console.warn('Failed to fetch featured products, returning empty array');
@@ -346,7 +346,7 @@ export async function fetchProductsByCategory(categorySlug: string): Promise<Pro
     const staticProducts = loadStaticProducts();
     const products = Object.values(staticProducts)
       .filter(product => product.category?.slug === categorySlug)
-      .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
     if (products.length > 0) {
       return products;
@@ -357,7 +357,7 @@ export async function fetchProductsByCategory(categorySlug: string): Promise<Pro
 
   // Fall back to Strapi API
   try {
-    const response = await fetchWithTimeout(`${STRAPI_URL}/api/products?populate=*&filters[category][slug][$eq]=${categorySlug}&sort[0]=updatedAt:desc`);
+    const response = await fetchWithTimeout(`${STRAPI_URL}/api/products?populate=*&filters[category][slug][$eq]=${categorySlug}&sort[0]=createdAt:desc`);
 
     if (!response.ok) {
       console.warn(`Failed to fetch products for category ${categorySlug}, returning empty array`);
@@ -380,7 +380,7 @@ export async function fetchProductsByCategory(categorySlug: string): Promise<Pro
 
 export async function fetchProductsByCategoryPaginated(categorySlug: string, page: number = 1, limit: number = 16): Promise<{ products: Product[], pagination: { page: number, pageSize: number, pageCount: number, total: number } }> {
   try {
-    const response = await fetchWithTimeout(`${STRAPI_URL}/api/products?populate=*&filters[category][slug][$eq]=${categorySlug}&pagination[page]=${page}&pagination[pageSize]=${limit}&sort[0]=updatedAt:desc`);
+    const response = await fetchWithTimeout(`${STRAPI_URL}/api/products?populate=*&filters[category][slug][$eq]=${categorySlug}&pagination[page]=${page}&pagination[pageSize]=${limit}&sort[0]=createdAt:desc`);
 
     if (!response.ok) {
       console.warn(`Failed to fetch paginated products for category ${categorySlug}, returning empty array`);
@@ -478,7 +478,7 @@ export async function fetchPosterProducts(): Promise<Product[]> {
     const staticProducts = loadStaticProducts();
     const products = Object.values(staticProducts)
       .filter(product => product.hasPoster === true)
-      .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
     if (products.length > 0) {
       return products;
@@ -489,7 +489,7 @@ export async function fetchPosterProducts(): Promise<Product[]> {
 
   // Fall back to Strapi API
   try {
-    const response = await fetchWithTimeout(`${STRAPI_URL}/api/products?populate=*&filters[hasPoster][$eq]=true&sort[0]=updatedAt:desc`);
+    const response = await fetchWithTimeout(`${STRAPI_URL}/api/products?populate=*&filters[hasPoster][$eq]=true&sort[0]=createdAt:desc`);
 
     if (!response.ok) {
       console.warn('Failed to fetch poster products, returning empty array');
@@ -516,7 +516,7 @@ export async function fetchPosterProductsPaginated(page: number = 1, limit: numb
     const staticProducts = loadStaticProducts();
     const allProducts = Object.values(staticProducts)
       .filter(product => product.hasPoster === true)
-      .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
     if (allProducts.length > 0) {
       const total = allProducts.length;
@@ -535,7 +535,7 @@ export async function fetchPosterProductsPaginated(page: number = 1, limit: numb
 
   // Fall back to Strapi API
   try {
-    const response = await fetchWithTimeout(`${STRAPI_URL}/api/products?populate=*&filters[hasPoster][$eq]=true&pagination[page]=${page}&pagination[pageSize]=${limit}&sort[0]=updatedAt:desc`);
+    const response = await fetchWithTimeout(`${STRAPI_URL}/api/products?populate=*&filters[hasPoster][$eq]=true&pagination[page]=${page}&pagination[pageSize]=${limit}&sort[0]=createdAt:desc`);
 
     if (!response.ok) {
       console.warn('Failed to fetch paginated poster products, returning empty array');
@@ -621,7 +621,7 @@ export async function fetchProductsByShow(showSlug: string): Promise<Product[]> 
     const staticProducts = loadStaticProducts();
     const products = Object.values(staticProducts)
       .filter(product => product.currentShow?.slug === showSlug)
-      .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
     if (products.length > 0) {
       return products;
@@ -632,7 +632,7 @@ export async function fetchProductsByShow(showSlug: string): Promise<Product[]> 
 
   // Fall back to Strapi API
   try {
-    const response = await fetchWithTimeout(`${STRAPI_URL}/api/products?populate=*&filters[currentShow][slug][$eq]=${showSlug}&sort[0]=updatedAt:desc`);
+    const response = await fetchWithTimeout(`${STRAPI_URL}/api/products?populate=*&filters[currentShow][slug][$eq]=${showSlug}&sort[0]=createdAt:desc`);
 
     if (!response.ok) {
       console.warn(`Failed to fetch products for show ${showSlug}, returning empty array`);
