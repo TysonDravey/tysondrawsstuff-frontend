@@ -1,11 +1,15 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Remove static export for now - we have dynamic Stripe routes
-  // output: 'export',
   trailingSlash: true,
   images: {
+    unoptimized: true,
     remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+        pathname: '/**',
+      },
       {
         protocol: 'http',
         hostname: 'localhost',
@@ -14,12 +18,7 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'loose-stake-distributor-are.trycloudflare.com',
-        pathname: '/uploads/**',
-      },
-      {
-        protocol: 'https',
-        hostname: '*.trycloudflare.com', // Allow any Cloudflare tunnel
+        hostname: '*.trycloudflare.com',
         pathname: '/uploads/**',
       },
     ],

@@ -36,6 +36,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# product images are served from Cloudinary, not committed to git
+/public/products/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
