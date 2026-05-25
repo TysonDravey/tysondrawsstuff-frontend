@@ -291,6 +291,12 @@ async function syncImages() {
     await mkdir(PUBLIC_DIR, { recursive: true });
     if (!USE_CLOUDINARY) await mkdir(PRODUCTS_DIR, { recursive: true });
 
+    // Load existing image-map so we can skip Cloudinary API calls for already-uploaded images
+    let existingImageMap = {};
+    try {
+      existingImageMap = JSON.parse(await readFile(IMAGE_MAP_FILE, 'utf8'));
+    } catch { /* first run or missing file — start fresh */ }
+
     const imageMap = {};
     const currentSlugs = [];
     let totalProcessed = 0;
@@ -349,9 +355,20 @@ async function syncImages() {
         }
       } else {
         // Cloudinary mode: upload from Strapi URL, store Cloudinary URL
+        const existingEntries = existingImageMap[slug] || [];
         for (let i = 0; i < images.length; i++) {
           const image = images[i];
           try {
+            // If this image already has a Cloudinary URL in the local map, reuse it —
+            // no API call needed, avoids rate limits on every build
+            const cached = existingEntries[i];
+            if (cached && cached.url && cached.url.startsWith('https://res.cloudinary.com/')) {
+              console.log(`  ☁️  Cached: ${cached.url.split('/').slice(-2).join('/')}`);
+              localImages.push({ ...cached, id: image.id, alternativeText: image.alternativeText || cached.alternativeText });
+              totalProcessed++;
+              continue;
+            }
+
             const publicId = `TysonDrawsStuff/products/${slug}/image-${i + 1}`;
             const cloudinaryUrl = await uploadToCloudinary(image.url, publicId);
 
