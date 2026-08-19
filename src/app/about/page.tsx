@@ -97,7 +97,7 @@ export default async function About() {
               <div className="space-y-2">
                 <p className="flex items-center justify-center">
                   <span className="text-primary mr-2">📧</span>
-                  kirk@tysondrawsstuff.com
+                  kirkbrillon@gmail.com
                 </p>
                 <p className="flex items-center justify-center">
                   <span className="text-primary mr-2">🎨</span>

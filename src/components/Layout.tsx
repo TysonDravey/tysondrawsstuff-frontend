@@ -234,7 +234,7 @@ export default function Layout({ children, categories = [] }: LayoutProps) {
               <h4 className="font-semibold text-card-foreground">Contact & Follow</h4>
               <div className="space-y-3">
                 <p className="text-muted-foreground">
-                  Email: <a href="mailto:kirk@tysondrawsstuff.com" className="text-primary hover:text-orange-600 transition-colors">kirk@tysondrawsstuff.com</a>
+                  Email: <a href="mailto:kirkbrillon@gmail.com" className="text-primary hover:text-orange-600 transition-colors">kirkbrillon@gmail.com</a>
                 </p>
                 <div className="flex space-x-4">
                   <a

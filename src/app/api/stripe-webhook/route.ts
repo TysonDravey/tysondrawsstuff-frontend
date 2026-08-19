@@ -27,7 +27,7 @@ function getWebhookSecret() {
 // Email configuration
 const EMAIL_CONFIG = {
   from: process.env.EMAIL_FROM || 'orders@tysondrawsstuff.com',
-  to: process.env.EMAIL_TO || 'kirk@tysondrawsstuff.com',
+  to: process.env.EMAIL_TO || 'kirkbrillon@gmail.com',
   smtpHost: process.env.SMTP_HOST || 'smtp.gmail.com',
   smtpPort: parseInt(process.env.SMTP_PORT || '587'),
   smtpUser: process.env.SMTP_USER!,
