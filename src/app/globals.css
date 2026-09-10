@@ -63,3 +63,17 @@ h1, h2, h3, h4, h5, h6 {
 .font-display {
   font-family: var(--font-display), var(--font-sans), system-ui, sans-serif;
 }
+
+@keyframes pop {
+  0% {
+    transform: scale(0.4);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+  }
+}
