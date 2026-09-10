@@ -18,7 +18,7 @@ export default async function MarketPage({ searchParams }: MarketPageProps) {
   const { m } = await searchParams;
 
   return (
-    <div className="min-h-screen bg-primary">
+    <div className="min-h-screen bg-background">
       <MarketCheckoutClient market={m} />
     </div>
   );

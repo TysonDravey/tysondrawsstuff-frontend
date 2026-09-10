@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 
 const PRESET_AMOUNTS = [20, 30, 40, 50, 75, 100];
 const MIN_AMOUNT = 1;
@@ -54,8 +55,8 @@ export default function MarketCheckoutClient({ market }: MarketCheckoutClientPro
   if (redirecting) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-6 px-6 text-center">
-        <div className="w-16 h-16 border-4 border-black/30 border-t-black rounded-full animate-spin" />
-        <p className="text-2xl font-black uppercase tracking-wide text-black">
+        <div className="w-16 h-16 border-4 border-[#E89B3B]/30 border-t-[#E89B3B] rounded-full animate-spin" />
+        <p className="text-2xl font-black uppercase tracking-wide text-[#E89B3B]">
           Opening secure checkout…
         </p>
       </div>
@@ -65,10 +66,15 @@ export default function MarketCheckoutClient({ market }: MarketCheckoutClientPro
   return (
     <div className="min-h-screen flex flex-col px-4 py-6 sm:py-10">
       <header className="text-center mb-6 sm:mb-8">
-        <p className="text-sm sm:text-base font-bold uppercase tracking-[0.2em] text-black/70">
-          Tyson Draws Stuff
-        </p>
-        <h1 className="text-4xl sm:text-6xl font-black uppercase tracking-tight text-black mt-1">
+        <Image
+          src="/static/logo.png"
+          alt="Tyson Draws Stuff"
+          width={418}
+          height={200}
+          className="h-20 sm:h-24 w-auto mx-auto"
+          priority
+        />
+        <h1 className="text-4xl sm:text-6xl font-black uppercase tracking-tight text-[#E89B3B] mt-3">
           Quick Pay
         </h1>
       </header>
@@ -89,20 +95,20 @@ export default function MarketCheckoutClient({ market }: MarketCheckoutClientPro
 
           <button
             onClick={() => setShowOther(true)}
-            className="mt-6 sm:mt-8 w-full py-6 sm:py-7 rounded-3xl bg-black/20 border-2 border-black text-black text-2xl sm:text-3xl font-black uppercase tracking-wide active:scale-95 transition-transform"
+            className="mt-6 sm:mt-8 w-full py-6 sm:py-7 rounded-3xl bg-black border-2 border-[#E89B3B] text-[#E89B3B] text-2xl sm:text-3xl font-black uppercase tracking-wide active:scale-95 transition-transform"
           >
             Other Amount
           </button>
 
           {error && (
-            <p className="mt-4 text-center text-lg font-bold text-black bg-white/70 rounded-xl py-3 px-4">
+            <p className="mt-4 text-center text-lg font-bold text-black bg-white/90 rounded-xl py-3 px-4">
               {error}
             </p>
           )}
         </div>
       ) : (
         <div className="flex-1 flex flex-col justify-center max-w-md mx-auto w-full">
-          <label className="text-center text-black/70 text-lg font-bold uppercase tracking-wide mb-3">
+          <label className="text-center text-[#E89B3B]/80 text-lg font-bold uppercase tracking-wide mb-3">
             Enter Amount
           </label>
           <div className="flex items-center justify-center bg-black rounded-3xl px-4 py-6 mb-6">
@@ -120,7 +126,7 @@ export default function MarketCheckoutClient({ market }: MarketCheckoutClientPro
           </div>
 
           {error && (
-            <p className="mb-4 text-center text-lg font-bold text-black bg-white/70 rounded-xl py-3 px-4">
+            <p className="mb-4 text-center text-lg font-bold text-black bg-white/90 rounded-xl py-3 px-4">
               {error}
             </p>
           )}
@@ -138,7 +144,7 @@ export default function MarketCheckoutClient({ market }: MarketCheckoutClientPro
               setError(null);
               setOtherAmount('');
             }}
-            className="mt-4 w-full py-4 text-black/70 text-lg font-bold uppercase tracking-wide"
+            className="mt-4 w-full py-4 text-[#E89B3B]/80 text-lg font-bold uppercase tracking-wide"
           >
             Back
           </button>
@@ -146,7 +152,7 @@ export default function MarketCheckoutClient({ market }: MarketCheckoutClientPro
       )}
 
       <footer className="text-center mt-8">
-        <p className="text-black/50 text-sm font-semibold uppercase tracking-wide">
+        <p className="text-[#E89B3B]/50 text-sm font-semibold uppercase tracking-wide">
           Secure payment via Stripe
         </p>
       </footer>
