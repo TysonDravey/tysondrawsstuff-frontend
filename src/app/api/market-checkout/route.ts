@@ -44,12 +44,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Minimal, in-person checkout: no shipping, no phone, no billing address,
-    // no custom fields. payment_method_types is left unset so Checkout
-    // dynamically surfaces Apple Pay / Google Pay / Link / card based on
-    // the customer's device and the Dashboard's enabled payment methods.
+    // no custom fields. 'card' also brings Apple Pay / Google Pay as express
+    // wallet buttons automatically when the device supports them; 'link'
+    // adds Stripe Link. Deliberately excludes other Dashboard-enabled
+    // methods (e.g. Klarna) that can ask for extra info like a phone number.
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       submit_type: 'pay',
+      payment_method_types: ['card', 'link'],
       line_items: [
         {
           price_data: {
