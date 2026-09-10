@@ -190,6 +190,33 @@ async function sendGA4PurchaseEvent(session: Stripe.Checkout.Session) {
   }
 }
 
+// Send a short notification for an in-person /market sale
+async function sendMarketSaleNotificationEmail(session: Stripe.Checkout.Session) {
+  const transporter = createEmailTransporter();
+
+  const amount = ((session.amount_total || 0) / 100).toFixed(2);
+  const currency = (session.currency || 'cad').toUpperCase();
+  const market = session.metadata?.market;
+
+  const mailOptions = {
+    from: EMAIL_CONFIG.from,
+    to: EMAIL_CONFIG.to,
+    subject: `🎫 Market Sale: $${amount} ${currency}`,
+    text: `
+Market Sale (in-person)
+
+Amount: $${amount} ${currency}
+${market ? `Market: ${market}\n` : ''}Payment ID: ${session.id}
+Date: ${new Date().toLocaleString()}
+
+View in Stripe: https://dashboard.stripe.com/test/checkout/sessions/${session.id}
+    `,
+  };
+
+  await transporter.sendMail(mailOptions);
+  console.log('Market sale notification email sent successfully');
+}
+
 // Send order notification email
 async function sendOrderNotificationEmail(orderData: OrderData) {
   try {
@@ -368,6 +395,20 @@ export async function POST(request: NextRequest) {
         };
 
         console.log('Processing completed checkout session:', session.id);
+
+        // Market (in-person) sales never collect shipping/product data, so
+        // they get a short dedicated notification instead of the store's
+        // order email, which would render mostly "undefined" fields.
+        if (session.metadata?.sale_type === 'market') {
+          try {
+            await sendMarketSaleNotificationEmail(session);
+          } catch (emailError) {
+            console.error('Error sending market sale notification email:', emailError);
+          }
+          console.log('Market sale processed:', session.id);
+          break;
+        }
+
         console.log('Session shipping_details:', JSON.stringify(session.shipping_details, null, 2));
 
         // Always retrieve full session with all details expanded

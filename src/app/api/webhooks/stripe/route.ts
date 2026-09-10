@@ -42,6 +42,13 @@ export async function POST(request: NextRequest) {
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object as Stripe.Checkout.Session;
 
+    // Market (in-person) sales aren't store orders — they have no
+    // product/shipping data, so they don't belong in the Strapi Orders collection.
+    if (session.metadata?.sale_type === 'market') {
+      console.log('Market sale — skipping Strapi order save:', session.id);
+      return NextResponse.json({ received: true });
+    }
+
     try {
       // Get expanded session with customer and line items
       const expandedSession = await stripe.checkout.sessions.retrieve(session.id, {
