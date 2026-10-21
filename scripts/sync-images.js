@@ -360,8 +360,9 @@ async function syncImages() {
           const image = images[i];
           try {
             // If this image already has a Cloudinary URL in the local map, reuse it —
-            // no API call needed, avoids rate limits on every build
-            const cached = existingEntries[i];
+            // no API call needed, avoids rate limits on every build.
+            // Match on the Strapi source URL, not position, so reordering images in Strapi takes effect.
+            const cached = existingEntries.find(e => e.originalUrl === image.url);
             if (cached && cached.url && cached.url.startsWith('https://res.cloudinary.com/')) {
               console.log(`  ☁️  Cached: ${cached.url.split('/').slice(-2).join('/')}`);
               localImages.push({ ...cached, id: image.id, alternativeText: image.alternativeText || cached.alternativeText });
@@ -369,7 +370,9 @@ async function syncImages() {
               continue;
             }
 
-            const publicId = `TysonDrawsStuff/products/${slug}/image-${i + 1}`;
+            // Name by the Strapi file hash (unique per upload) rather than position, otherwise an
+            // existing "image-1" on Cloudinary gets reused even after the order changes
+            const publicId = `TysonDrawsStuff/products/${slug}/${image.hash || `image-${image.id}`}`;
             const cloudinaryUrl = await uploadToCloudinary(image.url, publicId);
 
             localImages.push({
