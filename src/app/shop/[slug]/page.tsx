@@ -130,6 +130,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
   // Check if the show is still active
   const showIsActive = product.currentShow ? isShowActive(product.currentShow) : false;
 
+  // Shows this piece has been in, excluding the one it's currently at
+  const pastShows = (product.shows || [])
+    .filter(show => !(showIsActive && show.slug === product.currentShow?.slug))
+    .sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
+
   // Fetch related products for navigation
   let relatedProducts: Product[] = [];
   let context: 'category' | 'show' = 'category';
@@ -320,6 +325,28 @@ export default async function ProductPage({ params }: ProductPageProps) {
                   </div>
                 )}
               </div>
+
+              {/* Show History */}
+              {pastShows.length > 0 && (
+                <div className="bg-card border border-border rounded-lg p-6">
+                  <h3 className="text-lg font-semibold mb-4 text-card-foreground">Previously Shown At</h3>
+                  <ul className="space-y-2">
+                    {pastShows.map((show) => (
+                      <li key={show.documentId}>
+                        <Link
+                          href={`/shows/${show.slug}`}
+                          className="text-primary hover:text-orange-600 font-medium transition-colors"
+                        >
+                          {show.title}
+                        </Link>
+                        <span className="text-sm text-muted-foreground ml-2">
+                          {show.startDate.slice(0, 4)}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
 
               {/* Product Navigation */}
               {relatedProducts.length > 1 && (

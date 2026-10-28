@@ -92,6 +92,7 @@ export interface Product {
   images?: StrapiImage[];
   category?: Category;
   currentShow?: Show;
+  shows?: Show[];
   showPrice?: number;
   createdAt: string;
   updatedAt: string;
@@ -620,7 +621,7 @@ export async function fetchProductsByShow(showSlug: string): Promise<Product[]> 
   try {
     const staticProducts = loadStaticProducts();
     const products = Object.values(staticProducts)
-      .filter(product => product.currentShow?.slug === showSlug)
+      .filter(product => product.currentShow?.slug === showSlug || product.shows?.some(show => show.slug === showSlug))
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 
     if (products.length > 0) {
@@ -632,7 +633,7 @@ export async function fetchProductsByShow(showSlug: string): Promise<Product[]> 
 
   // Fall back to Strapi API
   try {
-    const response = await fetchWithTimeout(`${STRAPI_URL}/api/products?populate=*&filters[currentShow][slug][$eq]=${showSlug}&sort[0]=createdAt:desc`);
+    const response = await fetchWithTimeout(`${STRAPI_URL}/api/products?populate=*&filters[$or][0][currentShow][slug][$eq]=${showSlug}&filters[$or][1][shows][slug][$eq]=${showSlug}&sort[0]=createdAt:desc`);
 
     if (!response.ok) {
       console.warn(`Failed to fetch products for show ${showSlug}, returning empty array`);
