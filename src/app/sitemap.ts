@@ -1,12 +1,11 @@
 import { MetadataRoute } from 'next';
+import { siteUrl } from '@/lib/site';
 import { fetchProductSlugs, fetchShowSlugs, fetchCategories } from '@/lib/api';
 
 // Revalidate sitemap every hour
 export const revalidate = 3600;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  // Always use production domain for sitemap URLs
-  const baseUrl = 'https://tysondrawsstuff.com';
   const now = new Date();
 
   try {
@@ -20,25 +19,31 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const urls: MetadataRoute.Sitemap = [
       // Static pages
       {
-        url: baseUrl,
+        url: siteUrl(),
         lastModified: now,
         changeFrequency: 'daily',
         priority: 1.0,
       },
       {
-        url: `${baseUrl}/shop`,
+        url: siteUrl(`/shop`),
         lastModified: now,
         changeFrequency: 'daily',
         priority: 0.9,
       },
       {
-        url: `${baseUrl}/about`,
+        url: siteUrl(`/about`),
         lastModified: now,
         changeFrequency: 'monthly',
         priority: 0.7,
       },
       {
-        url: `${baseUrl}/shows`,
+        url: siteUrl(`/shows`),
+        lastModified: now,
+        changeFrequency: 'weekly',
+        priority: 0.8,
+      },
+      {
+        url: siteUrl(`/posters`),
         lastModified: now,
         changeFrequency: 'weekly',
         priority: 0.8,
@@ -48,7 +53,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // Add product pages
     productSlugs.forEach((slug) => {
       urls.push({
-        url: `${baseUrl}/shop/${slug}`,
+        url: siteUrl(`/shop/${slug}`),
         lastModified: now,
         changeFrequency: 'weekly',
         priority: 0.8,
@@ -58,17 +63,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // Add show pages
     showSlugs.forEach((slug) => {
       urls.push({
-        url: `${baseUrl}/shows/${slug}`,
+        url: siteUrl(`/shows/${slug}`),
         lastModified: now,
         changeFrequency: 'weekly',
         priority: 0.7,
       });
     });
 
-    // Add category pages (if they have their own pages)
+    // Add category pages
     categories.forEach((category) => {
       urls.push({
-        url: `${baseUrl}/shop?category=${category.slug}`,
+        url: siteUrl(`/category/${category.slug}`),
         lastModified: now,
         changeFrequency: 'weekly',
         priority: 0.6,
@@ -84,19 +89,19 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // Return minimal sitemap if API calls fail
     return [
       {
-        url: baseUrl,
+        url: siteUrl(),
         lastModified: now,
         changeFrequency: 'daily',
         priority: 1.0,
       },
       {
-        url: `${baseUrl}/shop`,
+        url: siteUrl(`/shop`),
         lastModified: now,
         changeFrequency: 'daily',
         priority: 0.9,
       },
       {
-        url: `${baseUrl}/about`,
+        url: siteUrl(`/about`),
         lastModified: now,
         changeFrequency: 'monthly',
         priority: 0.7,

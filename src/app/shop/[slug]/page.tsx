@@ -8,6 +8,7 @@ import ImageGallery from '@/components/ImageGallery';
 import ProductNavigation from '@/components/ProductNavigation';
 import { getProductImages } from '@/lib/images';
 import { marked } from 'marked';
+import { siteUrl } from '@/lib/site';
 
 // Helper function to check if a show is currently active
 function isShowActive(show: Show): boolean {
@@ -32,16 +33,6 @@ export async function generateStaticParams() {
   }));
 }
 
-// Get the current deployment URL for metadata
-const getBaseUrl = () => {
-  if (process.env.VERCEL_URL) {
-    return `https://${process.env.VERCEL_URL}`;
-  }
-  if (process.env.NODE_ENV === 'development') {
-    return 'http://localhost:3000';
-  }
-  return 'https://tysondrawsstuff.com';
-};
 
 export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
   const { slug } = await params;
@@ -64,7 +55,6 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
     ? stripHtml(product.description).substring(0, 150).trim() + (product.description.length > 150 ? '...' : '')
     : `Original artwork by Tyson Brillon - ${product.title}. Available for purchase.`;
 
-  const baseUrl = getBaseUrl();
   const ogImage = firstImage?.src || '/images/og-default.jpg';
   const fullTitle = `${product.title} | Tyson Draws Stuff`;
 
@@ -75,7 +65,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
       title: fullTitle,
       description: metaDescription,
       type: 'article',
-      url: `${baseUrl}/shop/${slug}`,
+      url: siteUrl(`/shop/${slug}`),
       siteName: 'Tyson Draws Stuff',
       images: [
         {
@@ -93,7 +83,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
       images: [ogImage],
     },
     alternates: {
-      canonical: `${baseUrl}/shop/${slug}`,
+      canonical: siteUrl(`/shop/${slug}`),
     },
   };
 }

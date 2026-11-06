@@ -10,6 +10,7 @@ import {
   fetchProductsByShow
 } from '@/lib/api';
 import { getStaticAssetUrl, getProductImages } from '@/lib/images';
+import { siteUrl } from '@/lib/site';
 
 interface ShowPageProps {
   params: Promise<{
@@ -17,16 +18,6 @@ interface ShowPageProps {
   }>;
 }
 
-// Get the current deployment URL for metadata
-const getBaseUrl = () => {
-  if (process.env.VERCEL_URL) {
-    return `https://${process.env.VERCEL_URL}`;
-  }
-  if (process.env.NODE_ENV === 'development') {
-    return 'http://localhost:3000';
-  }
-  return 'https://tysondrawsstuff.com';
-};
 
 export async function generateStaticParams() {
   const slugs = await fetchShowSlugs();
@@ -47,7 +38,6 @@ export async function generateMetadata({ params }: ShowPageProps): Promise<Metad
     };
   }
 
-  const baseUrl = getBaseUrl();
   const ogImage = show.logo ? getStaticAssetUrl(show.logo.url) : '/images/og-default.jpg';
   const fullTitle = `${show.title} | Tyson Draws Stuff`;
 
@@ -64,7 +54,7 @@ export async function generateMetadata({ params }: ShowPageProps): Promise<Metad
       title: fullTitle,
       description: metaDescription,
       type: 'article',
-      url: `${baseUrl}/shows/${slug}`,
+      url: siteUrl(`/shows/${slug}`),
       siteName: 'Tyson Draws Stuff',
       images: [
         {
@@ -82,7 +72,7 @@ export async function generateMetadata({ params }: ShowPageProps): Promise<Metad
       images: [ogImage],
     },
     alternates: {
-      canonical: `${baseUrl}/shows/${slug}`,
+      canonical: siteUrl(`/shows/${slug}`),
     },
   };
 }

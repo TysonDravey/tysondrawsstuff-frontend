@@ -21,24 +21,20 @@ function GaPageViewComponent() {
       return;
     }
 
-    // Construct the full URL
-    const url = pathname + (searchParams.toString() ? `?${searchParams.toString()}` : '');
+    // Never send the Stripe checkout session id to GA: /success?session_id=...
+    // shows the buyer's name, address and phone to anyone holding that id.
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete('session_id');
+    const query = params.toString();
+    const url = pathname + (query ? `?${query}` : '');
 
-    // Send page view event to GA4
-    window.gtag('config', GA_ID, {
-      page_title: document.title,
-      page_location: window.location.href,
-      page_path: url,
-    });
-
-    // Also send a specific page_view event for better tracking
+    // One page_view per page. (gtag('config') used to be called here too, which
+    // sends its own page_view, so every page was counted at least twice.)
     window.gtag('event', 'page_view', {
       page_title: document.title,
-      page_location: window.location.href,
+      page_location: window.location.origin + url,
       page_path: url,
     });
-
-    console.log('GA4 Page view tracked:', url);
   }, [pathname, searchParams]);
 
   return null;

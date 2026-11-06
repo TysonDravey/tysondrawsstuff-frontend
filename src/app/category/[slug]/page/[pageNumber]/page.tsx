@@ -10,6 +10,7 @@ import {
   fetchCategories,
   fetchCategoriesWithProducts,
 } from '@/lib/api';
+import { siteUrl } from '@/lib/site';
 
 interface CategoryPagePaginatedProps {
   params: Promise<{
@@ -19,24 +20,14 @@ interface CategoryPagePaginatedProps {
 }
 
 
-const getBaseUrl = () => {
-  if (process.env.VERCEL_URL) {
-    return `https://${process.env.VERCEL_URL}`;
-  }
-  if (process.env.NODE_ENV === 'development') {
-    return 'http://localhost:3000';
-  }
-  return 'https://tysondrawsstuff.com';
-};
 
 export async function generateMetadata({ params }: CategoryPagePaginatedProps): Promise<Metadata> {
   const resolvedParams = await params;
   const { slug, pageNumber } = resolvedParams;
-  const baseUrl = getBaseUrl();
   
   return {
     alternates: {
-      canonical: `${baseUrl}/category/${slug}/page/${pageNumber}`,
+      canonical: siteUrl(`/category/${slug}/page/${pageNumber}`),
     },
   };
 }

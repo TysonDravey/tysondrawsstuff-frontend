@@ -14,24 +14,16 @@ import {
   type Show
 } from '@/lib/api';
 import { getLogoUrl } from '@/lib/images';
+import { siteUrl } from '@/lib/site';
 // Trigger Vercel deployment with static site generation fixes
 
 // Static export - no revalidation needed
 
 
-const getBaseUrl = () => {
-  if (process.env.VERCEL_URL) {
-    return `https://${process.env.VERCEL_URL}`;
-  }
-  if (process.env.NODE_ENV === 'development') {
-    return 'http://localhost:3000';
-  }
-  return 'https://tysondrawsstuff.com';
-};
 
 export const metadata: Metadata = {
   alternates: {
-    canonical: `${getBaseUrl()}`,
+    canonical: siteUrl(),
   },
 };
 

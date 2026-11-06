@@ -9,6 +9,7 @@ import {
   fetchCategoriesWithProducts,
   fetchGlobal,
 } from '@/lib/api';
+import { siteUrl } from '@/lib/site';
 
 interface PostersPagePaginatedProps {
   params: Promise<{
@@ -16,25 +17,15 @@ interface PostersPagePaginatedProps {
   }>;
 }
 
-const getBaseUrl = () => {
-  if (process.env.VERCEL_URL) {
-    return `https://${process.env.VERCEL_URL}`;
-  }
-  if (process.env.NODE_ENV === 'development') {
-    return 'http://localhost:3000';
-  }
-  return 'https://tysondrawsstuff.com';
-};
 
 export async function generateMetadata({ params }: PostersPagePaginatedProps): Promise<Metadata> {
   const { pageNumber } = await params;
-  const baseUrl = getBaseUrl();
 
   return {
     title: `Posters - Page ${pageNumber} | Tyson Draws Stuff`,
     description: 'High-quality poster prints of original artwork by Kirk Brillon.',
     alternates: {
-      canonical: `${baseUrl}/posters/page/${pageNumber}`,
+      canonical: siteUrl(`/posters/page/${pageNumber}`),
     },
   };
 }

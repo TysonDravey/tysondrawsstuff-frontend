@@ -8,25 +8,16 @@ import {
   fetchCategoriesWithProducts,
   fetchGlobal,
 } from '@/lib/api';
+import { siteUrl } from '@/lib/site';
 
-const getBaseUrl = () => {
-  if (process.env.VERCEL_URL) {
-    return `https://${process.env.VERCEL_URL}`;
-  }
-  if (process.env.NODE_ENV === 'development') {
-    return 'http://localhost:3000';
-  }
-  return 'https://tysondrawsstuff.com';
-};
 
 export async function generateMetadata(): Promise<Metadata> {
-  const baseUrl = getBaseUrl();
 
   return {
     title: 'Posters | Tyson Draws Stuff',
     description: 'High-quality poster prints of original artwork by Kirk Brillon.',
     alternates: {
-      canonical: `${baseUrl}/posters`,
+      canonical: siteUrl(`/posters`),
     },
   };
 }

@@ -3,6 +3,7 @@ import { Nunito, Nunito_Sans } from "next/font/google";
 import Script from "next/script";
 import GaPageView from "@/components/GaPageView";
 import "./globals.css";
+import { siteUrl, SITE_URL, IS_PRODUCTION_SITE } from '@/lib/site';
 
 const nunito = Nunito({
   variable: "--font-nunito",
@@ -16,28 +17,18 @@ const nunitoSans = Nunito_Sans({
   weight: ["400", "600", "700"],
 });
 
-// Get the current deployment URL for metadata
-const getBaseUrl = () => {
-  if (process.env.VERCEL_URL) {
-    return `https://${process.env.VERCEL_URL}`;
-  }
-  if (process.env.NODE_ENV === 'development') {
-    return 'http://localhost:3000';
-  }
-  return 'https://tysondrawsstuff.com';
-};
 
 export const metadata: Metadata = {
   title: "Tyson Draws Stuff | Original Art, Prints, and Books",
   description: "Explore original art, posters, merch, and books by Tyson Brillon. Unique artwork and prints available for purchase.",
-  metadataBase: new URL(getBaseUrl()),
+  metadataBase: new URL(SITE_URL),
   icons: {
     icon: "/favicon.ico",
   },
   openGraph: {
     title: "Tyson Draws Stuff | Original Art, Prints, and Books",
     description: "Explore original art, posters, merch, and books by Tyson Brillon. Unique artwork and prints available for purchase.",
-    url: getBaseUrl(),
+    url: siteUrl(),
     siteName: "Tyson Draws Stuff",
     images: [
       {
@@ -56,20 +47,21 @@ export const metadata: Metadata = {
     description: "Explore original art, posters, merch, and books by Tyson Brillon. Unique artwork and prints available for purchase.",
     images: ["/images/og-default.jpg"],
   },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      "max-video-preview": -1,
-      "max-image-preview": "large",
-      "max-snippet": -1,
-    },
-  },
-  verification: {
-    google: "your-google-verification-code", // Replace with actual verification code when available
-  },
+  // Preview deployments must never be indexed; only the live site is.
+  robots: IS_PRODUCTION_SITE
+    ? {
+        index: true,
+        follow: true,
+        googleBot: {
+          index: true,
+          follow: true,
+          "max-video-preview": -1,
+          "max-image-preview": "large",
+          "max-snippet": -1,
+        },
+      }
+    : { index: false, follow: false },
+  // Add `verification: { google: "<code>" }` here once Search Console gives a code.
 };
 
 export default function RootLayout({
@@ -77,7 +69,8 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const GA_ID = process.env.NEXT_PUBLIC_GA_ID;
+  // Analytics only on the live site, so preview/testing visits don't count as real traffic.
+  const GA_ID = IS_PRODUCTION_SITE ? process.env.NEXT_PUBLIC_GA_ID : undefined;
 
   return (
     <html lang="en">
@@ -96,11 +89,9 @@ export default function RootLayout({
                 window.dataLayer = window.dataLayer || [];
                 function gtag(){dataLayer.push(arguments);}
                 gtag('js', new Date());
-                gtag('config', '${GA_ID}', {
-                  page_title: document.title,
-                  page_location: window.location.href,
-                  page_path: window.location.pathname + window.location.search
-                });
+                // Page views are sent once per page by <GaPageView />. Letting config
+                // send one too counted every first page load two or three times.
+                gtag('config', '${GA_ID}', { send_page_view: false });
               `}
             </Script>
             <GaPageView />

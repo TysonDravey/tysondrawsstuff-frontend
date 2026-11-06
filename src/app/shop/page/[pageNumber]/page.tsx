@@ -4,6 +4,7 @@ import ProductGrid from '@/components/ProductGrid';
 import Pagination from '@/components/Pagination';
 import { fetchProductsPaginated, fetchCategoriesWithProducts } from '@/lib/api';
 import { notFound } from 'next/navigation';
+import { siteUrl } from '@/lib/site';
 
 interface PageProps {
   params: Promise<{
@@ -12,24 +13,14 @@ interface PageProps {
 }
 
 
-const getBaseUrl = () => {
-  if (process.env.VERCEL_URL) {
-    return `https://${process.env.VERCEL_URL}`;
-  }
-  if (process.env.NODE_ENV === 'development') {
-    return 'http://localhost:3000';
-  }
-  return 'https://tysondrawsstuff.com';
-};
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const resolvedParams = await params;
   const { pageNumber } = resolvedParams;
-  const baseUrl = getBaseUrl();
   
   return {
     alternates: {
-      canonical: `${baseUrl}/shop/page/${pageNumber}`,
+      canonical: siteUrl(`/shop/page/${pageNumber}`),
     },
   };
 }

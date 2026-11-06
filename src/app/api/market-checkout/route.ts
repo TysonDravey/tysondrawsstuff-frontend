@@ -72,9 +72,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ url: session.url });
   } catch (error) {
     console.error('Error creating market checkout session:', error);
-    const message = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json(
-      { error: 'Internal server error', detail: message },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }

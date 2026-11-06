@@ -3,6 +3,7 @@ import Stripe from 'stripe';
 import fs from 'fs';
 import path from 'path';
 import { type Product } from '@/lib/api';
+import { getProductImages } from '@/lib/images';
 
 function initializeStripe() {
   const secretKey = process.env.STRIPE_SECRET_KEY;
@@ -62,6 +63,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    if (variant !== 'original' && variant !== 'poster') {
+      return NextResponse.json({ error: 'Invalid variant' }, { status: 400 });
+    }
+
+    // Server-side availability checks — the product page hides these buttons,
+    // but the API can be called directly, so it must enforce them itself.
+    if (variant === 'original' && product.sold === true) {
+      return NextResponse.json({ error: 'This original has been sold' }, { status: 409 });
+    }
+    if (variant === 'poster' && product.hasPoster !== true) {
+      return NextResponse.json({ error: 'No poster available for this piece' }, { status: 400 });
+    }
+
     // Determine price and product name based on variant
     let checkoutPrice = product.price;
     let productName = product.title;
@@ -81,6 +95,12 @@ export async function POST(request: NextRequest) {
 
     // Convert CAD to cents for Stripe
     const priceInCents = Math.round(checkoutPrice * 100);
+    if (!Number.isFinite(priceInCents) || priceInCents < 100) {
+      return NextResponse.json({ error: 'Product is not available for purchase' }, { status: 400 });
+    }
+
+    const firstImage = getProductImages(product.slug)[0]?.src;
+    const checkoutImage = firstImage?.startsWith('https://') ? firstImage : undefined;
 
     // Create Stripe checkout session with comprehensive customer data collection
     const session = await stripe.checkout.sessions.create({
@@ -92,9 +112,9 @@ export async function POST(request: NextRequest) {
             product_data: {
               name: productName,
               description: product.description ? product.description.replace(/<[^>]*>/g, '') : undefined,
-              images: product.images && product.images.length > 0
-                ? [`${request.nextUrl.origin}${product.images[0].url}`]
-                : undefined,
+              // Product photos are served from Cloudinary; Strapi's /uploads/ paths
+              // don't exist on the live site, so Stripe showed a broken image.
+              images: checkoutImage ? [checkoutImage] : undefined,
             },
             unit_amount: priceInCents,
           },
@@ -153,9 +173,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ url: session.url });
   } catch (error) {
     console.error('Error creating checkout session:', error);
-    const message = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json(
-      { error: 'Internal server error', detail: message },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }

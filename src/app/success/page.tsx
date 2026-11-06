@@ -5,6 +5,7 @@ import type { Metadata } from 'next';
 import Stripe from 'stripe';
 import Layout from '@/components/Layout';
 import { fetchCategoriesWithProducts, Category } from '@/lib/api';
+import { siteUrl } from '@/lib/site';
 
 interface ExpandedSession extends Stripe.Checkout.Session {
   shipping_details?: {
@@ -26,19 +27,10 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 
 
-const getBaseUrl = () => {
-  if (process.env.VERCEL_URL) {
-    return `https://${process.env.VERCEL_URL}`;
-  }
-  if (process.env.NODE_ENV === 'development') {
-    return 'http://localhost:3000';
-  }
-  return 'https://tysondrawsstuff.com';
-};
 
 export const metadata: Metadata = {
   alternates: {
-    canonical: `${getBaseUrl()}/success`,
+    canonical: siteUrl(`/success`),
   },
 };
 

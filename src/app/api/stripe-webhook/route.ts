@@ -24,6 +24,13 @@ function getWebhookSecret() {
   return webhookSecret;
 }
 
+// Live sales link to the live dashboard; test-mode sales to the test one.
+function stripeDashboardBase() {
+  return process.env.STRIPE_SECRET_KEY?.startsWith('sk_live_')
+    ? 'https://dashboard.stripe.com'
+    : 'https://dashboard.stripe.com/test';
+}
+
 // Email configuration
 const EMAIL_CONFIG = {
   from: process.env.EMAIL_FROM || 'orders@tysondrawsstuff.com',
@@ -209,12 +216,22 @@ Amount: $${amount} ${currency}
 ${market ? `Market: ${market}\n` : ''}Payment ID: ${session.id}
 Date: ${new Date().toLocaleString()}
 
-View in Stripe: https://dashboard.stripe.com/test/checkout/sessions/${session.id}
+View in Stripe: ${stripeDashboardBase()}/checkout/sessions/${session.id}
     `,
   };
 
   await transporter.sendMail(mailOptions);
   console.log('Market sale notification email sent successfully');
+}
+
+// Escape customer-supplied text before putting it in the HTML email
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
 }
 
 // Send order notification email
@@ -282,27 +299,27 @@ ${orderData.orderNotes}
 
         <div class="section">
             <h2>👤 Customer Information</h2>
-            <pre>${customerInfo}</pre>
+            <pre>${escapeHtml(customerInfo)}</pre>
         </div>
 
         <div class="section">
             <h2>📦 Shipping Information</h2>
-            <pre>${shippingInfo}</pre>
+            <pre>${escapeHtml(shippingInfo)}</pre>
         </div>
 
         <div class="section">
             <h2>🎨 Product Details</h2>
-            <pre>${productInfo}</pre>
+            <pre>${escapeHtml(productInfo)}</pre>
         </div>
 
         ${specialInstructions ? `<div class="section">
             <h2>📝 Special Instructions</h2>
-            <pre>${specialInstructions}</pre>
+            <pre>${escapeHtml(specialInstructions)}</pre>
         </div>` : ''}
 
         <div class="section">
             <h2>🔗 Links</h2>
-            <p><a href="https://dashboard.stripe.com/test/checkout/sessions/${orderData.stripeSessionId}" target="_blank">View in Stripe Dashboard</a></p>
+            <p><a href="${stripeDashboardBase()}/checkout/sessions/${orderData.stripeSessionId}" target="_blank">View in Stripe Dashboard</a></p>
         </div>
     </div>
 
@@ -332,7 +349,7 @@ ${shippingInfo}
 ${productInfo}
 ${specialInstructions}
 
-View in Stripe: https://dashboard.stripe.com/test/checkout/sessions/${orderData.stripeSessionId}
+View in Stripe: ${stripeDashboardBase()}/checkout/sessions/${orderData.stripeSessionId}
       `,
     };
 
@@ -409,20 +426,12 @@ export async function POST(request: NextRequest) {
           break;
         }
 
-        console.log('Session shipping_details:', JSON.stringify(session.shipping_details, null, 2));
-
         // Always retrieve full session with all details expanded
         let fullSession = session;
         try {
           fullSession = await stripe.checkout.sessions.retrieve(session.id, {
             expand: ['customer', 'shipping_cost']
           });
-          console.log('=== FULL SESSION DEBUG ===');
-          console.log('shipping_details:', JSON.stringify(fullSession.shipping_details, null, 2));
-          console.log('customer_details:', JSON.stringify(fullSession.customer_details, null, 2));
-          console.log('shipping_cost:', JSON.stringify(fullSession.shipping_cost, null, 2));
-          console.log('All session keys:', Object.keys(fullSession));
-          console.log('=== END DEBUG ===');
         } catch (error) {
           console.warn('Could not retrieve full session, using webhook session:', error);
         }
@@ -530,10 +539,12 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Error processing webhook:', error);
 
-    // Return success to Stripe to prevent retries, but log the error
+    // Fail so Stripe retries (it does for up to 3 days and shows the failure in
+    // the dashboard). Answering 200 here meant a failed order email was simply
+    // lost: the sale happened and nobody was told.
     return NextResponse.json(
-      { error: 'Webhook processing failed', details: error instanceof Error ? error.message : 'Unknown error' },
-      { status: 200 } // Return 200 to prevent Stripe retries
+      { error: 'Webhook processing failed' },
+      { status: 500 }
     );
   }
   } catch (initError) {
