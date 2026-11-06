@@ -44,7 +44,7 @@ interface SuccessPageProps {
 async function getCheckoutSession(sessionId: string) {
   try {
     const session = await stripe.checkout.sessions.retrieve(sessionId, {
-      expand: ['customer', 'line_items', 'payment_intent'],
+      expand: ['customer', 'line_items', 'payment_intent.payment_method'],
     });
     return session;
   } catch (error) {
@@ -82,8 +82,17 @@ function SuccessContent({ session, categories }: { session: ExpandedSession | nu
   const customer = session.customer as Stripe.Customer | null;
   const customerEmail = customer?.email || session.customer_email;
   const customerName = customer?.name;
-  const shippingAddress = session.shipping_details?.address;
-  const shippingName = session.shipping_details?.name;
+  // Since the 2025 "basil" Stripe API, shipping lives in collected_information.
+  const shipping = session.collected_information?.shipping_details ?? session.shipping_details;
+  const shippingAddress = shipping?.address;
+  const shippingName = shipping?.name;
+
+  const paymentIntent = session.payment_intent as Stripe.PaymentIntent | null;
+  const paymentMethod = paymentIntent?.payment_method as Stripe.PaymentMethod | null;
+  const card = paymentMethod?.card;
+  const paymentLabel = card
+    ? `${card.brand.charAt(0).toUpperCase()}${card.brand.slice(1)} ending in ${card.last4}`
+    : paymentMethod?.type === 'link' ? 'Link' : 'Card';
 
   return (
     <Layout categories={categories}>
@@ -154,7 +163,7 @@ function SuccessContent({ session, categories }: { session: ExpandedSession | nu
               <div className="border-t border-border pt-4">
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-medium text-foreground">Payment Method:</span>
-                  <span className="text-sm text-foreground/80">Card ending in ****</span>
+                  <span className="text-sm text-foreground/80">{paymentLabel}</span>
                 </div>
                 <div className="flex justify-between items-center mt-2">
                   <span className="text-sm font-medium text-foreground">Total Paid:</span>

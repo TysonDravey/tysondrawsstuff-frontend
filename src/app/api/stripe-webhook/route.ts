@@ -5,6 +5,8 @@ import nodemailer from 'nodemailer';
 import { writeFile, mkdir } from 'fs/promises';
 import { existsSync } from 'fs';
 import path from 'path';
+import { getProductImages } from '@/lib/images';
+import { siteUrl } from '@/lib/site';
 
 function initializeStripe() {
   const secretKey = process.env.STRIPE_SECRET_KEY;
@@ -264,6 +266,19 @@ Product ID: ${orderData.productId}
 Product Slug: ${orderData.productSlug}
     `;
 
+    // Photo of the piece that sold, so it's obvious at a glance which one to pack.
+    // Resized by Cloudinary to email size, as JPEG (some mail apps can't show WebP).
+    const photoUrl = getProductImages(orderData.productSlug)[0]?.src;
+    const emailPhotoUrl = photoUrl?.startsWith('https://res.cloudinary.com/')
+      ? photoUrl.replace('/upload/', '/upload/w_600,c_limit,f_jpg,q_auto/')
+      : null;
+    const productPageUrl = siteUrl(`/shop/${orderData.productSlug}`);
+    const photoBlock = emailPhotoUrl ? `
+        <div class="section" style="text-align: center;">
+            <a href="${escapeHtml(productPageUrl)}"><img src="${escapeHtml(emailPhotoUrl)}" alt="${escapeHtml(orderData.productTitle)}" width="300" style="max-width: 100%; height: auto; border-radius: 4px;"></a>
+            <p style="margin: 8px 0 0;"><strong>${escapeHtml(orderData.productTitle)}</strong> (${variantLabel})</p>
+        </div>` : '';
+
     const specialInstructions = orderData.orderNotes ? `
 Special Instructions:
 ${orderData.orderNotes}
@@ -288,6 +303,8 @@ ${orderData.orderNotes}
     </div>
 
     <div class="content">
+        ${photoBlock}
+
         <div class="section">
             <h2>💰 Order Summary</h2>
             <p><strong>Order ID:</strong> ${orderData.stripeSessionId}</p>
@@ -455,7 +472,23 @@ export async function POST(request: NextRequest) {
 
           // Shipping information - found in customer_details.address!
           shippingAddress: (() => {
-            // The address is actually in customer_details.address when shipping collection is enabled
+            // Where to SHIP. Since the 2025 "basil" Stripe API this lives in
+            // collected_information.shipping_details. customer_details.address is
+            // the BILLING address - only a last resort, since a buyer can ship
+            // somewhere else (e.g. a gift).
+            const shipping = fullSession.collected_information?.shipping_details;
+            if (shipping?.address) {
+              return {
+                name: shipping.name || fullSession.customer_details?.name || undefined,
+                line1: shipping.address.line1 || undefined,
+                line2: shipping.address.line2 || undefined,
+                city: shipping.address.city || undefined,
+                state: shipping.address.state || undefined,
+                postal_code: shipping.address.postal_code || undefined,
+                country: shipping.address.country || undefined,
+              };
+            }
+
             if (fullSession.customer_details?.address) {
               const addr = fullSession.customer_details.address;
               return {
