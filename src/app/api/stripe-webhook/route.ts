@@ -59,6 +59,7 @@ function createEmailTransporter() {
 // Order data interface
 interface OrderData {
   stripeSessionId: string;
+  livemode: boolean;
   stripeCustomerId: string | null;
   orderDate: string;
   orderTotal: number;
@@ -210,7 +211,7 @@ async function sendMarketSaleNotificationEmail(session: Stripe.Checkout.Session)
   const mailOptions = {
     from: EMAIL_CONFIG.from,
     to: EMAIL_CONFIG.to,
-    subject: `🎫 Market Sale: $${amount} ${currency}`,
+    subject: `${session.livemode ? '' : '[TEST] '}🎫 Market Sale: $${amount} ${currency}`,
     text: `
 Market Sale (in-person)
 
@@ -298,6 +299,9 @@ ${orderData.orderNotes}
     </style>
 </head>
 <body>
+    ${orderData.livemode ? '' : `<div style="background-color: #fde047; color: #000; padding: 12px; text-align: center; font-weight: bold; font-size: 18px;">
+        TEST ORDER - no money was charged. Do not ship.
+    </div>`}
     <div class="header">
         <h1>🎨 New Order - Tyson Draws Stuff</h1>
     </div>
@@ -350,7 +354,7 @@ ${orderData.orderNotes}
     const mailOptions = {
       from: EMAIL_CONFIG.from,
       to: EMAIL_CONFIG.to,
-      subject: `🎨 New Order: $${orderData.orderTotal} - ${orderData.productTitle} (${variantLabel})`,
+      subject: `${orderData.livemode ? '' : '[TEST] '}🎨 New Order: $${orderData.orderTotal} - ${orderData.productTitle} (${variantLabel})`,
       html: emailHtml,
       text: `
 New Order Received!
@@ -457,6 +461,7 @@ export async function POST(request: NextRequest) {
         const orderData = {
           // Stripe identifiers
           stripeSessionId: session.id,
+          livemode: session.livemode,
           stripeCustomerId: session.customer as string || null,
 
           // Order details
