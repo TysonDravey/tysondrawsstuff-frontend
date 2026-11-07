@@ -55,7 +55,9 @@ async function getExistingEnvVar(key) {
       res.on('end', () => {
         if (res.statusCode >= 200 && res.statusCode < 300) {
           const envVars = JSON.parse(responseData);
-          const existingVar = envVars.envs.find(env => env.key === key);
+          // Only the general (non-branch) variable. Branch-scoped copies, like the
+          // railway-preview branch's Railway Strapi URL, must never be overwritten here.
+          const existingVar = envVars.envs.find(env => env.key === key && !env.gitBranch);
           resolve(existingVar);
         } else {
           reject(new Error(`Failed to get env vars: ${res.statusCode} ${responseData}`));
