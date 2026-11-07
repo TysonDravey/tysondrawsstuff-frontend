@@ -1,6 +1,20 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+
+type Notice = { title: string; message: string; reloadOnClose: boolean };
+
+const SOLD_NOTICE: Notice = {
+  title: 'This original just sold',
+  message: 'Sorry, someone bought this piece a moment ago. If it has a poster, that may still be available.',
+  reloadOnClose: true,
+};
+
+const ERROR_NOTICE: Notice = {
+  title: 'Something went wrong',
+  message: "We couldn't start the checkout. Please try again in a moment.",
+  reloadOnClose: false,
+};
 
 // Extend the global window object to include gtag
 declare global {
@@ -18,6 +32,21 @@ interface BuyButtonProps {
 
 export default function BuyButton({ productSlug, price, productTitle, variant = 'original' }: BuyButtonProps) {
   const [loading, setLoading] = useState(false);
+  const [notice, setNotice] = useState<Notice | null>(null);
+
+  const closeNotice = () => {
+    // After a "just sold" notice, reload so the page shows the piece as sold.
+    if (notice?.reloadOnClose) window.location.reload();
+    setNotice(null);
+  };
+
+  useEffect(() => {
+    if (!notice) return;
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && closeNotice();
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [notice]);
 
   // Check if we're in test mode
   const isTestMode = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY?.startsWith('pk_test_');
@@ -65,15 +94,14 @@ export default function BuyButton({ productSlug, price, productTitle, variant = 
         // Redirect to Stripe Checkout
         window.location.href = data.url;
       } else if (response.status === 409) {
-        alert('Sorry, this original has just been sold.');
-        window.location.reload();
+        setNotice(SOLD_NOTICE);
       } else {
         console.error('Error creating checkout session:', data.error);
-        alert('Something went wrong. Please try again.');
+        setNotice(ERROR_NOTICE);
       }
     } catch (error) {
       console.error('Error:', error);
-      alert('Something went wrong. Please try again.');
+      setNotice(ERROR_NOTICE);
     } finally {
       setLoading(false);
     }
@@ -101,6 +129,36 @@ export default function BuyButton({ productSlug, price, productTitle, variant = 
           </>
         )}
       </button>
+
+      {notice && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4"
+          onClick={closeNotice}
+        >
+          <div
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="buy-notice-title"
+            aria-describedby="buy-notice-message"
+            className="w-full max-w-sm rounded-lg border border-border bg-card p-6 text-center shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h2 id="buy-notice-title" className="font-display text-xl font-bold text-foreground">
+              {notice.title}
+            </h2>
+            <p id="buy-notice-message" className="mt-3 text-muted-foreground">
+              {notice.message}
+            </p>
+            <button
+              autoFocus
+              onClick={closeNotice}
+              className="mt-6 w-full rounded-lg bg-primary px-6 py-3 font-semibold text-primary-foreground transition-colors hover:bg-orange-600"
+            >
+              OK
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
