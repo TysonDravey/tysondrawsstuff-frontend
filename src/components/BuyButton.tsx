@@ -10,6 +10,12 @@ const SOLD_NOTICE: Notice = {
   reloadOnClose: true,
 };
 
+const IN_CHECKOUT_NOTICE: Notice = {
+  title: 'Someone is buying this right now',
+  message: 'Another buyer is partway through checkout for this original. If they don’t finish, it will be available again within 15 minutes.',
+  reloadOnClose: false,
+};
+
 const ERROR_NOTICE: Notice = {
   title: 'Something went wrong',
   message: "We couldn't start the checkout. Please try again in a moment.",
@@ -94,7 +100,7 @@ export default function BuyButton({ productSlug, price, productTitle, variant = 
         // Redirect to Stripe Checkout
         window.location.href = data.url;
       } else if (response.status === 409) {
-        setNotice(SOLD_NOTICE);
+        setNotice(data.reason === 'in_checkout' ? IN_CHECKOUT_NOTICE : SOLD_NOTICE);
       } else {
         console.error('Error creating checkout session:', data.error);
         setNotice(ERROR_NOTICE);

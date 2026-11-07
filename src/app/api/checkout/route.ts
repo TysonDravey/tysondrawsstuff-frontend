@@ -4,7 +4,7 @@ import fs from 'fs';
 import path from 'path';
 import { type Product } from '@/lib/api';
 import { getProductImages } from '@/lib/images';
-import { ORIGINAL_METADATA_KEY, isOriginalSoldInStripe } from '@/lib/original-sales';
+import { ORIGINAL_METADATA_KEY, checkOriginalAvailability } from '@/lib/original-sales';
 
 function initializeStripe() {
   const secretKey = process.env.STRIPE_SECRET_KEY;
@@ -76,9 +76,19 @@ export async function POST(request: NextRequest) {
     if (variant === 'poster' && product.hasPoster !== true) {
       return NextResponse.json({ error: 'No poster available for this piece' }, { status: 400 });
     }
-    // The sold flag above only updates on rebuild; Stripe knows about a sale right away.
-    if (variant === 'original' && (await isOriginalSoldInStripe(stripe, product.documentId))) {
-      return NextResponse.json({ error: 'This original has been sold' }, { status: 409 });
+    // The sold flag above only updates on rebuild; Stripe knows about a sale right away,
+    // and about someone else being partway through buying this original.
+    if (variant === 'original') {
+      const availability = await checkOriginalAvailability(stripe, product.documentId);
+      if (availability === 'sold') {
+        return NextResponse.json({ error: 'This original has been sold', reason: 'sold' }, { status: 409 });
+      }
+      if (availability === 'in_checkout') {
+        return NextResponse.json(
+          { error: 'Someone is checking out this original right now', reason: 'in_checkout' },
+          { status: 409 }
+        );
+      }
     }
 
     // Determine price and product name based on variant
