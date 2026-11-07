@@ -37,6 +37,15 @@ if (!newStrapiUrl) {
   process.exit(1);
 }
 
+// Since 2026-11-07 the live site builds from Strapi on Railway. Pointing Vercel back
+// at a Cloudflare tunnel would break live builds, so the old publish manager's
+// "Update Env Vars" button is refused unless deliberately forced.
+if (newStrapiUrl.includes('trycloudflare.com') && !process.argv.includes('--force-tunnel')) {
+  console.error('❌ Refusing: the live site now uses Strapi on Railway, not the local tunnel.');
+  console.error('   If you really mean to switch back, run: npm run update-vercel-env "<url>" -- --force-tunnel');
+  process.exit(1);
+}
+
 async function getExistingEnvVar(key) {
   return new Promise((resolve, reject) => {
     const options = {
