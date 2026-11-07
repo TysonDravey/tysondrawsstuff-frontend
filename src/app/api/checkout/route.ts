@@ -4,6 +4,7 @@ import fs from 'fs';
 import path from 'path';
 import { type Product } from '@/lib/api';
 import { getProductImages } from '@/lib/images';
+import { ORIGINAL_METADATA_KEY, isOriginalSoldInStripe } from '@/lib/original-sales';
 
 function initializeStripe() {
   const secretKey = process.env.STRIPE_SECRET_KEY;
@@ -75,6 +76,10 @@ export async function POST(request: NextRequest) {
     if (variant === 'poster' && product.hasPoster !== true) {
       return NextResponse.json({ error: 'No poster available for this piece' }, { status: 400 });
     }
+    // The sold flag above only updates on rebuild; Stripe knows about a sale right away.
+    if (variant === 'original' && (await isOriginalSoldInStripe(stripe, product.documentId))) {
+      return NextResponse.json({ error: 'This original has been sold' }, { status: 409 });
+    }
 
     // Determine price and product name based on variant
     let checkoutPrice = product.price;
@@ -122,6 +127,13 @@ export async function POST(request: NextRequest) {
         },
       ],
       mode: 'payment',
+
+      // Originals: tag the payment so later checkouts can see this piece sold,
+      // and expire abandoned checkouts after Stripe's minimum of 30 minutes.
+      ...(variant === 'original' && {
+        payment_intent_data: { metadata: { [ORIGINAL_METADATA_KEY]: product.documentId } },
+        expires_at: Math.floor(Date.now() / 1000) + 31 * 60,
+      }),
 
       // Customer information collection
       customer_creation: 'always',

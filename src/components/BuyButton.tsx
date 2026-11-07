@@ -64,6 +64,9 @@ export default function BuyButton({ productSlug, price, productTitle, variant = 
       if (response.ok && data.url) {
         // Redirect to Stripe Checkout
         window.location.href = data.url;
+      } else if (response.status === 409) {
+        alert('Sorry, this original has just been sold.');
+        window.location.reload();
       } else {
         console.error('Error creating checkout session:', data.error);
         alert('Something went wrong. Please try again.');

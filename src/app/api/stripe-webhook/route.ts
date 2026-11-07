@@ -7,6 +7,7 @@ import { existsSync } from 'fs';
 import path from 'path';
 import { getProductImages } from '@/lib/images';
 import { siteUrl } from '@/lib/site';
+import { expireOtherOpenCheckouts } from '@/lib/original-sales';
 
 function initializeStripe() {
   const secretKey = process.env.STRIPE_SECRET_KEY;
@@ -445,6 +446,16 @@ export async function POST(request: NextRequest) {
           }
           console.log('Market sale processed:', session.id);
           break;
+        }
+
+        // An original just sold: cancel anyone else's open checkout for it first,
+        // before the slower email/analytics work below.
+        if (session.metadata?.variant === 'original' && session.metadata?.productId) {
+          try {
+            await expireOtherOpenCheckouts(stripe, session.metadata.productId, session.id);
+          } catch (expireError) {
+            console.error('Could not expire competing checkouts:', expireError);
+          }
         }
 
         // Always retrieve full session with all details expanded
