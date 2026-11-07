@@ -44,3 +44,8 @@ yarn-error.log*
 next-env.d.ts
 
 .vercel
+
+# TDS Railway tray (tools/tds_tray.py)
+/tools/venv/
+/tools/*.log
+/tools/__pycache__/
