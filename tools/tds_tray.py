@@ -444,13 +444,6 @@ def action_edit_config(icon, item):
     subprocess.Popen(["notepad.exe", str(CONFIG_FILE)], creationflags=NO_WINDOW)
 
 
-def action_reload_config(icon, item):
-    global CFG
-    CFG = load_config()
-    _set(strapi="not checked", strapi_checked=None)
-    notify("Config reloaded.")
-
-
 def action_view_log(icon, item):
     npp = Path(r"C:\Program Files\Notepad++\notepad++.exe")
     LOG_FILE.touch(exist_ok=True)
@@ -466,8 +459,26 @@ def action_quit(icon, item):
     icon.stop()
 
 
+def _fresh(action):
+    """Re-read .env.railway before every click, so edits apply without a restart."""
+    def wrapped(icon, item):
+        global CFG
+        try:
+            CFG = load_config()
+        except Exception as e:
+            log(f"Config read failed, keeping the previous one: {e}")
+        return action(icon, item)
+    return wrapped
+
+
 def build_menu() -> pystray.Menu:
-    M, S = pystray.MenuItem, pystray.Menu.SEPARATOR
+    S = pystray.Menu.SEPARATOR
+
+    def M(text, action=None, **kw):
+        if action is not None and not isinstance(action, pystray.Menu):
+            action = _fresh(action)
+        return pystray.MenuItem(text, action, **kw)
+
     return pystray.Menu(
         M(lambda i: f"  Strapi   {_strapi_label()}", None, enabled=False),
         M(lambda i: f"  Deploy   {_state['deploy']}", None, enabled=False),
@@ -487,7 +498,6 @@ def build_menu() -> pystray.Menu:
             M("Railway Dashboard", action_open_railway),
             S,
             M("Edit Config (.env.railway)", action_edit_config),
-            M("Reload Config", action_reload_config),
             M("View Log", action_view_log),
         )),
         M(lambda i: f"{'☑' if is_startup_enabled() else '☐'}  Start at Login", action_toggle_startup),
