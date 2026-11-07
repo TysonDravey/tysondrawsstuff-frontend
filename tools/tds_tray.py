@@ -25,6 +25,8 @@ or double-click tools\\start_tds_tray.bat
 """
 
 import ctypes
+import json
+import shutil
 import subprocess
 import sys
 import threading
@@ -36,7 +38,7 @@ from pathlib import Path
 
 import pystray
 import requests
-from PIL import Image
+from PIL import Image, ImageDraw
 
 # ---------------------------------------------------------------------------
 # Paths
@@ -44,6 +46,7 @@ from PIL import Image
 
 TOOLS_DIR    = Path(__file__).parent.resolve()
 FRONTEND_DIR = TOOLS_DIR.parent
+BACKEND_DIR  = FRONTEND_DIR.parent / "backend"   # linked to the Railway project via `railway link`
 CONFIG_FILE  = FRONTEND_DIR / ".env.railway"
 FALLBACK_ENV = FRONTEND_DIR / ".env.local"
 LOG_FILE     = TOOLS_DIR / "tds-tray.log"
@@ -150,6 +153,7 @@ _state = {
     "strapi_checked": None,    # datetime of last successful health check
     "deploy": "idle",          # short text for the last deploy
     "busy": False,             # a wake/deploy is in progress
+    "railway": None,           # instance status from Railway's API (RUNNING, SLEEPING, …) or None if unknown
 }
 _lock = threading.Lock()
 _icon: pystray.Icon = None  # set in main()
@@ -194,6 +198,40 @@ def wake_strapi(max_wait: int = 240) -> bool:
     _set(strapi="unreachable")
     log(f"Strapi did not come up within {max_wait}s.")
     return False
+
+
+def railway_instance_status() -> str | None:
+    """Ask Railway's API (via the CLI) whether the service is running or asleep.
+    This never touches Strapi itself, so it doesn't wake it."""
+    exe = shutil.which("railway")
+    if not exe or not BACKEND_DIR.exists():
+        return None
+    try:
+        out = subprocess.run(
+            [exe, "status", "--json"], cwd=str(BACKEND_DIR), capture_output=True,
+            text=True, timeout=30, creationflags=NO_WINDOW,
+        ).stdout
+        data = json.loads(out[out.index("{"):])
+        for env in data["environments"]["edges"]:
+            for si in env["node"]["serviceInstances"]["edges"]:
+                instances = (si["node"].get("latestDeployment") or {}).get("instances") or []
+                return instances[0]["status"] if instances else "SLEEPING"
+    except Exception as e:
+        log(f"Railway status check failed: {e}")
+    return None
+
+
+def _railway_poll_loop() -> None:
+    while True:
+        status = railway_instance_status()
+        if status != _state["railway"]:
+            if status:
+                log(f"Railway reports Strapi {status.lower()}.")
+            _state["railway"] = status
+            if status and status != "RUNNING" and _state["strapi"] == "awake":
+                _state["strapi"] = "asleep"
+            _refresh()
+        time.sleep(60)
 
 
 # ---------------------------------------------------------------------------
@@ -289,20 +327,26 @@ def run_deploy(hook_key: str, branch: str, label: str) -> None:
 # ---------------------------------------------------------------------------
 
 
-def _load_icon(bg: tuple) -> Image.Image:
-    size = (64, 64)
-    canvas = Image.new("RGBA", size, bg + (255,))
+def _load_icon(dot: tuple) -> Image.Image:
+    """The site logo with a big status dot in the bottom-right corner.
+    (The favicon is opaque, so a background colour wouldn't show.)"""
+    size = 64
+    canvas = Image.new("RGBA", (size, size), (0, 0, 0, 0))
     if ICON_FILE.exists():
-        logo = Image.open(ICON_FILE).convert("RGBA").resize((52, 52), Image.LANCZOS)
-        canvas.paste(logo, (6, 6), mask=logo.split()[3])
+        logo = Image.open(ICON_FILE).convert("RGBA").resize((size, size), Image.LANCZOS)
+        canvas.paste(logo, (0, 0), mask=logo.split()[3])
+    d = ImageDraw.Draw(canvas)
+    r0 = 30  # dot covers the lower-right ~half so it reads at 16px tray size
+    d.ellipse((r0 - 3, r0 - 3, size - 1, size - 1), fill=(0, 0, 0, 255))   # dark ring for contrast
+    d.ellipse((r0, r0, size - 4, size - 4), fill=dot + (255,))
     return canvas
 
 
 _ICONS = {
-    "idle":  _load_icon((30, 30, 30)),   # grey  — not checked / asleep
-    "awake": _load_icon((20, 80, 40)),   # green — Strapi awake
-    "busy":  _load_icon((80, 55, 10)),   # amber — waking / building
-    "error": _load_icon((110, 25, 25)),  # red   — unreachable / failed
+    "idle":  _load_icon((140, 140, 140)),  # grey  — asleep / not checked
+    "awake": _load_icon((40, 200, 80)),    # green — Strapi awake
+    "busy":  _load_icon((245, 170, 30)),   # amber — waking / building
+    "error": _load_icon((220, 40, 40)),    # red   — unreachable / failed
 }
 
 
@@ -312,15 +356,21 @@ def _current_icon() -> Image.Image:
         return _ICONS["error"]
     if _state["busy"] or s == "waking…" or "building" in d:
         return _ICONS["busy"]
-    if s == "awake":
+    if s == "awake" or _state["railway"] == "RUNNING":
         return _ICONS["awake"]
     return _ICONS["idle"]
 
 
 def _strapi_label() -> str:
-    s = _state["strapi"]
+    s, r = _state["strapi"], _state["railway"]
+    if s in ("waking…", "unreachable", "not configured"):
+        return s
+    if r == "RUNNING":
+        return "awake (sleeps after ~10 min idle)"
+    if r:
+        return "asleep (wakes automatically when used)" if r == "SLEEPING" else r.lower()
     if s == "awake" and _state["strapi_checked"]:
-        return f"awake at {_state['strapi_checked']:%H:%M} (sleeps when idle)"
+        return f"awake at {_state['strapi_checked']:%H:%M}"
     return s
 
 
@@ -525,6 +575,7 @@ def main():
         _state["strapi"] = "not configured"
     _icon = pystray.Icon("TDSRailway", _current_icon(), "TDS Railway", build_menu())
     log("Tray started.")
+    threading.Thread(target=_railway_poll_loop, daemon=True, name="railway-status").start()
     _icon.run(setup=lambda icon: (setattr(icon, "visible", True), _refresh()))
 
 

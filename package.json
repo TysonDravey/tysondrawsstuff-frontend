@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "dev:fresh": "npm run sync-images && npm run dev",
-    "prebuild": "node scripts/sync-images.js && node scripts/export-products.js",
+    "prebuild": "node scripts/wake-strapi.js && node scripts/sync-images.js && node scripts/export-products.js",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
