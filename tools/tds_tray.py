@@ -65,16 +65,13 @@ RAILWAY_STRAPI_URL=
 # Railway project dashboard (for the "Railway Dashboard" menu item)
 RAILWAY_DASHBOARD_URL=https://railway.com/dashboard
 
-# Vercel branch whose builds read from Railway (branch-scoped env vars in Vercel)
-PREVIEW_BRANCH=railway-preview
-# Vercel -> Settings -> Git -> Deploy Hooks, hook for PREVIEW_BRANCH
-VERCEL_DEPLOY_HOOK_RAILWAY_PREVIEW=
-# URL of that branch's preview site
-PREVIEW_SITE_URL=
+# Preview site: the develop branch. Its deploy hook (VERCEL_DEPLOY_HOOK_DEVELOP)
+# is read from .env.local; set it here only to override.
+PREVIEW_BRANCH=develop
+PREVIEW_SITE_URL=https://develop.tysondrawsstuff.com
 
-# Leave false until the live site's NEXT_PUBLIC_STRAPI_URL points at Railway.
-# While false, "Publish Live" is disabled so this app can't touch production.
-LIVE_ON_RAILWAY=false
+# Publish Live rebuilds www from the main branch (VERCEL_DEPLOY_HOOK_PRODUCTION in .env.local).
+LIVE_ON_RAILWAY=true
 LIVE_SITE_URL=https://www.tysondrawsstuff.com
 """
 
@@ -101,11 +98,13 @@ def load_config() -> dict:
     fallback = _read_env(FALLBACK_ENV)
     cfg = _read_env(CONFIG_FILE)
     # Only borrow Vercel API access + the production hook from .env.local, never the Strapi URL/token
-    for key in ("VERCEL_TOKEN", "VERCEL_PROJECT_ID", "VERCEL_TEAM_ID", "VERCEL_DEPLOY_HOOK_PRODUCTION"):
+    for key in ("VERCEL_TOKEN", "VERCEL_PROJECT_ID", "VERCEL_TEAM_ID",
+                "VERCEL_DEPLOY_HOOK_DEVELOP", "VERCEL_DEPLOY_HOOK_PRODUCTION"):
         if not cfg.get(key) and fallback.get(key):
             cfg[key] = fallback[key]
     cfg["RAILWAY_STRAPI_URL"] = cfg.get("RAILWAY_STRAPI_URL", "").rstrip("/")
-    cfg.setdefault("PREVIEW_BRANCH", "railway-preview")
+    cfg.setdefault("PREVIEW_BRANCH", "develop")
+    cfg.setdefault("PREVIEW_SITE_URL", "https://develop.tysondrawsstuff.com")
     cfg.setdefault("LIVE_SITE_URL", "https://www.tysondrawsstuff.com")
     return cfg
 
@@ -449,7 +448,7 @@ def action_open_admin(icon, item):
 
 
 def action_deploy_preview(icon, item):
-    _bg(run_deploy, "VERCEL_DEPLOY_HOOK_RAILWAY_PREVIEW", CFG["PREVIEW_BRANCH"], "Preview")
+    _bg(run_deploy, "VERCEL_DEPLOY_HOOK_DEVELOP", CFG["PREVIEW_BRANCH"], "Preview")
 
 
 def action_publish_live(icon, item):
