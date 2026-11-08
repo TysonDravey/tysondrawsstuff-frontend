@@ -116,12 +116,16 @@ const wallFromHash = () => {
 
 // The salon wall: a few paintings at a time, hung at their real proportions with slight, hand-hung
 // tilts and staggered heights. Previous/Next rehangs the wall in place (no page reload, no jump).
-export default function OriginalsGrid({ items, allHref, posterPrice }: {
+export default function OriginalsGrid({ items, allHref, posterPrice, heading = 'Originals', filters = true }: {
   items: GridItem[];
-  allHref: string;
+  /** "See all N originals on one page" link; left out when not given. */
+  allHref?: string;
   posterPrice?: number;
+  heading?: string;
+  /** Available / All work / Under $400 buttons. Off (show everything) on show pages. */
+  filters?: boolean;
 }) {
-  const [filter, setFilter] = useState<FilterId>('available');
+  const [filter, setFilter] = useState<FilterId>(filters ? 'available' : 'all');
   const [wall, setWall] = useState(0);
   const sectionRef = useRef<HTMLDivElement>(null);
   // Width of the wall, measured in the browser; the static build lays out for a desktop width.
@@ -200,8 +204,8 @@ export default function OriginalsGrid({ items, allHref, posterPrice }: {
   return (
     <div ref={sectionRef} className="scroll-mt-24">
       <div className="flex flex-wrap items-end justify-between gap-4 mb-10">
-        <h2 className="font-display text-4xl sm:text-[44px] leading-tight">Originals</h2>
-        <div role="group" aria-label="Filter originals" className="flex flex-wrap gap-2">
+        <h2 className="font-display text-4xl sm:text-[44px] leading-tight">{heading}</h2>
+        <div role="group" aria-label="Filter originals" className={`flex flex-wrap gap-2 ${filters ? '' : 'hidden'}`}>
           {FILTERS.map(f => (
             <button
               key={f.id}
@@ -342,12 +346,14 @@ export default function OriginalsGrid({ items, allHref, posterPrice }: {
             </button>
           </>
         )}
-        <Link
-          href={allHref}
-          className="basis-full text-center text-sm font-semibold text-muted-foreground hover:text-primary mt-2"
-        >
-          See all {items.length} originals on one page →
-        </Link>
+        {allHref && (
+          <Link
+            href={allHref}
+            className="basis-full text-center text-sm font-semibold text-muted-foreground hover:text-primary mt-2"
+          >
+            See all {items.length} originals on one page →
+          </Link>
+        )}
       </nav>
     </div>
   );

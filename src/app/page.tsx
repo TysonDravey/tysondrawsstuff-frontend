@@ -11,25 +11,15 @@ import {
   fetchGlobal,
   type Product,
 } from '@/lib/api';
-import { getProductImages } from '@/lib/images';
-import { siteUrl } from '@/lib/site';import { displayTitle, pullQuote, isOriginal, isAvailable, formatPrice, currentShows, showDates, activeShow } from '@/lib/display';
+import { siteUrl } from '@/lib/site';
+import { displayTitle, pullQuote, isOriginal, isAvailable, formatPrice, currentShows, showDates, activeShow } from '@/lib/display';
+import { firstImage, toGridItem, wallOrder } from '@/lib/grid-items';
 
 export const metadata: Metadata = {
   alternates: {
     canonical: siteUrl(),
   },
 };
-
-function firstImage(product: Product) {
-  const img = getProductImages(product.slug, product.images)[0];
-  if (!img) return null;
-  return {
-    src: img.src,
-    width: img.width || 1200,
-    height: img.height || 1600,
-    alt: img.alt || displayTitle(product.title),
-  };
-}
 
 export default async function Home() {
   const [products, categories, shows, global] = await Promise.all([
@@ -68,20 +58,7 @@ export default async function Home() {
   const liveShows = currentShows(shows);
 
   // Grid: every original, available pieces first, featured pieces first within that.
-  const gridItems: GridItem[] = originals
-    .slice()
-    .sort((a, b) => Number(!isAvailable(a)) - Number(!isAvailable(b)) || Number(b.featured) - Number(a.featured))
-    .map(p => ({
-      slug: p.slug,
-      title: displayTitle(p.title),
-      // While a piece hangs at a show, the wall shows its show price (if one is set).
-      price: (activeShow(p) && p.showPrice) || p.price,
-      sold: !isAvailable(p),
-      atShow: activeShow(p)?.title,
-      hasPoster: !!p.hasPoster,
-      frame: p.frame,
-      image: firstImage(p),
-    }));
+  const gridItems: GridItem[] = originals.slice().sort(wallOrder).map(toGridItem);
 
   // Posters band: one sold piece (the "missed it?" pitch) and one available piece, both with posters.
   const posterPicks = [

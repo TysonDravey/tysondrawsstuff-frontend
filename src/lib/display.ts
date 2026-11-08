@@ -85,7 +85,41 @@ export function activeShow(product: Product, now = new Date()): Show | null {
   return s && s.endDate.slice(0, 10) >= now.toISOString().slice(0, 10) ? s : null;
 }
 
-const MONTHS =['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+export type ShowStatus = 'upcoming' | 'current' | 'past';
+// Whole days: a show is current from its first day through the end of its last.
+export function showStatus(show: Show, now = new Date()): ShowStatus {
+  const today = now.toISOString().slice(0, 10);
+  if (show.startDate.slice(0, 10) > today) return 'upcoming';
+  if (show.endDate.slice(0, 10) < today) return 'past';
+  return 'current';
+}
+
+// "Sep 11 – Oct 31, 2026" / "Nov 4, 2026 – Jan 29, 2027"
+export function showDatesLong(show: Show): string {
+  const parts = (d: string) => d.slice(0, 10).split('-').map(Number);
+  const [y1, m1, d1] = parts(show.startDate);
+  const [y2, m2, d2] = parts(show.endDate);
+  return y1 === y2
+    ? `${MONTHS[m1 - 1]} ${d1} – ${MONTHS[m2 - 1]} ${d2}, ${y2}`
+    : `${MONTHS[m1 - 1]} ${d1}, ${y1} – ${MONTHS[m2 - 1]} ${d2}, ${y2}`;
+}
+
+// Plain-text opening of a Markdown description, for cards ("### Heading" and **bold** stripped).
+export function plainExcerpt(markdown: string | undefined, max = 180): string | null {
+  if (!markdown) return null;
+  const text = markdown
+    .replace(/&nbsp;/g, ' ')
+    .replace(/^#{1,6}\s*/gm, '')
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+    .replace(/[*_`>]/g, '')
+    .replace(/<[^>]+>/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (!text) return null;
+  return text.length > max ? text.slice(0, max).replace(/\s+\S*$/, '') + '…' : text;
+}
+
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 // "Nov 4 – Jan 29". Dates are plain YYYY-MM-DD from Strapi; parse them without a timezone shift.
 export function showDates(show: Show): string {
   const fmt = (d: string) => {
