@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
-import Layout from '@/components/Layout';
+import ListingPage from '@/components/ListingPage';
 import ProductGrid from '@/components/ProductGrid';
-import Pagination from '@/components/Pagination';
 import { fetchProductsPaginated, fetchCategoriesWithProducts } from '@/lib/api';
 import { notFound } from 'next/navigation';
 import { siteUrl } from '@/lib/site';
@@ -65,25 +64,15 @@ export default async function ShopPagePaginated({ params }: PageProps) {
   }
 
   return (
-    <Layout categories={categories}>
-      <div className="py-8">
-        <div className="container mx-auto px-4">
-          <div className="flex justify-between items-center mb-8">
-            <h1 className="text-3xl sm:text-4xl font-bold text-foreground">Shop All Products</h1>
-            <div className="text-sm text-muted-foreground">
-              Page {pagination.page} of {pagination.pageCount} ({pagination.total} total products)
-            </div>
-          </div>
-
-          <ProductGrid products={products} />
-
-          <Pagination
-            currentPage={pagination.page}
-            totalPages={pagination.pageCount}
-            baseUrl="/shop"
-          />
-        </div>
-      </div>
-    </Layout>
+    <ListingPage
+      categories={categories}
+      trail={[['Shop', '/shop/'], [`Page ${pageNumber}`]]}
+      eyebrow="Shop"
+      title="Everything"
+      intro="Originals, books and merch, all in one place. Free shipping within Canada."
+      pagination={{ ...pagination, baseUrl: '/shop' }}
+    >
+      <ProductGrid products={products} />
+    </ListingPage>
   );
 }

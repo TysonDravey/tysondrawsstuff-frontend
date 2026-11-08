@@ -1,8 +1,8 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import { type Product, type Show } from '@/lib/api';
+import { type Product } from '@/lib/api';
 import { getProductImageUrl } from '@/lib/images';
-import { displayTitle } from '@/lib/display';
+import { displayTitle, activeShow, isOriginal, formatPrice } from '@/lib/display';
 
 interface ProductCardProps {
   product: Product;
@@ -40,138 +40,54 @@ function PosterCard({ product, posterPrice }: { product: Product; posterPrice?: 
   );
 }
 
-// Helper function to check if a show is currently active
-function isShowActive(show: Show): boolean {
-  const now = new Date();
-  const endDate = new Date(show.endDate);
-  return endDate >= now;
-}
-
-export default function ProductCard({ product, featured = false, poster = false, posterPrice }: ProductCardProps) {
+// Books, merch, the "all products" shop: the item on a dark card, title and price beneath.
+// (`featured` is kept for older callers; it no longer changes the look.)
+export default function ProductCard({ product, poster = false, posterPrice }: ProductCardProps) {
   if (poster) return <PosterCard product={product} posterPrice={posterPrice} />;
 
-  // Check if the show is still active
-  const showIsActive = product.currentShow ? isShowActive(product.currentShow) : false;
+  const show = activeShow(product);
+  const sold = product.sold === true;
+  const image = product.images?.[0];
+  const price = (show && product.showPrice) || product.price;
+  const status = sold
+    ? 'Sold'
+    : show
+      ? `At ${show.title}`
+      : isOriginal(product)
+        ? `Original${product.hasPoster ? ' · poster available' : ''}`
+        : product.category?.name;
+
   return (
-    <div className="group">
-      <Link href={`/shop/${product.slug}`}>
-        <div className="bg-card border border-border rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 group-hover:scale-[1.02]">
-          <div className="aspect-square relative bg-muted">
-            {product.images && product.images.length > 0 ? (
-              <Image
-                src={getProductImageUrl(product.slug, product.images[0], 0)}
-                alt={product.images[0].alternativeText || product.title}
-                fill
-                className="object-cover transition-transform duration-300 group-hover:scale-105"
-              />
-            ) : (
-              <div className="flex items-center justify-center h-full text-muted-foreground">
-                No image available
-              </div>
-            )}
-
-            {/* SOLD Overlay */}
-            {product.sold === true && (
-              <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
-                <div className="bg-[#640006] text-white text-3xl font-bold px-8 py-4 rounded-lg transform -rotate-12 shadow-2xl border-4 border-white">
-                  SOLD
-                </div>
-              </div>
-            )}
-
-            {/* Featured Badge */}
-            {(featured || product.featured) && product.sold !== true && (
-              <div className="absolute top-3 left-3">
-                <span className="bg-primary text-primary-foreground text-xs font-semibold px-3 py-1 rounded-full">
-                  Featured
-                </span>
-              </div>
-            )}
-
-            {/* Show Badge - Only for ACTIVE shows */}
-            {product.currentShow && showIsActive && product.showPrice && product.sold !== true && (
-              <div className="absolute top-3 right-3">
-                <span className="bg-primary text-primary-foreground text-xs font-semibold px-2 py-1 rounded">
-                  At Show
-                </span>
-              </div>
-            )}
-
-            {/* Category Badge */}
-            {product.category && !(product.currentShow && showIsActive && product.showPrice) && product.sold !== true && (
-              <div className="absolute top-3 right-3">
-                <span className="bg-secondary text-secondary-foreground text-xs font-medium px-2 py-1 rounded">
-                  {product.category.name}
-                </span>
-              </div>
-            )}
-
-            {/* Poster Available Badge */}
-            {product.hasPoster && (
-              <div className="absolute bottom-3 left-3">
-                <span className="bg-[#BFA054] text-white text-xs font-semibold px-2 py-1 rounded">
-                  Poster Available
-                </span>
-              </div>
-            )}
-          </div>
-
-          <div className="p-6">
-            <h3 className="text-lg font-semibold text-card-foreground mb-3 line-clamp-2 group-hover:text-primary transition-colors">
-              {product.title}
-            </h3>
-
-            {/* Pricing or SOLD - Only show special pricing for ACTIVE shows */}
-            {product.sold === true ? (
-              <p className="text-2xl font-bold text-[#640006]">
-                SOLD
-              </p>
-            ) : product.currentShow && showIsActive && product.showPrice ? (
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <p className="text-lg text-muted-foreground line-through">
-                    ${product.price.toFixed(2)}
-                  </p>
-                  <p className="text-2xl font-bold text-primary">
-                    ${product.showPrice.toFixed(2)}
-                  </p>
-                </div>
-                <p className="text-xs text-primary font-medium">
-                  Show Special at {product.currentShow.title}
-                </p>
-              </div>
-            ) : (
-              <p className="text-2xl font-bold text-primary">
-                ${product.price.toFixed(2)}
-              </p>
-            )}
-
-            {/* Description for featured products */}
-            {featured && product.description && (
-              <div className="mt-3 pt-3 border-t border-border">
-                <p className="text-sm text-muted-foreground line-clamp-2">
-                  {typeof product.description === 'string'
-                    ? product.description.slice(0, 100) + (product.description.length > 100 ? '...' : '')
-                    : 'Product description available'
-                  }
-                </p>
-              </div>
-            )}
-
-            {/* View Item button for featured products */}
-            {featured && (
-              <div className="mt-4 pt-3 border-t border-border">
-                <span className="inline-flex items-center text-primary hover:text-orange-600 transition-colors font-medium text-sm">
-                  View Item
-                  <svg className="ml-1 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </span>
-              </div>
-            )}
-          </div>
-        </div>
-      </Link>
-    </div>
+    <Link href={`/shop/${product.slug}/`} className="group block">
+      <div className="aspect-square relative bg-card overflow-hidden">
+        {image ? (
+          <Image
+            src={getProductImageUrl(product.slug, image, 0)}
+            alt={image.alternativeText || displayTitle(product.title)}
+            fill
+            sizes="(min-width: 1280px) 300px, (min-width: 640px) 45vw, 100vw"
+            className={`object-contain p-4 transition-transform duration-300 group-hover:scale-[1.03] ${sold ? 'opacity-55' : ''}`}
+          />
+        ) : (
+          <div className="flex items-center justify-center h-full text-muted-foreground">No image available</div>
+        )}
+      </div>
+      <div className="pt-3 flex items-baseline justify-between gap-3">
+        <h3 className="font-sans font-semibold text-[15px] group-hover:text-primary transition-colors">{displayTitle(product.title)}</h3>
+        {!sold && (
+          <span className="text-[15px] whitespace-nowrap">
+            {show && product.showPrice ? <s className="text-muted-foreground mr-1.5">{formatPrice(product.price)}</s> : null}
+            {formatPrice(price)}
+          </span>
+        )}
+      </div>
+      {status && (
+        <p className="text-[13px] text-muted-foreground mt-0.5 flex items-center gap-1.5">
+          {sold && <span aria-hidden="true" className="w-2 h-2 rounded-full bg-[#D7262E]" />}
+          {!sold && show && <span aria-hidden="true" className="w-2 h-2 rounded-full bg-primary" />}
+          {status}
+        </p>
+      )}
+    </Link>
   );
 }
