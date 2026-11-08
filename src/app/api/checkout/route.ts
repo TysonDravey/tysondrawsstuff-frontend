@@ -39,6 +39,32 @@ function getSiteSettings(): { posterPrice?: number } {
   }
 }
 
+// Stripe's hosted checkout page dressed like the site (dark background, orange button, Inter)
+// instead of Stripe's default bright white. Our SDK version predates `branding_settings`, hence
+// the cast. Branding is cosmetic: if Stripe ever rejects it, retry plain rather than lose a sale.
+const BRANDING = {
+  display_name: 'Tyson Draws Stuff',
+  background_color: '#0E0B0A',
+  button_color: '#E89B3B',
+  border_style: 'rounded',
+  font_family: 'inter',
+};
+
+async function createBrandedSession(stripe: Stripe, params: Stripe.Checkout.SessionCreateParams) {
+  try {
+    return await stripe.checkout.sessions.create({
+      ...params,
+      branding_settings: BRANDING,
+    } as Stripe.Checkout.SessionCreateParams);
+  } catch (error) {
+    if (error instanceof Stripe.errors.StripeInvalidRequestError && /branding/i.test(`${error.param} ${error.message}`)) {
+      console.warn('Stripe rejected checkout branding; creating the session without it:', error.message);
+      return stripe.checkout.sessions.create(params);
+    }
+    throw error;
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     // Initialize Stripe only when the function is called
@@ -118,7 +144,7 @@ export async function POST(request: NextRequest) {
     const checkoutImage = firstImage?.startsWith('https://') ? firstImage : undefined;
 
     // Create Stripe checkout session with comprehensive customer data collection
-    const session = await stripe.checkout.sessions.create({
+    const params: Stripe.Checkout.SessionCreateParams = {
       payment_method_types: ['card'],
       line_items: [
         {
@@ -192,8 +218,9 @@ export async function POST(request: NextRequest) {
           optional: true,
         },
       ],
-    });
+    };
 
+    const session = await createBrandedSession(stripe, params);
     return NextResponse.json({ url: session.url });
   } catch (error) {
     console.error('Error creating checkout session:', error);
