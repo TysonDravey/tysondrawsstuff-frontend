@@ -12,9 +12,7 @@ import {
   type Product,
 } from '@/lib/api';
 import { getProductImages } from '@/lib/images';
-import { siteUrl } from '@/lib/site';
-import { frameSetting } from '@/lib/frame-pick';
-import { displayTitle, pullQuote, isOriginal, isAvailable, formatPrice, currentShows, showDates } from '@/lib/display';
+import { siteUrl } from '@/lib/site';import { displayTitle, pullQuote, isOriginal, isAvailable, formatPrice, currentShows, showDates, activeShow } from '@/lib/display';
 
 export const metadata: Metadata = {
   alternates: {
@@ -50,13 +48,21 @@ export default async function Home() {
     const fallback = originals.find(p => isAvailable(p) && firstImage(p));
     heroProducts = fallback ? [fallback] : [];
   }
-  const heroSlides: HeroSlide[] = heroProducts.map(p => ({
-    slug: p.slug,
-    title: displayTitle(p.title),
-    quote: pullQuote(p.description),
-    price: formatPrice(p.price),
-    image: firstImage(p)!,
-  }));
+  const heroSlides: HeroSlide[] = heroProducts.map(p => {
+    const show = activeShow(p);
+    const showPrice = show && p.showPrice ? p.showPrice : null;
+    return {
+      slug: p.slug,
+      title: displayTitle(p.title),
+      quote: pullQuote(p.description),
+      price: formatPrice(showPrice ?? p.price),
+      onlinePrice: showPrice ? formatPrice(p.price) : undefined,
+      show: show
+        ? { title: show.title, slug: show.slug, until: showDates(show).split(' – ')[1] }
+        : undefined,
+      image: firstImage(p)!,
+    };
+  });
   const heroIds = new Set(heroProducts.map(p => p.id));
 
   const liveShows = currentShows(shows);
@@ -68,10 +74,12 @@ export default async function Home() {
     .map(p => ({
       slug: p.slug,
       title: displayTitle(p.title),
-      price: p.price,
+      // While a piece hangs at a show, the wall shows its show price (if one is set).
+      price: (activeShow(p) && p.showPrice) || p.price,
       sold: !isAvailable(p),
+      atShow: activeShow(p)?.title,
       hasPoster: !!p.hasPoster,
-      frame: frameSetting(p),
+      frame: p.frame,
       image: firstImage(p),
     }));
 

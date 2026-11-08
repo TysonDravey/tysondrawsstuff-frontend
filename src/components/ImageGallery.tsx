@@ -16,12 +16,14 @@ interface ImageGalleryProps {
   sold?: boolean;
   /** Display frame class suffix (see frame-pick.ts), or 'none'. Matches the home page wall. */
   frame?: string;
+  /** Replaces "Frame shown for display only." under a framed painting. */
+  framedNote?: string;
 }
 
 // Product page: the piece hangs on the same oxblood wall as the home page salon, unframed (so it
 // shows what actually ships), under a picture light. A sold original gets a gallery red dot.
 // Click/tap to enlarge; extra photos (details, the piece in a room) are thumbnails underneath.
-export default function ImageGallery({ images, productTitle, productSlug, sold = false, frame = 'none' }: ImageGalleryProps) {
+export default function ImageGallery({ images, productTitle, productSlug, sold = false, frame = 'none', framedNote }: ImageGalleryProps) {
   const [selected, setSelected] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
 
@@ -79,7 +81,7 @@ export default function ImageGallery({ images, productTitle, productSlug, sold =
         </span>
       </div>
 
-      {framed && <p className="-mt-1 text-xs text-muted-foreground">Frame shown for display only.</p>}
+      {framed && <p className="-mt-1 text-xs text-muted-foreground">{framedNote ?? 'Frame shown for display only.'}</p>}
 
       {processed.length > 1 && (
         <div className="flex flex-wrap gap-3" role="group" aria-label="More photos">

@@ -78,7 +78,14 @@ export function currentShows(shows: Show[], now = new Date()): Show[] {
     .sort((a, b) => b.startDate.localeCompare(a.startDate));
 }
 
-const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+// The show a piece is hanging at right now, if any. A show holds the piece (for in-person sale)
+// until the end of its last day.
+export function activeShow(product: Product, now = new Date()): Show | null {
+  const s = product.currentShow;
+  return s && s.endDate.slice(0, 10) >= now.toISOString().slice(0, 10) ? s : null;
+}
+
+const MONTHS =['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 // "Nov 4 – Jan 29". Dates are plain YYYY-MM-DD from Strapi; parse them without a timezone shift.
 export function showDates(show: Show): string {
   const fmt = (d: string) => {

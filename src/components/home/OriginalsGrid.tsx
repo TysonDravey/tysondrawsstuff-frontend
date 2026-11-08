@@ -12,7 +12,9 @@ export interface GridItem {
   sold: boolean;
   hasPoster: boolean;
   frame?: string;
-  image: { src: string; width: number; height: number; alt: string } | null;
+  /** Title of the show the piece is hanging at right now. */
+  atShow?: string;
+  image:{ src: string; width: number; height: number; alt: string } | null;
 }
 
 
@@ -294,6 +296,12 @@ export default function OriginalsGrid({ items, allHref, posterPrice }: {
                       {item.sold ? 'Sold' : `$${item.price}`}
                     </span>
                   </div>
+                  {item.atShow && !item.sold && (
+                    <div className="flex items-center gap-1.5 text-[13px] text-[#F6C9A0] mt-0.5">
+                      <span aria-hidden="true" className="w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
+                      At {item.atShow}
+                    </div>
+                  )}
                   {item.hasPoster && (
                     <div className="text-[13px] text-muted-foreground mt-0.5">
                       {item.sold ? 'Poster still available' : 'Poster available'}

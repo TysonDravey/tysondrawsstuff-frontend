@@ -10,7 +10,12 @@ export interface HeroSlide {
   slug: string;
   title: string;
   quote: string | null;
+  /** The price to show: the show price while the piece hangs at a show (if one is set). */
   price: string;
+  /** The regular online price, when `price` is a show price. */
+  onlinePrice?: string;
+  /** The show the piece is hanging at right now. */
+  show?: { title: string; slug: string; until: string };
   image: { src: string; width: number; height: number; alt: string };
 }
 
@@ -69,11 +74,28 @@ export default function FeaturedHero({ slides }: { slides: HeroSlide[] }) {
                     <span className="text-[28px] font-bold">
                       {s.price} <span className="text-sm font-medium text-muted-foreground">CAD</span>
                     </span>
-                    <span className="inline-flex items-center gap-2 text-sm text-[#CFE3B4]">
-                      <span aria-hidden="true" className="w-2 h-2 rounded-full bg-available" />
-                      Available
-                    </span>
+                    {s.onlinePrice && (
+                      <span className="text-sm text-muted-foreground">
+                        Show price · <s>{s.onlinePrice}</s> online
+                      </span>
+                    )}
+                    {!s.show && (
+                      <span className="inline-flex items-center gap-2 text-sm text-[#CFE3B4]">
+                        <span aria-hidden="true" className="w-2 h-2 rounded-full bg-available" />
+                        Available
+                      </span>
+                    )}
                   </div>
+                  {s.show && (
+                    <Link
+                      href={`/shows/${s.show.slug}/`}
+                      tabIndex={i === selected ? 0 : -1}
+                      className="self-start inline-flex items-center gap-2.5 rounded-full border border-[#F6C9A0]/40 bg-burgundy/60 px-4 py-2 text-sm text-[#F6C9A0] hover:border-[#F6C9A0] transition-colors"
+                    >
+                      <span aria-hidden="true" className="w-2 h-2 rounded-full bg-primary" />
+                      On the wall at <strong className="text-foreground">{s.show.title}</strong> until {s.show.until}
+                    </Link>
+                  )}
                   <div className="flex flex-wrap gap-3 mt-2">
                     <Link
                       href={`/shop/${s.slug}/`}

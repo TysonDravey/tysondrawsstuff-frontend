@@ -2,22 +2,18 @@ import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import type { Metadata } from 'next';
 import Layout from '@/components/Layout';
-import { fetchProductBySlug, fetchProductSlugs, fetchCategoriesWithProducts, fetchProductsByCategory, fetchProductsByShow, fetchGlobal, type Product, type Show } from '@/lib/api';
+import { fetchProductBySlug, fetchProductSlugs, fetchCategoriesWithProducts, fetchProductsByCategory, fetchProductsByShow, fetchGlobal, type Product } from '@/lib/api';
 import BuyButton from '@/components/BuyButton';
 import ImageGallery from '@/components/ImageGallery';
 import ProductNavigation from '@/components/ProductNavigation';
 import { getProductImages } from '@/lib/images';
-import { displayTitle, describeOriginal, isOriginal, formatPrice, showDates } from '@/lib/display';
+import { displayTitle, describeOriginal, isOriginal, formatPrice, showDates, activeShow } from '@/lib/display';
 import { marked } from 'marked';
 import { siteUrl } from '@/lib/site';
-import { frameFor, frameSetting } from '@/lib/frame-pick';
+import { frameFor, comesFramed } from '@/lib/frame-pick';
 
 const CONTACT_EMAIL = 'kirkbrillon@gmail.com';
 
-// A show counts as on (and holds the piece for in-person sale) until the end of its last day.
-function isShowActive(show: Show): boolean {
-  return show.endDate.slice(0, 10) >= new Date().toISOString().slice(0, 10);
-}
 
 interface ProductPageProps {
   params: Promise<{
@@ -128,7 +124,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const title = displayTitle(product.title);
   const original = isOriginal(product);
   const sold = product.sold === true;
-  const show = product.currentShow && isShowActive(product.currentShow) ? product.currentShow : null;
+  const show = activeShow(product);
   const posterPrice = product.hasPoster ? globalSettings.posterPrice : undefined;
 
   // Originals: story ("Sometimes…") + details (medium, size, framing). Books/merch: the full text.
@@ -171,7 +167,12 @@ export default async function ProductPage({ params }: ProductPageProps) {
             productTitle={title}
             productSlug={product.slug}
             sold={original && sold}
-            frame={original ? frameFor({ slug: product.slug, frame: frameSetting(product) }) : 'none'}
+            frame={original ? frameFor(product) : 'none'}
+            framedNote={
+              comesFramed(product)
+                ? 'Display frame shown. This piece comes in its own custom frame (see details).'
+                : undefined
+            }
           />
 
           <div className="lg:sticky lg:top-24 flex flex-col gap-7">

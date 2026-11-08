@@ -1,15 +1,11 @@
 import { FRAME_NAMES } from './frames';
 import { describeOriginal } from './display';
 
-/**
- * The frame setting to use for a product: when the piece comes in a real frame (its description's
- * details mention one, e.g. "Custom wood frame with resin inlays included") its photo already shows
- * that frame, so "auto" becomes "none". An explicit choice in Strapi is always kept.
- */
-export function frameSetting(p: { frame?: string; description?: string }): string | undefined {
-  const auto = !p.frame || p.frame === 'auto';
-  if (auto && describeOriginal(p.description).details.some(d => /frame/i.test(d))) return 'none';
-  return p.frame;
+/** Does the piece ship in a real frame of its own? (Its details mention one, e.g. the Krampus
+ *  series' "Custom wood frame with resin inlays included".) Their photos show the painting only,
+ *  so they still get a display frame; the product page just says the real one is different. */
+export function comesFramed(p: { description?: string }): boolean {
+  return describeOriginal(p.description).details.some(d => /frame/i.test(d));
 }
 
 // Small, stable pseudo-random number (0..1) from a slug, so a painting always gets the same
