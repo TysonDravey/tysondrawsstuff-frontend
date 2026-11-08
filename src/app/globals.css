@@ -135,8 +135,8 @@ a:focus-visible, button:focus-visible {
 }
 
 /* Warm picture light on the wall above and to the left of each painting. */
-.hang-item { position: relative; }
-.hang-item::before {
+.hang-item, .lit { position: relative; }
+.hang-item::before, .lit::before {
   content: '';
   position: absolute;
   left: -40%;

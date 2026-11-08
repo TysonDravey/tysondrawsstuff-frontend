@@ -152,7 +152,9 @@ export async function POST(request: NextRequest) {
       // Collect customer details
       billing_address_collection: 'auto', // Optional billing address
       shipping_address_collection: {
-        allowed_countries: ['CA', 'US'], // Adjust based on your shipping countries
+        // Canada only (free shipping, built into the price). US orders were dropped in Nov 2026
+        // over tariffs/customs; US visitors are pointed to email instead.
+        allowed_countries: ['CA'],
       },
 
       // Phone number collection

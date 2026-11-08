@@ -7,14 +7,15 @@ import BuyButton from '@/components/BuyButton';
 import ImageGallery from '@/components/ImageGallery';
 import ProductNavigation from '@/components/ProductNavigation';
 import { getProductImages } from '@/lib/images';
+import { displayTitle, describeOriginal, isOriginal, formatPrice, showDates } from '@/lib/display';
 import { marked } from 'marked';
 import { siteUrl } from '@/lib/site';
 
-// Helper function to check if a show is currently active
+const CONTACT_EMAIL = 'kirkbrillon@gmail.com';
+
+// A show counts as on (and holds the piece for in-person sale) until the end of its last day.
 function isShowActive(show: Show): boolean {
-  const now = new Date();
-  const endDate = new Date(show.endDate);
-  return endDate >= now;
+  return show.endDate.slice(0, 10) >= new Date().toISOString().slice(0, 10);
 }
 
 interface ProductPageProps {
@@ -88,6 +89,15 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   };
 }
 
+function Tick({ children }: { children: React.ReactNode }) {
+  return (
+    <li className="flex gap-3 items-start">
+      <svg aria-hidden="true" className="mt-0.5 shrink-0" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#E89B3B" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round"><path d="M20 6L9 17l-5-5" /></svg>
+      <span>{children}</span>
+    </li>
+  );
+}
+
 export default async function ProductPage({ params }: ProductPageProps) {
   const { slug } = await params;
   const [product, categories, globalSettings] = await Promise.all([
@@ -101,14 +111,11 @@ export default async function ProductPage({ params }: ProductPageProps) {
     if (process.env.NODE_ENV === 'production') {
       return (
         <Layout categories={categories}>
-          <div className="container mx-auto px-4 py-16 text-center">
-            <h1 className="text-2xl font-bold mb-4 text-foreground">Product Not Available</h1>
-            <p className="text-muted-foreground mb-8">This product could not be loaded at the moment.</p>
-            <Link href="/shop" className="text-primary hover:text-orange-600 inline-flex items-center">
-              <svg className="mr-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-              Back to Shop
+          <div className="mx-auto max-w-7xl px-4 py-24 text-center">
+            <h1 className="font-display text-3xl mb-4">Not available right now</h1>
+            <p className="text-soft mb-8">This piece couldn’t be loaded at the moment.</p>
+            <Link href="/category/category/" className="font-semibold border-b-2 border-primary pb-0.5 hover:text-primary">
+              Browse the originals
             </Link>
           </div>
         </Layout>
@@ -117,240 +124,178 @@ export default async function ProductPage({ params }: ProductPageProps) {
     notFound();
   }
 
-  // Check if the show is still active
-  const showIsActive = product.currentShow ? isShowActive(product.currentShow) : false;
+  const title = displayTitle(product.title);
+  const original = isOriginal(product);
+  const sold = product.sold === true;
+  const show = product.currentShow && isShowActive(product.currentShow) ? product.currentShow : null;
+  const posterPrice = product.hasPoster ? globalSettings.posterPrice : undefined;
 
-  // Shows this piece has been in, excluding the one it's currently at
+  // Originals: story ("Sometimes…") + details (medium, size, framing). Books/merch: the full text.
+  const { story, details } = original ? describeOriginal(product.description) : { story: null, details: [] };
+  const bodyHtml = !original && product.description
+    ? (marked(product.description, { breaks: true, gfm: true }) as string)
+    : null;
+
+  // Shows this piece has been in, excluding the one it's at now
   const pastShows = (product.shows || [])
-    .filter(show => !(showIsActive && show.slug === product.currentShow?.slug))
+    .filter(s => !(show && s.slug === show.slug))
     .sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
 
-  // Fetch related products for navigation
-  let relatedProducts: Product[] = [];
-  let context: 'category' | 'show' = 'category';
+  // Previous / next: within the show it's hanging at, otherwise within its category
+  let related: Product[] = [];
+  if (show) related = await fetchProductsByShow(show.slug);
+  else if (product.category) related = await fetchProductsByCategory(product.category.slug);
+  const contextLabel = show ? show.title : product.category?.name === 'Original Art' ? 'Originals' : product.category?.name;
+  const contextHref = show ? `/shows/${show.slug}/` : product.category ? `/category/${product.category.slug}/` : undefined;
 
-  if (product.currentShow && showIsActive) {
-    relatedProducts = await fetchProductsByShow(product.currentShow.slug);
-    context = 'show';
-  } else if (product.category) {
-    relatedProducts = await fetchProductsByCategory(product.category.slug);
-    context = 'category';
-  }
+  const askHref = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(`About “${title}”`)}`;
 
   return (
     <Layout categories={categories}>
-      <div className="py-8">
-        <div className="container mx-auto px-4">
-          <Link
-            href="/shop"
-            className="text-primary hover:text-orange-600 mb-6 inline-flex items-center font-medium transition-colors"
-          >
-            <svg className="mr-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-            Back to Shop
-          </Link>
+      <div className="mx-auto max-w-7xl px-4 sm:px-8 pt-6 sm:pt-8 pb-20">
+        {/* Breadcrumb */}
+        <nav aria-label="Breadcrumb" className="text-sm text-muted-foreground mb-6">
+          {contextHref && contextLabel ? (
+            <Link href={contextHref} className="hover:text-primary">{contextLabel}</Link>
+          ) : (
+            <Link href="/shop/" className="hover:text-primary">Shop</Link>
+          )}
+          <span aria-hidden="true" className="mx-2">/</span>
+          <span className="text-soft">{title}</span>
+        </nav>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
-            {/* Product Images */}
-            <div>
-              <ImageGallery
-                images={product.images || []}
-                productTitle={product.title}
-                productSlug={product.slug}
-                sold={product.sold}
-              />
+        <div className="grid gap-10 lg:gap-14 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] items-start">
+          <ImageGallery images={product.images || []} productTitle={title} productSlug={product.slug} sold={original && sold} />
+
+          <div className="lg:sticky lg:top-24 flex flex-col gap-7">
+            <div className="flex flex-col gap-4">
+              <p className="eyebrow">
+                {original ? 'Original painting · One of a kind' : product.category?.name ?? 'Shop'}
+              </p>
+              <h1 className="font-display text-4xl sm:text-5xl leading-[1.05]">{title}</h1>
+              {story && <p className="text-xl text-soft italic max-w-[34ch]">“{story}”</p>}
             </div>
 
-            {/* Product Details */}
-            <div className="space-y-6 lg:space-y-8">
-              {/* Product Info Card */}
-              <div className="bg-card border border-border rounded-lg p-6 space-y-6">
-                {/* Title and Price */}
-                <div>
-                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-3 lg:mb-4 leading-tight text-card-foreground">
-                    {product.title}
-                  </h1>
-
-                  {/* Show Badge if product is at an ACTIVE show */}
-                  {product.currentShow && showIsActive && (
-                    <div className="mb-4">
-                      <Link
-                        href={`/shows/${product.currentShow.slug}`}
-                        className="inline-flex items-center bg-amber-100 text-amber-800 text-sm font-medium px-3 py-1 rounded-full border border-amber-200 hover:bg-amber-200 transition-colors"
-                      >
-                        <svg className="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                        Available at {product.currentShow.title}
-                      </Link>
-                    </div>
-                  )}
-
-                  {/* Pricing Display - Only show special pricing for ACTIVE shows */}
-                  {product.currentShow && product.showPrice && showIsActive ? (
-                    <div className="space-y-2">
-                      <p className={`text-lg text-muted-foreground line-through`}>
-                        Online Price: ${product.price.toFixed(2)} CAD
-                      </p>
-                      <p className={`text-3xl sm:text-4xl lg:text-5xl font-bold ${product.sold === true ? 'line-through text-gray-400' : 'text-amber-600'}`}>
-                        Show Price: ${product.showPrice.toFixed(2)} <span className="text-sm sm:text-base text-muted-foreground font-normal">CAD</span>
-                      </p>
-                    </div>
-                  ) : (
-                    <p className={`text-3xl sm:text-4xl lg:text-5xl font-bold ${product.sold === true ? 'line-through text-gray-400' : 'text-primary'}`}>
-                      ${product.price.toFixed(2)} <span className="text-sm sm:text-base text-muted-foreground font-normal">CAD</span>
-                    </p>
-                  )}
-                </div>
-
-                {/* Category */}
-                {product.category && (
-                  <div>
-                    <span className="inline-block bg-secondary text-secondary-foreground text-sm font-medium px-3 py-1 rounded">
-                      {product.category.name}
+            {/* Price and status */}
+            <div className="flex flex-wrap items-baseline gap-x-5 gap-y-2">
+              {original && sold ? (
+                <span className="inline-flex items-center gap-2 text-lg font-semibold">
+                  <span aria-hidden="true" className="w-3 h-3 rounded-full bg-[#D7262E]" />
+                  Sold. This original has found its home.
+                </span>
+              ) : (
+                <>
+                  <span className="text-[32px] font-bold leading-none">
+                    {formatPrice(show && product.showPrice ? product.showPrice : product.price)}{' '}
+                    <span className="text-sm font-medium text-muted-foreground">CAD</span>
+                  </span>
+                  {show && product.showPrice ? (
+                    <span className="text-sm text-muted-foreground">
+                      Show price · <s>{formatPrice(product.price)}</s> online
                     </span>
-                  </div>
-                )}
-              </div>
-
-              {/* Description */}
-              {product.description && (
-                <div className="bg-card border border-border rounded-lg p-6">
-                  <h3 className="text-lg sm:text-xl font-semibold mb-4 text-card-foreground">Description</h3>
-                  <div
-                    className="text-muted-foreground leading-relaxed prose prose-sm max-w-none"
-                    dangerouslySetInnerHTML={{
-                      __html: marked(product.description, {
-                        breaks: true,
-                        gfm: true,
-                      }) as string
-                    }}
-                  />
-                </div>
+                  ) : original ? (
+                    <span className="inline-flex items-center gap-2 text-sm text-[#CFE3B4]">
+                      <span aria-hidden="true" className="w-2 h-2 rounded-full bg-available" />
+                      Available
+                    </span>
+                  ) : null}
+                </>
               )}
-
-              {/* Purchase Section */}
-              <div className="bg-card border border-border rounded-lg p-6">
-                <h3 className="text-lg font-semibold mb-4 text-card-foreground">
-                  {product.sold === true && !product.hasPoster ? 'Status' : (product.currentShow && showIsActive && !product.hasPoster) ? 'Availability' : 'Purchase'}
-                </h3>
-
-                {/* Original artwork status/button */}
-                {product.sold === true ? (
-                  <div className="space-y-4">
-                    <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                      <div className="flex items-start space-x-3">
-                        <svg className="w-5 h-5 text-red-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <div>
-                          <h4 className="font-medium text-red-800">This Original Has Been Sold</h4>
-                          <p className="text-sm text-red-700 mt-1">
-                            This piece has found its home and is no longer available for purchase.
-                            {product.hasPoster ? ' A poster print is still available below!' : (product.currentShow && showIsActive ? ` Check out more artwork at ${product.currentShow.title}!` : ' Check out more available artwork in the shop!')}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {!product.hasPoster && (
-                      <Link
-                        href={(product.currentShow && showIsActive) ? `/shows/${product.currentShow.slug}` : '/shop'}
-                        className="inline-flex items-center justify-center w-full bg-primary hover:bg-orange-600 text-white font-medium py-3 px-6 rounded-lg transition-colors"
-                      >
-                        <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
-                        </svg>
-                        {(product.currentShow && showIsActive) ? `Browse More at ${product.currentShow.title}` : 'Browse Available Artwork'}
-                      </Link>
-                    )}
-                  </div>
-                ) : (product.currentShow && showIsActive) ? (
-                  <div className="space-y-4">
-                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-                      <div className="flex items-start space-x-3">
-                        <svg className="w-5 h-5 text-amber-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <div>
-                          <h4 className="font-medium text-amber-800">Original Available at Show</h4>
-                          <p className="text-sm text-amber-700 mt-1">
-                            The original artwork is currently available at <strong>{product.currentShow.title}</strong>.
-                            {product.hasPoster ? ' You can still order a poster print online below!' : ' Online purchasing is temporarily unavailable.'}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <Link
-                      href={`/shows/${product.currentShow.slug}`}
-                      className="inline-flex items-center justify-center w-full bg-amber-600 hover:bg-amber-700 text-white font-medium py-3 px-6 rounded-lg transition-colors"
-                    >
-                      <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      View Show Details
-                    </Link>
-                  </div>
-                ) : (
-                  <BuyButton
-                    productSlug={product.slug}
-                    price={product.price}
-                    productTitle={product.title}
-                    variant="original"
-                  />
-                )}
-
-                {/* Poster buy button - shown when hasPoster is true and posterPrice is set */}
-                {product.hasPoster && globalSettings.posterPrice && (
-                  <div className={product.sold === true || (product.currentShow && showIsActive) ? 'mt-4 pt-4 border-t border-border' : 'mt-4'}>
-                    <BuyButton
-                      productSlug={product.slug}
-                      price={globalSettings.posterPrice}
-                      productTitle={product.title}
-                      variant="poster"
-                    />
-                  </div>
-                )}
-              </div>
-
-              {/* Show History */}
-              {pastShows.length > 0 && (
-                <div className="bg-card border border-border rounded-lg p-6">
-                  <h3 className="text-lg font-semibold mb-4 text-card-foreground">Previously Shown At</h3>
-                  <ul className="space-y-2">
-                    {pastShows.map((show) => (
-                      <li key={show.documentId}>
-                        <Link
-                          href={`/shows/${show.slug}`}
-                          className="text-primary hover:text-orange-600 font-medium transition-colors"
-                        >
-                          {show.title}
-                        </Link>
-                        <span className="text-sm text-muted-foreground ml-2">
-                          {show.startDate.slice(0, 4)}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {/* Product Navigation */}
-              {relatedProducts.length > 1 && (
-                <div className="bg-card border border-border rounded-lg p-6">
-                  <ProductNavigation
-                    currentProduct={product}
-                    allProducts={relatedProducts}
-                    context={context}
-                  />
-                </div>
-              )}
-
             </div>
+
+            {/* Buying */}
+            {show && !sold ? (
+              <div className="rounded border border-[#F6C9A0]/30 bg-burgundy/40 p-5 flex flex-col gap-3">
+                <p className="text-xs font-bold tracking-[0.18em] uppercase text-[#F6C9A0]">On the wall now</p>
+                <p>
+                  This original is hanging at <strong>{show.title}</strong>
+                  {show.location ? `, ${show.location.trim().replace(/\.$/, '')}` : ''} until{' '}
+                  {showDates(show).split(' – ')[1]}. Buy it there, or email me to reserve it.
+                </p>
+                <div className="flex flex-wrap gap-3">
+                  <Link href={`/shows/${show.slug}/`} className="bg-primary text-primary-foreground font-bold px-6 py-3 rounded hover:bg-[#F4B868] transition-colors">
+                    See the show
+                  </Link>
+                  <a href={askHref} className="border border-white/30 font-semibold px-6 py-3 rounded hover:border-primary transition-colors">
+                    Email to reserve
+                  </a>
+                </div>
+              </div>
+            ) : !sold || !original ? (
+              <BuyButton
+                productSlug={product.slug}
+                price={product.price}
+                productTitle={product.title}
+                variant="original"
+                label={original ? undefined : `Buy now · ${formatPrice(product.price)}`}
+              />
+            ) : null}
+
+            {/* Poster */}
+            {posterPrice ? (
+              <div id="poster" className="scroll-mt-28 rounded border border-border bg-card p-5 flex flex-col gap-4">
+                <div>
+                  <p className="font-display text-xl">Poster print · {formatPrice(posterPrice)}</p>
+                  <p className="text-sm text-soft mt-1">
+                    {sold
+                      ? 'The original is gone, but you can still hang this one on your wall.'
+                      : 'Love it, but not the original price? Take home a print.'}
+                  </p>
+                </div>
+                <BuyButton productSlug={product.slug} price={posterPrice} productTitle={product.title} variant="poster" />
+              </div>
+            ) : null}
+
+            {/* Details */}
+            {details.length > 0 && (
+              <div>
+                <h2 className="eyebrow mb-3">Details</h2>
+                <ul className="divide-y divide-border border-y border-border">
+                  {details.map(d => (
+                    <li key={d} className="py-2.5 text-soft">{d}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {bodyHtml && (
+              <div
+                className="text-soft leading-relaxed [&_p]:mb-4 [&_a]:text-primary [&_a]:underline"
+                dangerouslySetInnerHTML={{ __html: bodyHtml }}
+              />
+            )}
+
+            {/* Reassurance */}
+            <ul className="flex flex-col gap-2.5 text-sm text-soft">
+              {original && <Tick>One of a kind. Each original sells once.</Tick>}
+              <Tick>Free shipping within Canada</Tick>
+              <Tick>Secure checkout with Stripe</Tick>
+            </ul>
+            <p className="text-sm text-muted-foreground">
+              Outside Canada, or have a question?{' '}
+              <a href={askHref} className="text-foreground font-semibold border-b border-primary hover:text-primary">
+                Email me about this piece
+              </a>
+            </p>
+
+            {/* Show history */}
+            {pastShows.length > 0 && (
+              <div>
+                <h2 className="eyebrow mb-3">Shown at</h2>
+                <ul className="flex flex-col gap-1.5">
+                  {pastShows.map(s => (
+                    <li key={s.documentId}>
+                      <Link href={`/shows/${s.slug}/`} className="font-semibold hover:text-primary">{s.title}</Link>
+                      <span className="text-sm text-muted-foreground ml-2">{s.startDate.slice(0, 4)}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
+        </div>
+
+        <div className="mt-16">
+          <ProductNavigation currentProduct={product} allProducts={related} contextLabel={contextLabel} contextHref={contextHref} />
         </div>
       </div>
     </Layout>

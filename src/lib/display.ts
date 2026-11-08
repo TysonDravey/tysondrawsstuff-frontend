@@ -14,6 +14,49 @@ export function pullQuote(description?: string, maxLength = 160): string | null 
   return first;
 }
 
+// Leftovers from the Strapi rich-text editor: &nbsp; and a stray literal "**Bold**".
+function clean(text: string): string {
+  return text.replace(/&nbsp;/g, ' ').replace(/\*\*Bold\*\*/g, '').replace(/[ \t]+/g, ' ').trim();
+}
+
+// A line that reads like a spec (medium, size, framing) rather than part of the story.
+const SPEC = /\d+\s*["”]?\s*[x×]\s*\d+|acrylic|ink\b|watercolou?r|canvas|paper|mixed media|multi media|pastel|\boil\b|gouache|frame|painting|pigment/i;
+
+// "16x20" / 12" x16" → 16 × 20″
+function prettySize(text: string): string {
+  // The closing inch mark (and the space before it) is only eaten when there is one, so
+  // "14x20 in a frame" keeps its space and "12x16 24x16" stays two sizes.
+  return text.replace(/(\d+)\s*["”]?\s*[x×]\s*(\d+)(?:\s*["”])?/g, '$1 × $2″');
+}
+
+/**
+ * Split an original's description into the artist's story (the "Sometimes…" line and any other
+ * prose) and its details (medium, size, framing), e.g.
+ *   "Sometimes your game just needs cover art.\n\nAcrylic on canvas\n16\"x20\""
+ *   → { story: "Sometimes your game just needs cover art.", details: ["Acrylic on canvas", "16 × 20″"] }
+ */
+export function describeOriginal(description?: string): { story: string | null; details: string[] } {
+  if (!description) return { story: null, details: [] };
+  const lines = clean(description.replace(/\r/g, ''))
+    .split(/\n+/)
+    .map(clean)
+    .filter(Boolean);
+  const story: string[] = [];
+  const details: string[] = [];
+  for (const [i, line] of lines.entries()) {
+    if (i > 0 && SPEC.test(line)) {
+      // "This is acrylic paint on canvas. 30x40" → "Acrylic paint on canvas", "30 × 40″"
+      for (const part of line.replace(/^this is\s+/i, '').split(/\.\s+(?=\d)/)) {
+        const d = prettySize(part.replace(/\.$/, '').trim());
+        if (d && !details.includes(d)) details.push(d.charAt(0).toUpperCase() + d.slice(1));
+      }
+    } else {
+      story.push(line);
+    }
+  }
+  return { story: story.join(' ') || null, details };
+}
+
 export function isOriginal(product: Product): boolean {
   return product.category?.name === 'Original Art';
 }

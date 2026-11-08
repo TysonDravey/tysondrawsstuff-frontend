@@ -34,9 +34,11 @@ interface BuyButtonProps {
   price: number;
   productTitle: string;
   variant?: 'original' | 'poster';
+  /** Button text; defaults to "Buy original/poster · $price". */
+  label?: string;
 }
 
-export default function BuyButton({ productSlug, price, productTitle, variant = 'original' }: BuyButtonProps) {
+export default function BuyButton({ productSlug, price, productTitle, variant = 'original', label: customLabel }: BuyButtonProps) {
   const [loading, setLoading] = useState(false);
   const [notice, setNotice] = useState<Notice | null>(null);
 
@@ -57,9 +59,8 @@ export default function BuyButton({ productSlug, price, productTitle, variant = 
   // Check if we're in test mode
   const isTestMode = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY?.startsWith('pk_test_');
 
-  const label = variant === 'poster'
-    ? `Buy Poster - $${price.toFixed(2)} CAD`
-    : `Buy Original - $${price.toFixed(2)} CAD`;
+  const amount = Number.isInteger(price) ? `$${price}` : `$${price.toFixed(2)}`;
+  const label = customLabel ?? (variant === 'poster' ? `Buy poster · ${amount}` : `Buy the original · ${amount}`);
 
   const handleBuyNow = async () => {
     setLoading(true);
@@ -118,13 +119,13 @@ export default function BuyButton({ productSlug, price, productTitle, variant = 
       <button
         onClick={handleBuyNow}
         disabled={loading}
-        className={`w-full py-3 px-6 rounded-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed relative transition-colors ${
+        className={`w-full rounded disabled:opacity-50 disabled:cursor-not-allowed relative transition-colors ${
           variant === 'poster'
-            ? 'bg-[#BFA054] text-white hover:bg-[#A98E49]'
-            : 'bg-primary text-primary-foreground hover:bg-orange-600'
+            ? 'py-3 px-5 border border-primary text-foreground font-semibold hover:bg-primary hover:text-primary-foreground'
+            : 'py-4 px-6 bg-primary text-primary-foreground font-bold text-base hover:bg-[#F4B868]'
         }`}
       >
-        {loading ? 'Processing...' : (
+        {loading ? 'Opening checkout…' : (
           <>
             {label}
             {isTestMode && (
@@ -158,7 +159,7 @@ export default function BuyButton({ productSlug, price, productTitle, variant = 
             <button
               autoFocus
               onClick={closeNotice}
-              className="mt-6 w-full rounded-lg bg-primary px-6 py-3 font-semibold text-primary-foreground transition-colors hover:bg-orange-600"
+              className="mt-6 w-full rounded bg-primary px-6 py-3 font-semibold text-primary-foreground transition-colors hover:bg-[#F4B868]"
             >
               OK
             </button>
