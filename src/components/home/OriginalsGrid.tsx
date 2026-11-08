@@ -89,26 +89,32 @@ function planRows(ratios: number[], width: number) {
   return { rows, gap };
 }
 
-// Round arrow halfway down the side of the wall. Wide screens: in the margin beside the paintings;
-// narrower screens: over the wall's edge on a dark disc so it reads on top of a painting.
+// Round arrow on each side of the wall. It runs in a full-height rail beside the wall and sticks
+// to the middle of the screen while you scroll the gallery, so it stays put no matter how tall
+// each wall is (paging never moves it out from under the pointer). Wide screens: in the margin
+// beside the paintings; narrower screens: over the wall's edge on a dark disc.
 function SideArrow({ dir, disabled, onClick }: { dir: 'prev' | 'next'; disabled: boolean; onClick: () => void }) {
   const prev = dir === 'prev';
   return (
+    <div
+      className={`absolute inset-y-0 z-10 w-12 pointer-events-none
+        ${prev ? '-left-2 2xl:-left-20' : '-right-2 2xl:-right-20'}`}
+    >
     <button
       type="button"
       onClick={onClick}
       disabled={disabled}
       aria-label={prev ? 'Previous wall' : 'Next wall'}
-      className={`absolute top-1/2 -translate-y-1/2 z-10 w-12 h-12 grid place-items-center rounded-full
+      className="sticky top-[calc(50vh-24px)] mt-[min(260px,40%)] pointer-events-auto w-12 h-12 grid place-items-center rounded-full
         bg-black/45 backdrop-blur-sm border border-white/25 text-foreground shadow-[0_6px_18px_rgba(0,0,0,.45)]
         hover:border-primary hover:text-primary transition-[color,border-color,opacity]
-        disabled:opacity-0 disabled:pointer-events-none
-        ${prev ? '-left-2 2xl:-left-20' : '-right-2 2xl:-right-20'}`}
+        disabled:opacity-0 disabled:pointer-events-none"
     >
       <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
         <path d={prev ? 'M15 18l-6-6 6-6' : 'M9 18l6-6-6-6'} />
       </svg>
     </button>
+    </div>
   );
 }
 
