@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { FRAME_NAMES } from '@/lib/frames';
 
 export interface GridItem {
   slug: string;
@@ -14,18 +15,11 @@ export interface GridItem {
   image: { src: string; width: number; height: number; alt: string } | null;
 }
 
-// Frame styles drawn in globals.css (.frame-*). "auto" (the Strapi default) picks one per
-// painting from its slug, so it is stable; a choice made in Strapi always wins.
-const FRAMES = ['none', 'black', 'wood', 'gilt', 'ornate', 'mat'];
-const AUTO_FRAMES: [string, number][] = [['black', 0.34], ['wood', 0.2], ['gilt', 0.2], ['mat', 0.14], ['ornate', 0.12]];
+// Textured frames (frames.css). "auto" (the Strapi default) picks one per painting from its
+// slug, so it is stable; a choice made in Strapi ("none" or a named frame) always wins.
 function frameFor(item: GridItem): string {
-  if (item.frame && FRAMES.includes(item.frame)) return item.frame;
-  let r = seeded(item.slug, 5);
-  for (const [name, share] of AUTO_FRAMES) {
-    if (r < share) return name;
-    r -= share;
-  }
-  return 'black';
+  if (item.frame === 'none' || (FRAME_NAMES as readonly string[]).includes(item.frame ?? '')) return item.frame!;
+  return FRAME_NAMES[Math.floor(seeded(item.slug, 5) * FRAME_NAMES.length)];
 }
 
 const FILTERS = [

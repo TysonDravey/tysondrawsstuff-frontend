@@ -90,7 +90,7 @@ export interface Product {
   sold: boolean;
   hasPoster?: boolean;
   /** How the piece is framed on the home page salon wall; 'auto' (or missing) = picked for it. */
-  frame?: 'auto' | 'none' | 'black' | 'wood' | 'gilt' | 'ornate' | 'mat';
+  frame?: string; // 'auto' | 'none' | one of FRAME_NAMES (src/lib/frames.ts)
   images?: StrapiImage[];
   category?: Category;
   currentShow?: Show;
