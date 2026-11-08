@@ -138,7 +138,7 @@ export default async function Home() {
               </Link>
             </div>
             {/* Same height side by side: each poster's share of the width follows its shape. */}
-            <div className="flex-[1_1_460px] min-w-0 flex gap-5 items-start">
+            <div className="flex-[1_1_460px] min-w-0 max-w-[520px] mx-auto flex gap-5 items-start">
               {posterPicks.map(p => {
                 const img = firstImage(p)!;
                 return (
