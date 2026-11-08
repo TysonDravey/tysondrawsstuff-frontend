@@ -137,11 +137,12 @@ export default async function Home() {
                 Shop posters
               </Link>
             </div>
-            <div className="flex-[1_1_460px] min-w-0 flex gap-5 items-end">
-              {posterPicks.map((p, i) => {
+            {/* Same height side by side: each poster's share of the width follows its shape. */}
+            <div className="flex-[1_1_460px] min-w-0 flex gap-5 items-start">
+              {posterPicks.map(p => {
                 const img = firstImage(p)!;
                 return (
-                  <Link key={p.id} href={`/shop/${p.slug}/`} className={i === 0 ? 'w-[46%]' : 'w-[34%]'}>
+                  <Link key={p.id} href={`/shop/${p.slug}/`} className="min-w-0" style={{ flex: `${img.width / img.height} 1 0` }}>
                     <Image
                       src={img.src}
                       alt={`${displayTitle(p.title)} poster`}

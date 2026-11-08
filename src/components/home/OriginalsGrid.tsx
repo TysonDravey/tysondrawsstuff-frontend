@@ -59,39 +59,47 @@ export default function OriginalsGrid({ items, limit = 12, allHref, posterPrice 
       {shown.length === 0 ? (
         <p className="text-soft py-12">Nothing here right now. Try “All work”.</p>
       ) : (
-        <div className="columns-2 md:columns-3 xl:columns-4 gap-5 sm:gap-8">
-          {shown.map(item => (
-            <Link
-              key={item.slug}
-              href={`/shop/${item.slug}/`}
-              className="group block break-inside-avoid mb-8 sm:mb-10 text-foreground"
-            >
-              {item.image ? (
-                <Image
-                  src={item.image.src}
-                  alt={item.image.alt}
-                  width={item.image.width}
-                  height={item.image.height}
-                  sizes="(min-width: 1280px) 300px, (min-width: 768px) 33vw, 50vw"
-                  className={`w-full h-auto block transition-opacity group-hover:opacity-90 ${item.sold ? 'opacity-55' : ''}`}
-                />
-              ) : (
-                <div className="aspect-[3/4] bg-card" />
-              )}
-              <div className="pt-3 flex items-baseline justify-between gap-3">
-                <span className="font-semibold text-[15px] group-hover:text-primary transition-colors">{item.title}</span>
-                <span className={`text-[15px] whitespace-nowrap ${item.sold ? 'text-muted-foreground' : ''}`}>
-                  {item.sold ? 'Sold' : `$${item.price}`}
-                </span>
-              </div>
-              {item.hasPoster && (
-                <div className="text-[13px] text-muted-foreground mt-0.5">
-                  {item.sold ? 'Poster still available' : 'Poster available'}
-                  {posterPrice ? ` · $${posterPrice}` : ''}
+        // Justified rows: every row shares one height and each painting is as wide as its shape needs,
+        // so wide pieces (diptychs, triptychs, landscapes) take more of the row instead of shrinking.
+        // Pure CSS: flex-grow and flex-basis are proportional to each image's aspect ratio. The spacer
+        // at the end stops the last row from stretching a lone painting across the whole page.
+        <div className="justified flex flex-wrap gap-x-5 sm:gap-x-8 gap-y-8 sm:gap-y-10">
+          {shown.map(item => {
+            const ratio = item.image ? item.image.width / item.image.height : 0.75;
+            return (
+              <Link
+                key={item.slug}
+                href={`/shop/${item.slug}/`}
+                style={{ flexGrow: ratio, flexBasis: `calc(var(--row-h) * ${ratio.toFixed(4)})` }}
+                className="group block min-w-0 text-foreground"
+              >
+                <div className="relative w-full bg-card" style={{ aspectRatio: `${ratio}` }}>
+                  {item.image && (
+                    <Image
+                      src={item.image.src}
+                      alt={item.image.alt}
+                      fill
+                      sizes={`(min-width: 768px) ${Math.round(420 * ratio)}px, ${Math.round(Math.min(100, 60 * ratio))}vw`}
+                      className={`object-cover transition-opacity group-hover:opacity-90 ${item.sold ? 'opacity-55' : ''}`}
+                    />
+                  )}
                 </div>
-              )}
-            </Link>
-          ))}
+                <div className="pt-3 flex items-baseline justify-between gap-3">
+                  <span className="font-semibold text-[15px] leading-snug group-hover:text-primary transition-colors">{item.title}</span>
+                  <span className={`text-[15px] whitespace-nowrap ${item.sold ? 'text-muted-foreground' : ''}`}>
+                    {item.sold ? 'Sold' : `$${item.price}`}
+                  </span>
+                </div>
+                {item.hasPoster && (
+                  <div className="text-[13px] text-muted-foreground mt-0.5">
+                    {item.sold ? 'Poster still available' : 'Poster available'}
+                    {posterPrice ? ` · $${posterPrice}` : ''}
+                  </div>
+                )}
+              </Link>
+            );
+          })}
+          <span aria-hidden="true" className="grow-[1000] basis-0" />
         </div>
       )}
 

@@ -113,6 +113,11 @@ a:focus-visible, button:focus-visible {
   color: var(--muted-foreground);
 }
 
+/* Target row height for the justified art gallery (home page Originals). */
+.justified { --row-h: 150px; }
+@media (min-width: 640px) { .justified { --row-h: 230px; } }
+@media (min-width: 1024px) { .justified { --row-h: 300px; } }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; animation: none !important; }
 }
