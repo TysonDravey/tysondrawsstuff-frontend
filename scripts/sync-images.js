@@ -39,6 +39,7 @@ const WEB_PREFIX = 'TysonDrawsStuff/web-v2'; // v2: watermark moved to bottom ce
 const WATERMARK_ID = 'TysonDrawsStuff/brand/watermark-v1';
 const WATERMARK_FILE = path.join(PUBLIC_DIR, 'brand', 'tds-watermark.png');
 const WEB_MAX_PX = 1600;
+const UPLOAD_CACHE_FILE = path.join(__dirname, '..', 'node_modules', '.cache', 'tds-cloudinary-uploads.json');
 const WEB_TRANSFORMATION = [
   { width: WEB_MAX_PX, height: WEB_MAX_PX, crop: 'limit' },
   { overlay: WATERMARK_ID.replace(/\//g, ':'), width: 0.4, flags: 'relative', opacity: 55 },
@@ -307,7 +308,17 @@ async function syncImages() {
 
     await mkdir(PUBLIC_DIR, { recursive: true });
     if (!USE_CLOUDINARY) await mkdir(PRODUCTS_DIR, { recursive: true });
-    if (USE_CLOUDINARY) await ensureWatermark();
+    // Remember what is already on Cloudinary between builds, so a normal build makes no Cloudinary calls
+    // at all: only new or changed images get sent. node_modules/.cache survives between Vercel builds
+    // (and between local runs); if it's ever empty, the overwrite:false uploads still just return the
+    // existing copies, so the worst case is one round of cheap "already there" calls.
+    let uploadCache = {};
+    try { uploadCache = JSON.parse(await readFile(UPLOAD_CACHE_FILE, 'utf8')); } catch { /* first build */ }
+
+    if (USE_CLOUDINARY && !uploadCache[WATERMARK_ID]) {
+      await ensureWatermark();
+      uploadCache[WATERMARK_ID] = { url: 'ok' };
+    }
 
     // Load existing image-map so we can skip Cloudinary API calls for already-uploaded images
     let existingImageMap = {};
@@ -392,7 +403,13 @@ async function syncImages() {
             // Name by the Strapi file hash (unique per upload) rather than position, otherwise an
             // existing "image-1" on Cloudinary gets reused even after the order changes
             const publicId = `${WEB_PREFIX}/products/${slug}/${image.hash || `image-${image.id}`}`;
-            const uploaded = await uploadToCloudinary(image.url, publicId);
+            let uploaded = uploadCache[publicId];
+            if (uploaded) {
+              console.log(`  ☁️  Cached: ${publicId.split('/').slice(-2).join('/')}`);
+            } else {
+              uploaded = await uploadToCloudinary(image.url, publicId);
+              uploadCache[publicId] = uploaded;
+            }
 
             localImages.push({
               id: image.id,
@@ -451,6 +468,15 @@ async function syncImages() {
     }
 
     // Write image map
+    if (USE_CLOUDINARY) {
+      try {
+        await mkdir(path.dirname(UPLOAD_CACHE_FILE), { recursive: true });
+        await writeFile(UPLOAD_CACHE_FILE, JSON.stringify(uploadCache));
+      } catch (error) {
+        console.warn(`⚠️  Could not save upload cache: ${error.message}`);
+      }
+    }
+
     console.log('\n📝 Writing image map...');
     await writeFile(IMAGE_MAP_FILE, JSON.stringify(imageMap, null, 2));
 
