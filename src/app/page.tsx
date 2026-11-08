@@ -3,6 +3,7 @@ import Image from 'next/image';
 import type { Metadata } from 'next';
 import Layout from '@/components/Layout';
 import OriginalsGrid, { type GridItem } from '@/components/home/OriginalsGrid';
+import FeaturedHero, { type HeroSlide } from '@/components/home/FeaturedHero';
 import {
   fetchProducts,
   fetchCategoriesWithProducts,
@@ -41,19 +42,27 @@ export default async function Home() {
   const posterPrice = global.posterPrice;
 
   const originals = products.filter(isOriginal);
-  // Hero: the first featured original that is still for sale and has a picture.
-  const hero =
-    originals.find(p => p.featured && isAvailable(p) && firstImage(p)) ??
-    originals.find(p => isAvailable(p) && firstImage(p)) ??
-    null;
-  const heroImage = hero ? firstImage(hero) : null;
-  const heroQuote = hero ? pullQuote(hero.description) : null;
+  // Hero: every featured original that is still for sale and has a picture (up to 6), as a carousel.
+  // If nothing is featured, fall back to the newest available painting.
+  let heroProducts = originals.filter(p => p.featured && isAvailable(p) && firstImage(p)).slice(0, 6);
+  if (heroProducts.length === 0) {
+    const fallback = originals.find(p => isAvailable(p) && firstImage(p));
+    heroProducts = fallback ? [fallback] : [];
+  }
+  const heroSlides: HeroSlide[] = heroProducts.map(p => ({
+    slug: p.slug,
+    title: displayTitle(p.title),
+    quote: pullQuote(p.description),
+    price: formatPrice(p.price),
+    image: firstImage(p)!,
+  }));
+  const heroIds = new Set(heroProducts.map(p => p.id));
 
   const liveShows = currentShows(shows);
 
-  // Grid: everything except the hero, available pieces first, featured pieces first within that.
+  // Grid: every original, available pieces first, featured pieces first within that.
   const gridItems: GridItem[] = originals
-    .filter(p => p.id !== hero?.id)
+    .slice()
     .sort((a, b) => Number(!isAvailable(a)) - Number(!isAvailable(b)) || Number(b.featured) - Number(a.featured))
     .map(p => ({
       slug: p.slug,
@@ -67,51 +76,13 @@ export default async function Home() {
   // Posters band: one sold piece (the "missed it?" pitch) and one available piece, both with posters.
   const posterPicks = [
     originals.find(p => p.hasPoster && !isAvailable(p) && firstImage(p)),
-    originals.find(p => p.hasPoster && isAvailable(p) && p.id !== hero?.id && firstImage(p)),
+    originals.find(p => p.hasPoster && isAvailable(p) && !heroIds.has(p.id) && firstImage(p)),
   ].filter((p): p is Product => !!p);
 
   return (
     <Layout categories={categories}>
-      {/* Hero: one painting, shown whole */}
-      {hero && heroImage && (
-        <section className="mx-auto max-w-7xl px-4 sm:px-8 pt-12 pb-16 sm:pt-[72px] sm:pb-[88px] flex flex-wrap-reverse items-center gap-10 lg:gap-16">
-          <div className="flex-[1_1_380px] min-w-0 flex flex-col gap-6">
-            <p className="eyebrow">{hero.featured ? 'Featured original' : 'Original painting'} · One of a kind</p>
-            <h1 className="font-display text-[44px] sm:text-[64px] leading-[1.02]">{displayTitle(hero.title)}</h1>
-            {heroQuote && <p className="text-xl text-soft italic max-w-[30ch]">“{heroQuote}”</p>}
-            <div className="flex flex-wrap items-baseline gap-4">
-              <span className="text-[28px] font-bold">
-                {formatPrice(hero.price)} <span className="text-sm font-medium text-muted-foreground">CAD</span>
-              </span>
-              <span className="inline-flex items-center gap-2 text-sm text-[#CFE3B4]">
-                <span aria-hidden="true" className="w-2 h-2 rounded-full bg-available" />
-                Available
-              </span>
-            </div>
-            <div className="flex flex-wrap gap-3 mt-2">
-              <Link href={`/shop/${hero.slug}/`} className="bg-primary text-primary-foreground font-bold px-7 py-[15px] rounded text-[15px] hover:bg-[#F4B868] transition-colors">
-                See the painting
-              </Link>
-              <a href="#originals" className="border border-line-strong text-foreground font-semibold px-[26px] py-[14px] rounded text-[15px] hover:border-primary transition-colors">
-                Browse all originals
-              </a>
-            </div>
-          </div>
-          <div className="flex-[1_1_460px] min-w-0 flex justify-center">
-            <Link href={`/shop/${hero.slug}/`} className="block w-full max-w-[540px]">
-              <Image
-                src={heroImage.src}
-                alt={heroImage.alt}
-                width={heroImage.width}
-                height={heroImage.height}
-                priority
-                sizes="(min-width: 1024px) 540px, 100vw"
-                className="w-full h-auto block shadow-[0_30px_80px_rgba(0,0,0,.6)]"
-              />
-            </Link>
-          </div>
-        </section>
-      )}
+      {/* Hero: featured paintings, shown whole, one at a time */}
+      {heroSlides.length > 0 && <FeaturedHero slides={heroSlides} />}
 
       {/* Shows on right now: one row per show, however many overlap */}
       {liveShows.length > 0 && (
