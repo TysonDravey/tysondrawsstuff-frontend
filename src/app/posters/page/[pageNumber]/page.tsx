@@ -120,7 +120,7 @@ export default async function PostersPagePaginated({ params }: PostersPagePagina
             </p>
           </div>
 
-          <ProductGrid products={products} />
+          <ProductGrid products={products} poster posterPrice={posterPrice} />
 
           <Pagination
             currentPage={pagination.page}

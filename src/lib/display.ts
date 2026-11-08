@@ -26,11 +26,13 @@ export function formatPrice(amount: number): string {
   return `$${Number.isInteger(amount) ? amount : amount.toFixed(2)}`;
 }
 
-// A show that is on right now (started, not yet ended). If several overlap, the one that started last.
-export function currentShow(shows: Show[], now = new Date()): Show | null {
-  const live = shows.filter(s => new Date(s.startDate) <= now && new Date(s.endDate) >= now);
-  live.sort((a, b) => new Date(b.startDate).getTime() - new Date(a.startDate).getTime());
-  return live[0] ?? null;
+// Every show that is on right now (started, not yet ended), newest first.
+// Dates are whole days, so a show is still "on" for all of its end date.
+export function currentShows(shows: Show[], now = new Date()): Show[] {
+  const today = now.toISOString().slice(0, 10);
+  return shows
+    .filter(s => s.startDate.slice(0, 10) <= today && s.endDate.slice(0, 10) >= today)
+    .sort((a, b) => b.startDate.localeCompare(a.startDate));
 }
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];

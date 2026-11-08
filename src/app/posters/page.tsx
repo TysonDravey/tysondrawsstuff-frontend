@@ -82,7 +82,7 @@ export default async function PostersPage() {
             </p>
           </div>
 
-          <ProductGrid products={products} />
+          <ProductGrid products={products} poster posterPrice={posterPrice} />
 
           <Pagination
             currentPage={pagination.page}

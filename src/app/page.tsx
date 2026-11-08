@@ -12,7 +12,7 @@ import {
 } from '@/lib/api';
 import { getProductImages } from '@/lib/images';
 import { siteUrl } from '@/lib/site';
-import { displayTitle, pullQuote, isOriginal, isAvailable, formatPrice, currentShow, showDates } from '@/lib/display';
+import { displayTitle, pullQuote, isOriginal, isAvailable, formatPrice, currentShows, showDates } from '@/lib/display';
 
 export const metadata: Metadata = {
   alternates: {
@@ -49,7 +49,7 @@ export default async function Home() {
   const heroImage = hero ? firstImage(hero) : null;
   const heroQuote = hero ? pullQuote(hero.description) : null;
 
-  const show = currentShow(shows);
+  const liveShows = currentShows(shows);
 
   // Grid: everything except the hero, available pieces first, featured pieces first within that.
   const gridItems: GridItem[] = originals
@@ -113,21 +113,34 @@ export default async function Home() {
         </section>
       )}
 
-      {/* Current show band */}
-      {show && (
-        <section className="bg-burgundy">
-          <div className="mx-auto max-w-7xl px-4 sm:px-8 py-7 flex flex-wrap items-center justify-between gap-x-8 gap-y-4">
-            <div className="flex flex-wrap items-baseline gap-x-5 gap-y-2">
-              <span className="text-xs font-bold tracking-[0.18em] uppercase text-[#F6C9A0]">On the wall now</span>
-              <span className="font-display text-2xl sm:text-[26px]">{show.title}</span>
-              <span className="text-[#F1DCCB]">
-                {show.location ? `${show.location.trim().replace(/\.$/, '')} · ` : ''}
-                {showDates(show)}
-              </span>
-            </div>
-            <Link href={`/shows/${show.slug}/`} className="text-white font-semibold border-b-2 border-primary pb-0.5 hover:text-primary">
-              See the show →
-            </Link>
+      {/* Shows on right now: one row per show, however many overlap */}
+      {liveShows.length > 0 && (
+        <section className="bg-burgundy" aria-labelledby="on-now">
+          <div className="mx-auto max-w-7xl px-4 sm:px-8 py-6 flex flex-col">
+            <h2 id="on-now" className="font-sans text-xs font-bold tracking-[0.18em] uppercase text-[#F6C9A0] pb-2">
+              On the wall now{liveShows.length > 1 ? ` · ${liveShows.length} shows` : ''}
+            </h2>
+            <ul className="divide-y divide-white/15">
+              {liveShows.map(show => (
+                <li key={show.id}>
+                  <Link
+                    href={`/shows/${show.slug}/`}
+                    className="group py-3 flex flex-wrap items-baseline justify-between gap-x-8 gap-y-1 text-white"
+                  >
+                    <span className="flex flex-wrap items-baseline gap-x-5 gap-y-1 min-w-0">
+                      <span className="font-display text-2xl sm:text-[26px] group-hover:text-primary transition-colors">{show.title}</span>
+                      <span className="text-[#F1DCCB]">
+                        {show.location ? `${show.location.trim().replace(/\.$/, '')} · ` : ''}
+                        Until {showDates(show).split(' – ')[1]}
+                      </span>
+                    </span>
+                    <span className="font-semibold border-b-2 border-primary pb-0.5 group-hover:text-primary whitespace-nowrap">
+                      See the show →
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </div>
         </section>
       )}

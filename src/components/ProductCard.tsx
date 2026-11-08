@@ -2,10 +2,42 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { type Product, type Show } from '@/lib/api';
 import { getProductImageUrl } from '@/lib/images';
+import { displayTitle } from '@/lib/display';
 
 interface ProductCardProps {
   product: Product;
   featured?: boolean;
+  /** Poster listings: sell the print, so a sold original never makes the poster look unavailable. */
+  poster?: boolean;
+  posterPrice?: number;
+}
+
+function PosterCard({ product, posterPrice }: { product: Product; posterPrice?: number }) {
+  const image = product.images?.[0];
+  return (
+    <Link href={`/shop/${product.slug}/`} className="group block">
+      <div className="aspect-[3/4] relative bg-card overflow-hidden">
+        {image ? (
+          <Image
+            src={getProductImageUrl(product.slug, image, 0)}
+            alt={`${displayTitle(product.title)} poster`}
+            fill
+            sizes="(min-width: 1280px) 300px, (min-width: 640px) 45vw, 100vw"
+            className="object-cover transition-transform duration-300 group-hover:scale-[1.03]"
+          />
+        ) : (
+          <div className="flex items-center justify-center h-full text-muted-foreground">No image available</div>
+        )}
+      </div>
+      <div className="pt-3 flex items-baseline justify-between gap-3">
+        <h3 className="font-sans font-semibold text-[15px] group-hover:text-primary transition-colors">{displayTitle(product.title)}</h3>
+        {posterPrice ? <span className="text-[15px] whitespace-nowrap">${posterPrice}</span> : null}
+      </div>
+      <p className="text-[13px] text-muted-foreground mt-0.5">
+        Poster print{product.sold === true ? ' · original sold' : ' · original also available'}
+      </p>
+    </Link>
+  );
 }
 
 // Helper function to check if a show is currently active
@@ -15,7 +47,9 @@ function isShowActive(show: Show): boolean {
   return endDate >= now;
 }
 
-export default function ProductCard({ product, featured = false }: ProductCardProps) {
+export default function ProductCard({ product, featured = false, poster = false, posterPrice }: ProductCardProps) {
+  if (poster) return <PosterCard product={product} posterPrice={posterPrice} />;
+
   // Check if the show is still active
   const showIsActive = product.currentShow ? isShowActive(product.currentShow) : false;
   return (
