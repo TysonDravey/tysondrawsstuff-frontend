@@ -49,3 +49,6 @@ next-env.d.ts
 /tools/venv/
 /tools/*.log
 /tools/__pycache__/
+
+# Full-size product images must never ship with the site (local-mode sync output only)
+public/products/

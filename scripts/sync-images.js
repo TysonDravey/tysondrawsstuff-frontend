@@ -30,6 +30,22 @@ const USE_CLOUDINARY = !!(CLOUDINARY_CLOUD_NAME && CLOUDINARY_API_KEY && CLOUDIN
 
 const REQUEST_TIMEOUT = 30000;
 
+// Web-safe copies: every product image is stored on Cloudinary already shrunk to WEB_MAX_PX on its
+// long side with the TDS watermark burned in (an "incoming transformation"), so the full-size original
+// never exists on Cloudinary for these. This is done per upload, NOT with account-wide settings like
+// strict transformations, so nothing else on the shared Cloudinary account (e.g. KAC) is affected.
+// Changing the watermark or size? Bump the -vN suffixes and every image re-uploads on the next build.
+const WEB_PREFIX = 'TysonDrawsStuff/web-v1';
+const WATERMARK_ID = 'TysonDrawsStuff/brand/watermark-v1';
+const WATERMARK_FILE = path.join(PUBLIC_DIR, 'brand', 'tds-watermark.png');
+const WEB_MAX_PX = 1600;
+const WEB_TRANSFORMATION = [
+  { width: WEB_MAX_PX, height: WEB_MAX_PX, crop: 'limit' },
+  { overlay: WATERMARK_ID.replace(/\//g, ':'), width: 0.4, flags: 'relative', opacity: 55 },
+  { flags: 'layer_apply', gravity: 'south_east', x: 0.03, y: 0.03 },
+  { quality: 'auto:good' },
+];
+
 console.log('🎨 Starting image sync process...');
 console.log(`📡 Strapi URL: ${STRAPI_URL}`);
 console.log(`☁️  Cloudinary: ${USE_CLOUDINARY ? `enabled (${CLOUDINARY_CLOUD_NAME})` : 'disabled — using local files'}`);
@@ -69,13 +85,27 @@ async function downloadImageToBuffer(imageUrl) {
   });
 }
 
-// Upload to Cloudinary, reusing the existing asset if already uploaded
+// Make sure the watermark image exists on Cloudinary (uploaded once from public/brand/)
+async function ensureWatermark() {
+  try {
+    await cloudinary.api.resource(WATERMARK_ID);
+    return;
+  } catch (err) {
+    const httpCode = err.http_code ?? err.error?.http_code;
+    if (httpCode && httpCode !== 404) throw new Error(`Watermark check failed (${httpCode})`);
+  }
+  console.log(`🔏 Uploading watermark: ${WATERMARK_ID}`);
+  await cloudinary.uploader.upload(WATERMARK_FILE, { public_id: WATERMARK_ID, overwrite: true, resource_type: 'image' });
+}
+
+// Upload a web-safe (shrunk + watermarked) copy to Cloudinary, reusing it if already uploaded.
+// Returns { url, width, height } of the stored copy.
 async function uploadToCloudinary(imageUrl, publicId) {
   // Check if already exists so we don't re-upload on every build
   try {
     const resource = await cloudinary.api.resource(publicId);
     console.log(`  ☁️  Already uploaded: ${publicId}`);
-    return resource.secure_url;
+    return { url: resource.secure_url, width: resource.width, height: resource.height };
   } catch (err) {
     // SDK v2 puts the status at err.error.http_code, not err.http_code
     const httpCode = err.http_code ?? err.error?.http_code;
@@ -97,12 +127,15 @@ async function uploadToCloudinary(imageUrl, publicId) {
   return new Promise((resolve, reject) => {
     const { Readable } = require('stream');
     const uploadStream = cloudinary.uploader.upload_stream(
-      { public_id: filename, folder, overwrite: true, resource_type: 'image', use_filename: false },
+      {
+        public_id: filename, folder, overwrite: true, resource_type: 'image', use_filename: false,
+        format: 'jpg', transformation: WEB_TRANSFORMATION,
+      },
       (error, result) => {
         if (error) reject(new Error(error.message));
         else {
-          console.log(`  ✅ Uploaded: ${result.secure_url}`);
-          resolve(result.secure_url);
+          console.log(`  ✅ Uploaded (${result.width}×${result.height}, watermarked): ${result.secure_url}`);
+          resolve({ url: result.secure_url, width: result.width, height: result.height });
         }
       }
     );
@@ -290,6 +323,7 @@ async function syncImages() {
 
     await mkdir(PUBLIC_DIR, { recursive: true });
     if (!USE_CLOUDINARY) await mkdir(PRODUCTS_DIR, { recursive: true });
+    if (USE_CLOUDINARY) await ensureWatermark();
 
     // Load existing image-map so we can skip Cloudinary API calls for already-uploaded images
     let existingImageMap = {};
@@ -362,8 +396,9 @@ async function syncImages() {
             // If this image already has a Cloudinary URL in the local map, reuse it —
             // no API call needed, avoids rate limits on every build.
             // Match on the Strapi source URL, not position, so reordering images in Strapi takes effect.
+            // Only reuse web-safe copies; older full-size uploads (without WEB_PREFIX) get replaced.
             const cached = existingEntries.find(e => e.originalUrl === image.url);
-            if (cached && cached.url && cached.url.startsWith('https://res.cloudinary.com/')) {
+            if (cached && cached.url && cached.url.startsWith('https://res.cloudinary.com/') && cached.url.includes(`/${WEB_PREFIX}/`)) {
               console.log(`  ☁️  Cached: ${cached.url.split('/').slice(-2).join('/')}`);
               localImages.push({ ...cached, id: image.id, alternativeText: image.alternativeText || cached.alternativeText });
               totalProcessed++;
@@ -372,15 +407,15 @@ async function syncImages() {
 
             // Name by the Strapi file hash (unique per upload) rather than position, otherwise an
             // existing "image-1" on Cloudinary gets reused even after the order changes
-            const publicId = `TysonDrawsStuff/products/${slug}/${image.hash || `image-${image.id}`}`;
-            const cloudinaryUrl = await uploadToCloudinary(image.url, publicId);
+            const publicId = `${WEB_PREFIX}/products/${slug}/${image.hash || `image-${image.id}`}`;
+            const uploaded = await uploadToCloudinary(image.url, publicId);
 
             localImages.push({
               id: image.id,
-              url: cloudinaryUrl,
+              url: uploaded.url,
               alternativeText: image.alternativeText || '',
-              width: image.width || 800,
-              height: image.height || 600,
+              width: uploaded.width || image.width || 800,
+              height: uploaded.height || image.height || 600,
               originalUrl: image.url,
             });
             totalProcessed++;
@@ -472,4 +507,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { syncImages };
+module.exports = { syncImages, ensureWatermark, uploadToCloudinary, WEB_PREFIX };
