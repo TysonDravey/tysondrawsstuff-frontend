@@ -1,20 +1,20 @@
 import type { Metadata } from "next";
-import { Nunito, Nunito_Sans } from "next/font/google";
+import { Alfa_Slab_One, Inter } from "next/font/google";
 import Script from "next/script";
 import GaPageView from "@/components/GaPageView";
 import "./globals.css";
 import { siteUrl, SITE_URL, IS_PRODUCTION_SITE } from '@/lib/site';
 
-const nunito = Nunito({
-  variable: "--font-nunito",
+// Headings: Alfa Slab One. Everything else: Inter. Both self-hosted by next/font, so no flash of fallback text.
+const alfa = Alfa_Slab_One({
+  variable: "--font-alfa",
   subsets: ["latin"],
-  weight: ["400", "600", "700", "800"],
+  weight: "400",
 });
 
-const nunitoSans = Nunito_Sans({
-  variable: "--font-nunito-sans",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
-  weight: ["400", "600", "700"],
 });
 
 
@@ -23,7 +23,11 @@ export const metadata: Metadata = {
   description: "Explore original art, posters, merch, and books by Tyson Brillon. Unique artwork and prints available for purchase.",
   metadataBase: new URL(SITE_URL),
   icons: {
-    icon: "/favicon.ico",
+    icon: [
+      { url: "/brand/favicon.svg", type: "image/svg+xml" },
+      { url: "/brand/favicon-32.png", sizes: "32x32", type: "image/png" },
+    ],
+    apple: "/brand/apple-touch-icon.png",
   },
   openGraph: {
     title: "Tyson Draws Stuff | Original Art, Prints, and Books",
@@ -75,7 +79,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${nunito.variable} ${nunitoSans.variable} antialiased`}
+        className={`${alfa.variable} ${inter.variable} antialiased`}
       >
         {/* Google Analytics 4 Scripts */}
         {GA_ID && (
