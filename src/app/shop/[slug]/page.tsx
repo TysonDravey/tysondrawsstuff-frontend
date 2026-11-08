@@ -10,6 +10,7 @@ import { getProductImages } from '@/lib/images';
 import { displayTitle, describeOriginal, isOriginal, formatPrice, showDates } from '@/lib/display';
 import { marked } from 'marked';
 import { siteUrl } from '@/lib/site';
+import { frameFor, frameSetting } from '@/lib/frame-pick';
 
 const CONTACT_EMAIL = 'kirkbrillon@gmail.com';
 
@@ -165,7 +166,13 @@ export default async function ProductPage({ params }: ProductPageProps) {
         </nav>
 
         <div className="grid gap-10 lg:gap-14 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)] items-start">
-          <ImageGallery images={product.images || []} productTitle={title} productSlug={product.slug} sold={original && sold} />
+          <ImageGallery
+            images={product.images || []}
+            productTitle={title}
+            productSlug={product.slug}
+            sold={original && sold}
+            frame={original ? frameFor({ slug: product.slug, frame: frameSetting(product) }) : 'none'}
+          />
 
           <div className="lg:sticky lg:top-24 flex flex-col gap-7">
             <div className="flex flex-col gap-4">

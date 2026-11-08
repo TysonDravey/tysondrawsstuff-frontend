@@ -13,6 +13,7 @@ import {
 } from '@/lib/api';
 import { getProductImages } from '@/lib/images';
 import { siteUrl } from '@/lib/site';
+import { frameSetting } from '@/lib/frame-pick';
 import { displayTitle, pullQuote, isOriginal, isAvailable, formatPrice, currentShows, showDates } from '@/lib/display';
 
 export const metadata: Metadata = {
@@ -70,7 +71,7 @@ export default async function Home() {
       price: p.price,
       sold: !isAvailable(p),
       hasPoster: !!p.hasPoster,
-      frame: p.frame,
+      frame: frameSetting(p),
       image: firstImage(p),
     }));
 

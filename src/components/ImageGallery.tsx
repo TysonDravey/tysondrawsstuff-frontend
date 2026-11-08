@@ -14,12 +14,14 @@ interface ImageGalleryProps {
   productTitle: string;
   productSlug: string;
   sold?: boolean;
+  /** Display frame class suffix (see frame-pick.ts), or 'none'. Matches the home page wall. */
+  frame?: string;
 }
 
 // Product page: the piece hangs on the same oxblood wall as the home page salon, unframed (so it
 // shows what actually ships), under a picture light. A sold original gets a gallery red dot.
 // Click/tap to enlarge; extra photos (details, the piece in a room) are thumbnails underneath.
-export default function ImageGallery({ images, productTitle, productSlug, sold = false }: ImageGalleryProps) {
+export default function ImageGallery({ images, productTitle, productSlug, sold = false, frame = 'none' }: ImageGalleryProps) {
   const [selected, setSelected] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
 
@@ -34,17 +36,19 @@ export default function ImageGallery({ images, productTitle, productSlug, sold =
   }
 
   const img = processed[selected];
+  // Only the main painting photo gets the display frame; detail/room photos are shown as taken.
+  const framed = frame !== 'none' && selected === 0;
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="salon-room relative px-6 sm:px-12 py-12 sm:py-16 flex justify-center">
+      <div className="salon-room relative overflow-hidden px-6 sm:px-12 py-12 sm:py-16 flex justify-center">
         <button
           type="button"
           onClick={() => setLightboxOpen(true)}
           aria-label={`Enlarge ${productTitle}`}
           className="lit group relative block cursor-zoom-in"
         >
-          <span className="relative block shadow-[10px_20px_32px_rgba(0,0,0,.55),3px_6px_10px_rgba(0,0,0,.35)]">
+          <span className={`painting painting-fit frame-${framed ? frame : 'none'} relative block`}>
             <Image
               src={img.src}
               alt={img.alt || `${productTitle}, image ${selected + 1}`}
@@ -74,6 +78,8 @@ export default function ImageGallery({ images, productTitle, productSlug, sold =
           Click to enlarge
         </span>
       </div>
+
+      {framed && <p className="-mt-1 text-xs text-muted-foreground">Frame shown for display only.</p>}
 
       {processed.length > 1 && (
         <div className="flex flex-wrap gap-3" role="group" aria-label="More photos">

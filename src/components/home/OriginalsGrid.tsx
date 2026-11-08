@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { FRAME_NAMES } from '@/lib/frames';
+import { seeded, frameFor } from '@/lib/frame-pick';
 
 export interface GridItem {
   slug: string;
@@ -15,12 +15,6 @@ export interface GridItem {
   image: { src: string; width: number; height: number; alt: string } | null;
 }
 
-// Textured frames (frames.css). "auto" (the Strapi default) picks one per painting from its
-// slug, so it is stable; a choice made in Strapi ("none" or a named frame) always wins.
-function frameFor(item: GridItem): string {
-  if (item.frame === 'none' || (FRAME_NAMES as readonly string[]).includes(item.frame ?? '')) return item.frame!;
-  return FRAME_NAMES[Math.floor(seeded(item.slug, 5) * FRAME_NAMES.length)];
-}
 
 const FILTERS = [
   { id: 'available', label: 'Available', test: (i: GridItem) => !i.sold },
@@ -32,13 +26,7 @@ type FilterId = (typeof FILTERS)[number]['id'];
 
 const PER_WALL = 6;
 
-// Small, stable pseudo-random numbers per painting (from its slug), so each piece always hangs
-// the same way: same tilt, same drop, same size, on every visit and every build.
-function seeded(slug: string, salt: number): number {
-  let h = 2166136261 ^ salt;
-  for (let i = 0; i < slug.length; i++) h = Math.imul(h ^ slug.charCodeAt(i), 16777619);
-  return ((h >>> 0) % 10000) / 10000; // 0..1
-}
+// Each piece always hangs the same way (seeded from its slug): same tilt, drop and size.
 
 function hang(slug: string) {
   return {

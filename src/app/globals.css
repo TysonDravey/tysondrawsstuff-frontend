@@ -169,6 +169,9 @@ a:focus-visible, button:focus-visible {
   width: calc(100% - 2 * var(--fwk));
   box-shadow: none;
 }
+/* Product page: the painting sizes to its photo rather than filling a slot. */
+.painting.painting-fit,
+.painting.painting-fit[class*="frame-"]:not(.frame-none) { width: auto; }
 .painting[class*="frame-"]:not(.frame-none)::before {
   content: '';
   position: absolute;
