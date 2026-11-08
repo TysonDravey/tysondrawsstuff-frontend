@@ -113,11 +113,11 @@ a:focus-visible, button:focus-visible {
   color: var(--muted-foreground);
 }
 
-/* Salon wall (home page Originals): target row height, and how strongly pieces tilt.
-   Phones get about two pieces per row and gentler tilts. */
-.salon { --row-h: 140px; --tilt-k: 0.5; }
-@media (min-width: 640px) { .salon { --row-h: 250px; --tilt-k: 0.8; } }
-@media (min-width: 1024px) { .salon { --row-h: 330px; --tilt-k: 1; } }
+/* Salon wall (home page Originals): how strongly pieces tilt. Phones get gentler tilts.
+   (Row layout is planned in OriginalsGrid.tsx.) */
+.salon { --tilt-k: 0.5; }
+@media (min-width: 640px) { .salon { --tilt-k: 0.8; } }
+@media (min-width: 1024px) { .salon { --tilt-k: 1; } }
 
 /* The room the salon wall hangs in: oxblood plaster, a little lighter near the ceiling,
    darker toward the floor. The light in this room comes from the upper left. */
@@ -168,13 +168,19 @@ a:focus-visible, button:focus-visible {
 
 .hang-item {
   transform: rotate(calc(var(--tilt, 0deg) * var(--tilt-k, 1)));
-  animation: hang-in 520ms cubic-bezier(.2, .7, .2, 1) var(--delay, 0ms) both;
+}
+/* Once the page's script is running, pieces wait out of sight until they scroll into view
+   (OriginalsGrid adds .in), then fade up and settle into their tilt, left to right along a row.
+   Without the script (or before it loads) everything simply shows. */
+.salon[data-reveal] .hang-item:not(.in) { opacity: 0; }
+.salon[data-reveal] .hang-item.in:not(.settled) {
+  animation: hang-in 800ms cubic-bezier(.16, .8, .24, 1) var(--delay, 0ms) both;
 }
 
 @keyframes hang-in {
   from {
     opacity: 0;
-    transform: translateY(14px) rotate(0deg);
+    transform: translateY(48px) rotate(0deg);
   }
   to {
     opacity: 1;
@@ -184,5 +190,5 @@ a:focus-visible, button:focus-visible {
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition: none !important; animation: none !important; }
-  .hang-item { transform: none; }
+  .hang-item, .salon[data-reveal] .hang-item:not(.in) { transform: none; opacity: 1; }
 }

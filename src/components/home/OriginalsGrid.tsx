@@ -35,9 +35,49 @@ function hang(slug: string) {
   return {
     tilt: (seeded(slug, 1) * 2 - 1) * 1.8,          // -1.8° .. 1.8°
     drop: Math.round(seeded(slug, 2) * 56),          // 0 .. 56px lower than the row's top
-    scale: 0.82 + seeded(slug, 3) * 0.18,            // 82% .. 100% of its slot
+    scale: 0.88 + seeded(slug, 3) * 0.12,            // 88% .. 100% of its slot
     align: (['start', 'center', 'end'] as const)[Math.floor(seeded(slug, 4) * 3)],
   };
+}
+
+// Spacing and ideal row height for a given wall width (px).
+function metrics(width: number) {
+  if (width < 640) return { gap: 24, target: 210 };
+  if (width < 1024) return { gap: 40, target: 300 };
+  return { gap: 40, target: 400 };
+}
+
+// Split the paintings (in order) into rows so that every row runs the full width and the rows
+// come out close to the ideal height. Tries every split (fine for a handful of pieces) and keeps
+// the one with the least total squared difference from the ideal. A row that would come out far
+// too tall (e.g. one lone portrait) is capped and centred instead of blown up. Rows that come out
+// short count double: small paintings in a long thin strip look worse than big ones.
+function planRows(ratios: number[], width: number) {
+  const { gap, target } = metrics(width);
+  const n = ratios.length;
+  const best: number[] = [0];
+  const from: number[] = [0];
+  for (let i = 1; i <= n; i++) {
+    best[i] = Infinity;
+    for (let j = 0; j < i; j++) {
+      let sum = 0;
+      for (let k = j; k < i; k++) sum += ratios[k];
+      const h = (width - gap * (i - j - 1)) / sum;
+      const off = h < target ? (target - h) * 2 : h - target;
+      const cost = best[j] + off * off;
+      if (cost < best[i]) { best[i] = cost; from[i] = j; }
+    }
+  }
+  const rows: { start: number; end: number; maxWidth?: number }[] = [];
+  for (let i = n; i > 0; i = from[i]) rows.unshift({ start: from[i], end: i });
+  const maxH = target * 1.35;
+  for (const r of rows) {
+    let sum = 0;
+    for (let k = r.start; k < r.end; k++) sum += ratios[k];
+    const count = r.end - r.start;
+    if ((width - gap * (count - 1)) / sum > maxH) r.maxWidth = Math.round(maxH * sum + gap * (count - 1));
+  }
+  return { rows, gap };
 }
 
 // "#originals-3" ↔ wall 3. Lets Back/Forward and shared links land on the same wall.
@@ -56,12 +96,53 @@ export default function OriginalsGrid({ items, allHref, posterPrice }: {
   const [filter, setFilter] = useState<FilterId>('available');
   const [wall, setWall] = useState(0);
   const sectionRef = useRef<HTMLDivElement>(null);
+  // Width of the wall, measured in the browser; the static build lays out for a desktop width.
+  const [wallWidth, setWallWidth] = useState(1216);
+
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([entry]) => setWallWidth(Math.round(entry.contentRect.width)));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   const active = FILTERS.find(f => f.id === filter)!;
   const matching = items.filter(active.test);
   const wallCount = Math.max(1, Math.ceil(matching.length / PER_WALL));
   const current = Math.min(wall, wallCount - 1);
   const shown = matching.slice(current * PER_WALL, current * PER_WALL + PER_WALL);
+  const ratioOf = (item: GridItem) => (item.image ? item.image.width / item.image.height : 0.75);
+  const plan = planRows(shown.map(ratioOf), wallWidth);
+  const wallKey = `${filter}-${current}`;
+  const layoutKey = `${wallKey}:${plan.rows.map(r => r.end).join(',')}`;
+
+  // Paintings fade up and settle onto the wall as they scroll into view. Once a piece has been
+  // revealed on this wall it stays put (no replay when a resize reshuffles the rows).
+  const wallRef = useRef<HTMLDivElement>(null);
+  const revealed = useRef<{ wall: string; slugs: Set<string> }>({ wall: '', slugs: new Set() });
+  useEffect(() => {
+    const el = wallRef.current;
+    if (!el) return;
+    if (revealed.current.wall !== wallKey) revealed.current = { wall: wallKey, slugs: new Set() };
+    const seen = revealed.current.slugs;
+    el.dataset.reveal = '1';
+    const pieces = Array.from(el.querySelectorAll<HTMLElement>('.hang-item'));
+    const io = new IntersectionObserver(entries => {
+      for (const e of entries) {
+        if (!e.isIntersecting) continue;
+        const piece = e.target as HTMLElement;
+        piece.classList.add('in');
+        seen.add(piece.dataset.slug ?? '');
+        io.unobserve(piece);
+      }
+    }, { rootMargin: '0px 0px -12% 0px' });
+    for (const p of pieces) {
+      if (seen.has(p.dataset.slug ?? '')) p.classList.add('in', 'settled');
+      else io.observe(p);
+    }
+    return () => io.disconnect();
+  }, [layoutKey, wallKey]);
 
   // Open on the wall named in the address (#originals-3), and follow Back/Forward.
   useEffect(() => {
@@ -114,36 +195,47 @@ export default function OriginalsGrid({ items, allHref, posterPrice }: {
       {shown.length === 0 ? (
         <p className="text-soft py-12">Nothing here right now. Try “All work”.</p>
       ) : (
-        // Rows share a height and each painting's slot is as wide as its shape needs (flex-grow ∝
-        // aspect ratio). Inside its slot each piece is then hung a little smaller, lower and tilted.
-        // The key makes React remount the wall on every change, which replays the "hang" animation.
+        // Rows are planned to run edge to edge (see planRows); within a row each painting's slot is
+        // as wide as its shape needs (flex-grow ∝ aspect ratio). Inside its slot each piece is then
+        // hung a little smaller, lower and tilted. The key remounts the wall on every change, which
+        // replays the "hang" animation.
         <div
-          key={`${filter}-${current}`}
-          className="salon flex flex-wrap items-start gap-x-6 sm:gap-x-10 gap-y-10 sm:gap-y-14 min-h-[420px]"
+          key={wallKey}
+          ref={wallRef}
+          className="salon flex flex-col gap-y-10 sm:gap-y-14 min-h-[420px]"
           aria-live="polite"
           aria-label={`Wall ${current + 1} of ${wallCount}`}
         >
-          {shown.map((item, i) => {
-            const ratio = item.image ? item.image.width / item.image.height : 0.75;
+          {plan.rows.map(row => (
+          <div
+            key={row.start}
+            className="flex items-start w-full mx-auto"
+            style={{ columnGap: `${plan.gap}px`, maxWidth: row.maxWidth ? `${row.maxWidth}px` : undefined }}
+          >
+          {shown.slice(row.start, row.end).map((item, k) => {
+            const ratio = ratioOf(item);
             const h = hang(item.slug);
+            // The outer pieces sit against the row's edges so the wall looks full; inner ones wander.
+            const last = row.end - row.start - 1;
+            const align = k === 0 ? 'start' : k === last ? 'end' : h.align;
             return (
               <div
                 key={item.slug}
                 className="min-w-0 flex"
                 style={{
-                  flexGrow: ratio,
-                  flexBasis: `calc(var(--row-h) * ${ratio.toFixed(4)})`,
+                  flex: `${ratio.toFixed(4)} 1 0`,
                   paddingTop: `${h.drop}px`,
-                  justifyContent: h.align,
+                  justifyContent: align,
                 }}
               >
                 <Link
                   href={`/shop/${item.slug}/`}
+                  data-slug={item.slug}
                   className="hang-item group block text-foreground"
                   style={{
                     width: `${(h.scale * 100).toFixed(1)}%`,
                     ['--tilt' as string]: `${h.tilt.toFixed(2)}deg`,
-                    ['--delay' as string]: `${i * 70}ms`,
+                    ['--delay' as string]: `${k * 110}ms`,
                   }}
                 >
                   <div
@@ -179,7 +271,8 @@ export default function OriginalsGrid({ items, allHref, posterPrice }: {
               </div>
             );
           })}
-          <span aria-hidden="true" className="grow-[1000] basis-0" />
+          </div>
+          ))}
         </div>
       )}
 
