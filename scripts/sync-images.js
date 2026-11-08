@@ -86,60 +86,43 @@ async function downloadImageToBuffer(imageUrl) {
   });
 }
 
+// IMPORTANT: never call cloudinary.api.* (the Admin API) per image. It is capped at 500 calls/hour for the
+// WHOLE Cloudinary account (shared with KAC); a few builds in a row used it up and every image failed.
+// Instead we use the Upload API with overwrite:false, which isn't rate limited that way: if the asset
+// already exists Cloudinary skips the upload and just returns the existing asset's details.
+
 // Make sure the watermark image exists on Cloudinary (uploaded once from public/brand/)
 async function ensureWatermark() {
-  try {
-    await cloudinary.api.resource(WATERMARK_ID);
-    return;
-  } catch (err) {
-    const httpCode = err.http_code ?? err.error?.http_code;
-    if (httpCode && httpCode !== 404) throw new Error(`Watermark check failed (${httpCode})`);
-  }
-  console.log(`🔏 Uploading watermark: ${WATERMARK_ID}`);
-  await cloudinary.uploader.upload(WATERMARK_FILE, { public_id: WATERMARK_ID, overwrite: true, resource_type: 'image' });
+  await cloudinary.uploader.upload(WATERMARK_FILE, { public_id: WATERMARK_ID, overwrite: false, resource_type: 'image' });
 }
 
-// Upload a web-safe (shrunk + watermarked) copy to Cloudinary, reusing it if already uploaded.
+// Upload a web-safe (shrunk + watermarked) copy to Cloudinary, or get the existing one.
 // Returns { url, width, height } of the stored copy.
 async function uploadToCloudinary(imageUrl, publicId) {
-  // Check if already exists so we don't re-upload on every build
-  try {
-    const resource = await cloudinary.api.resource(publicId);
-    console.log(`  ☁️  Already uploaded: ${publicId}`);
-    return { url: resource.secure_url, width: resource.width, height: resource.height };
-  } catch (err) {
-    // SDK v2 puts the status at err.error.http_code, not err.http_code
-    const httpCode = err.http_code ?? err.error?.http_code;
-    if (httpCode && httpCode !== 404) {
-      console.warn(`  ⚠️  Cloudinary check warning (${httpCode}): ${err.message ?? err.error?.message}`);
-    }
-    // 404 = not uploaded yet, anything else = log + try anyway
+  const options = {
+    public_id: publicId, overwrite: false, resource_type: 'image',
+    format: 'jpg', transformation: WEB_TRANSFORMATION,
+  };
+  const done = (result) => {
+    console.log(result.existing
+      ? `  ☁️  Already on Cloudinary: ${publicId}`
+      : `  ✅ Uploaded (${result.width}×${result.height}, watermarked): ${result.secure_url}`);
+    return { url: result.secure_url, width: result.width, height: result.height };
+  };
+
+  const fullUrl = imageUrl.startsWith('http') ? imageUrl : `${STRAPI_URL}${imageUrl}`;
+  // A public Strapi (Railway) can be fetched by Cloudinary directly; a local one can't, so stream it up.
+  if (/^https:\/\//.test(fullUrl) && !/localhost|127\.0\.0\.1/.test(fullUrl)) {
+    return done(await cloudinary.uploader.upload(fullUrl, options));
   }
 
-  // Download locally first (Cloudinary can't reach localhost), then stream up
-  console.log(`  📤 Uploading to Cloudinary: ${publicId}`);
   const buffer = await downloadImageToBuffer(imageUrl);
-
-  // Split into folder + filename so Cloudinary creates visible folders in the media library
-  const lastSlash = publicId.lastIndexOf('/');
-  const folder = publicId.substring(0, lastSlash);
-  const filename = publicId.substring(lastSlash + 1);
-
   return new Promise((resolve, reject) => {
     const { Readable } = require('stream');
-    const uploadStream = cloudinary.uploader.upload_stream(
-      {
-        public_id: filename, folder, overwrite: true, resource_type: 'image', use_filename: false,
-        format: 'jpg', transformation: WEB_TRANSFORMATION,
-      },
-      (error, result) => {
-        if (error) reject(new Error(error.message));
-        else {
-          console.log(`  ✅ Uploaded (${result.width}×${result.height}, watermarked): ${result.secure_url}`);
-          resolve({ url: result.secure_url, width: result.width, height: result.height });
-        }
-      }
-    );
+    const uploadStream = cloudinary.uploader.upload_stream(options, (error, result) => {
+      if (error) reject(new Error(error.message));
+      else resolve(done(result));
+    });
     Readable.from(buffer).pipe(uploadStream);
   });
 }
@@ -477,6 +460,12 @@ async function syncImages() {
     console.log(`   ✅ ${totalProcessed} product images`);
     console.log(`   🎪 ${showLogoCount} show logos`);
     if (totalErrors > 0) console.log(`   ⚠️  ${totalErrors} failures`);
+
+    // Never publish a site with missing paintings: fail the build so Vercel keeps the last good version.
+    if (USE_CLOUDINARY && totalErrors > 0) {
+      console.error(`💥 ${totalErrors} product image(s) failed to sync to Cloudinary. Failing the build so the previous deployment stays live.`);
+      process.exit(1);
+    }
 
   } catch (error) {
     console.error('💥 Unexpected error:', error.message);
