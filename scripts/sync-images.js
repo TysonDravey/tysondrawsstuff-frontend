@@ -35,7 +35,7 @@ const REQUEST_TIMEOUT = 30000;
 // never exists on Cloudinary for these. This is done per upload, NOT with account-wide settings like
 // strict transformations, so nothing else on the shared Cloudinary account (e.g. KAC) is affected.
 // Changing the watermark or size? Bump the -vN suffixes and every image re-uploads on the next build.
-const WEB_PREFIX = 'TysonDrawsStuff/web-v1';
+const WEB_PREFIX = 'TysonDrawsStuff/web-v2'; // v2: watermark moved to bottom centre
 const WATERMARK_ID = 'TysonDrawsStuff/brand/watermark-v1';
 const WATERMARK_FILE = path.join(PUBLIC_DIR, 'brand', 'tds-watermark.png');
 const WEB_MAX_PX = 1600;
