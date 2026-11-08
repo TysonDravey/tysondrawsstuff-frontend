@@ -102,7 +102,7 @@ export default function OriginalsGrid({ items, allHref, posterPrice }: {
               className={`min-h-11 px-[18px] rounded-full border text-sm font-semibold transition-colors ${
                 filter === f.id
                   ? 'border-primary bg-[#2A1A10] text-foreground'
-                  : 'border-[#3A2E28] text-muted-foreground hover:text-foreground'
+                  : 'border-white/25 text-[#E8D6C6] hover:text-foreground hover:border-white/50'
               }`}
             >
               {f.label}
@@ -147,7 +147,7 @@ export default function OriginalsGrid({ items, allHref, posterPrice }: {
                   }}
                 >
                   <div
-                    className="relative w-full bg-card shadow-[0_22px_45px_rgba(0,0,0,.6)] transition-transform duration-300 group-hover:-translate-y-1"
+                    className="painting relative w-full bg-card transition-transform duration-300 group-hover:-translate-y-1"
                     style={{ aspectRatio: `${ratio}` }}
                   >
                     {item.image && (
@@ -159,6 +159,7 @@ export default function OriginalsGrid({ items, allHref, posterPrice }: {
                         className={`object-cover ${item.sold ? 'opacity-55' : ''}`}
                       />
                     )}
+                    <span aria-hidden="true" className="painting-light" />
                   </div>
                   <div className="pt-3.5 flex items-baseline justify-between gap-3">
                     <span className="font-display text-[17px] sm:text-lg leading-snug group-hover:text-primary transition-colors">
@@ -189,7 +190,7 @@ export default function OriginalsGrid({ items, allHref, posterPrice }: {
               type="button"
               onClick={() => goTo(current - 1)}
               disabled={current === 0}
-              className="min-h-12 px-7 rounded-full border border-line-strong font-semibold uppercase tracking-[0.08em] text-sm text-foreground hover:border-primary disabled:opacity-35 disabled:hover:border-line-strong transition-colors"
+              className="min-h-12 px-7 rounded-full border border-white/30 font-semibold uppercase tracking-[0.08em] text-sm text-foreground hover:border-primary disabled:opacity-35 disabled:hover:border-white/30 transition-colors"
             >
               Previous
             </button>

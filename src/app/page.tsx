@@ -116,10 +116,12 @@ export default async function Home() {
         </section>
       )}
 
-      {/* Originals */}
-      <section id="originals" className="mx-auto max-w-7xl px-4 sm:px-8 pt-20 sm:pt-24 pb-16 scroll-mt-20">
-        <OriginalsGrid items={gridItems} allHref="/category/category/" posterPrice={posterPrice} />
-      </section>
+      {/* Originals: hung salon-style on an oxblood wall */}
+      <div className="salon-room">
+        <section id="originals" className="mx-auto max-w-7xl px-4 sm:px-8 pt-20 sm:pt-24 pb-20 scroll-mt-20">
+          <OriginalsGrid items={gridItems} allHref="/category/category/" posterPrice={posterPrice} />
+        </section>
+      </div>
 
       {/* Posters */}
       {posterPicks.length > 0 && (

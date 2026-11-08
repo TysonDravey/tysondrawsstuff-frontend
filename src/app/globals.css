@@ -119,6 +119,53 @@ a:focus-visible, button:focus-visible {
 @media (min-width: 640px) { .salon { --row-h: 250px; --tilt-k: 0.8; } }
 @media (min-width: 1024px) { .salon { --row-h: 330px; --tilt-k: 1; } }
 
+/* The room the salon wall hangs in: oxblood plaster, a little lighter near the ceiling,
+   darker toward the floor. The light in this room comes from the upper left. */
+.salon-room {
+  --wall: #4a1418;
+  position: relative;
+  isolation: isolate;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"),
+    radial-gradient(ellipse 120% 60% at 30% 0%, rgba(255, 220, 180, .07), transparent 70%),
+    linear-gradient(to bottom, transparent 60%, rgba(0, 0, 0, .25)),
+    var(--wall);
+  /* a soft shadow under the band above, so the wall reads as its own room */
+  box-shadow: inset 0 14px 24px -12px rgba(0, 0, 0, .6);
+}
+
+/* Warm picture light on the wall above and to the left of each painting. */
+.hang-item { position: relative; }
+.hang-item::before {
+  content: '';
+  position: absolute;
+  left: -40%;
+  right: -15%;
+  top: -80px;
+  height: 80%;
+  background: radial-gradient(closest-side, rgba(255, 205, 150, .24), transparent);
+  z-index: -1;
+  pointer-events: none;
+}
+
+/* The painting itself: cast shadow falls down-right, away from the light. */
+.painting {
+  box-shadow:
+    10px 20px 32px rgba(0, 0, 0, .55),
+    3px 6px 10px rgba(0, 0, 0, .35);
+}
+/* Over the picture: the edge nearest the light (top, left) is shaded where the edge/frame
+   blocks it, plus a faint warm sheen from the upper left fading to shade lower right. */
+.painting-light {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  box-shadow:
+    inset 7px 9px 14px -4px rgba(0, 0, 0, .55),
+    inset -1px -1px 0 rgba(255, 235, 210, .08);
+  background: linear-gradient(135deg, rgba(255, 236, 205, .10), transparent 45%, rgba(0, 0, 0, .14));
+}
+
 .hang-item {
   transform: rotate(calc(var(--tilt, 0deg) * var(--tilt-k, 1)));
   animation: hang-in 520ms cubic-bezier(.2, .7, .2, 1) var(--delay, 0ms) both;
