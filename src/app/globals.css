@@ -175,7 +175,10 @@ a:focus-visible, button:focus-visible {
   inset: calc(-1 * var(--fwk));
   z-index: -1;
   pointer-events: none;
-  border: var(--fwk) solid transparent;
+  /* Longhands only: the `border` shorthand would reset border-image (set in frames.css). */
+  border-style: solid;
+  border-color: transparent;
+  border-width: var(--fwk);
   box-shadow: var(--cast);
 }
 /* Over the picture: the edge nearest the light (top, left) is shaded where the edge/frame
