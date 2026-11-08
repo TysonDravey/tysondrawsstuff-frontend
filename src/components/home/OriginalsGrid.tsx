@@ -10,7 +10,22 @@ export interface GridItem {
   price: number;
   sold: boolean;
   hasPoster: boolean;
+  frame?: string;
   image: { src: string; width: number; height: number; alt: string } | null;
+}
+
+// Frame styles drawn in globals.css (.frame-*). "auto" (the Strapi default) picks one per
+// painting from its slug, so it is stable; a choice made in Strapi always wins.
+const FRAMES = ['none', 'black', 'wood', 'gilt', 'ornate', 'mat'];
+const AUTO_FRAMES: [string, number][] = [['black', 0.34], ['wood', 0.2], ['gilt', 0.2], ['mat', 0.14], ['ornate', 0.12]];
+function frameFor(item: GridItem): string {
+  if (item.frame && FRAMES.includes(item.frame)) return item.frame;
+  let r = seeded(item.slug, 5);
+  for (const [name, share] of AUTO_FRAMES) {
+    if (r < share) return name;
+    r -= share;
+  }
+  return 'black';
 }
 
 const FILTERS = [
@@ -78,6 +93,29 @@ function planRows(ratios: number[], width: number) {
     if ((width - gap * (count - 1)) / sum > maxH) r.maxWidth = Math.round(maxH * sum + gap * (count - 1));
   }
   return { rows, gap };
+}
+
+// Round arrow halfway down the side of the wall. Wide screens: in the margin beside the paintings;
+// narrower screens: over the wall's edge on a dark disc so it reads on top of a painting.
+function SideArrow({ dir, disabled, onClick }: { dir: 'prev' | 'next'; disabled: boolean; onClick: () => void }) {
+  const prev = dir === 'prev';
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={prev ? 'Previous wall' : 'Next wall'}
+      className={`absolute top-1/2 -translate-y-1/2 z-10 w-12 h-12 grid place-items-center rounded-full
+        bg-black/45 backdrop-blur-sm border border-white/25 text-foreground shadow-[0_6px_18px_rgba(0,0,0,.45)]
+        hover:border-primary hover:text-primary transition-[color,border-color,opacity]
+        disabled:opacity-0 disabled:pointer-events-none
+        ${prev ? '-left-2 2xl:-left-20' : '-right-2 2xl:-right-20'}`}
+    >
+      <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+        <path d={prev ? 'M15 18l-6-6 6-6' : 'M9 18l6-6-6-6'} />
+      </svg>
+    </button>
+  );
 }
 
 // "#originals-3" ↔ wall 3. Lets Back/Forward and shared links land on the same wall.
@@ -192,6 +230,13 @@ export default function OriginalsGrid({ items, allHref, posterPrice }: {
         </div>
       </div>
 
+      <div className="relative">
+      {wallCount > 1 && (
+        <>
+          <SideArrow dir="prev" disabled={current === 0} onClick={() => goTo(current - 1)} />
+          <SideArrow dir="next" disabled={current >= wallCount - 1} onClick={() => goTo(current + 1)} />
+        </>
+      )}
       {shown.length === 0 ? (
         <p className="text-soft py-12">Nothing here right now. Try “All work”.</p>
       ) : (
@@ -239,7 +284,7 @@ export default function OriginalsGrid({ items, allHref, posterPrice }: {
                   }}
                 >
                   <div
-                    className="painting relative w-full bg-card transition-transform duration-300 group-hover:-translate-y-1"
+                    className={`painting frame-${frameFor(item)} relative bg-card transition-transform duration-300 group-hover:-translate-y-1`}
                     style={{ aspectRatio: `${ratio}` }}
                   >
                     {item.image && (
@@ -275,6 +320,7 @@ export default function OriginalsGrid({ items, allHref, posterPrice }: {
           ))}
         </div>
       )}
+      </div>
 
       <nav aria-label="Walls" className="mt-12 flex flex-wrap items-center justify-center gap-4">
         {wallCount > 1 && (

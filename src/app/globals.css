@@ -150,9 +150,74 @@ a:focus-visible, button:focus-visible {
 
 /* The painting itself: cast shadow falls down-right, away from the light. */
 .painting {
+  --cast: 10px 20px 32px rgba(0, 0, 0, .55), 3px 6px 10px rgba(0, 0, 0, .35);
+  width: 100%;
+  box-shadow: var(--cast);
+}
+
+/* Frames. The picture keeps its exact shape; the frame is drawn around it (::before, behind the
+   picture) and the picture is inset by the frame's width so the whole thing still fits its slot.
+   Edges facing the light (top, left) catch a highlight; bottom and right sit in shade. */
+.salon { --fw-k: .55; }
+@media (min-width: 640px) { .salon { --fw-k: .8; } }
+@media (min-width: 1024px) { .salon { --fw-k: 1; } }
+
+.painting:not(.frame-none) {
+  --fwk: calc(var(--fw) * var(--fw-k, 1));
+  margin: var(--fwk);
+  width: calc(100% - 2 * var(--fwk));
+  box-shadow: none;
+}
+.painting:not(.frame-none)::before {
+  content: '';
+  position: absolute;
+  inset: calc(-1 * var(--fwk));
+  z-index: -1;
+  pointer-events: none;
   box-shadow:
-    10px 20px 32px rgba(0, 0, 0, .55),
-    3px 6px 10px rgba(0, 0, 0, .35);
+    inset 2px 2px 0 rgba(255, 240, 215, .28),
+    inset -2px -2px 0 rgba(0, 0, 0, .45),
+    var(--cast);
+}
+
+.frame-black { --fw: 12px; }
+.frame-black::before { background: linear-gradient(135deg, #2b2826, #121110 55%, #0b0a0a); }
+
+.frame-wood { --fw: 16px; }
+.frame-wood::before {
+  background:
+    linear-gradient(135deg, rgba(255, 220, 170, .12), transparent 50%, rgba(0, 0, 0, .3)),
+    repeating-linear-gradient(90deg, #4a2c17 0 3px, #5a3720 3px 7px, #40261400 7px 9px),
+    repeating-linear-gradient(0deg, #4a2c17 0 4px, #553420 4px 9px),
+    #48301c;
+}
+
+.frame-gilt { --fw: 18px; }
+.frame-gilt::before {
+  background: linear-gradient(135deg, #f3d98b, #c9a24a 25%, #8a6420 50%, #d8b55e 70%, #6e4f17);
+}
+
+.frame-ornate { --fw: 26px; }
+.frame-ornate::before {
+  background:
+    radial-gradient(circle, rgba(255, 236, 170, .35) 1.5px, transparent 2px) 0 0 / 7px 7px,
+    linear-gradient(135deg, #f0d27e, #b98f36 30%, #7a5619 55%, #d6b058 75%, #5e4210);
+  box-shadow:
+    inset 0 0 0 3px #4d3510,
+    inset 0 0 0 5px #e6c46e,
+    inset 0 0 0 8px rgba(70, 48, 14, .9),
+    inset 2px 2px 0 rgba(255, 240, 215, .3),
+    var(--cast);
+}
+
+/* Black frame with a cream mat: frame + mat together are --fw wide. */
+.frame-mat { --fw: 38px; }
+.frame-mat::before {
+  background: #ece4d4;
+  border: calc(10px * var(--fw-k, 1)) solid #151413;
+  box-shadow:
+    inset 2px 2px 0 rgba(0, 0, 0, .12),
+    var(--cast);
 }
 /* Over the picture: the edge nearest the light (top, left) is shaded where the edge/frame
    blocks it, plus a faint warm sheen from the upper left fading to shade lower right. */

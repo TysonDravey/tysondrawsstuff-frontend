@@ -70,6 +70,7 @@ export default async function Home() {
       price: p.price,
       sold: !isAvailable(p),
       hasPoster: !!p.hasPoster,
+      frame: p.frame,
       image: firstImage(p),
     }));
 

@@ -89,6 +89,8 @@ export interface Product {
   featured: boolean;
   sold: boolean;
   hasPoster?: boolean;
+  /** How the piece is framed on the home page salon wall; 'auto' (or missing) = picked for it. */
+  frame?: 'auto' | 'none' | 'black' | 'wood' | 'gilt' | 'ornate' | 'mat';
   images?: StrapiImage[];
   category?: Category;
   currentShow?: Show;
