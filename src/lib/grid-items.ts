@@ -1,6 +1,6 @@
 import type { Product } from './api';
 import type { GridItem } from '@/components/home/OriginalsGrid';
-import { getProductImages } from './images';
+import { getProductImages, hasFramedPhoto } from './images';
 import { displayTitle, isAvailable, activeShow } from './display';
 
 // The first photo of a product, sized for layout (falls back to a portrait shape).
@@ -25,7 +25,8 @@ export function toGridItem(p: Product): GridItem {
     price: (show && p.showPrice) || p.price,
     sold: !isAvailable(p),
     hasPoster: !!p.hasPoster,
-    frame: p.frame,
+    // Photographed in its real frame: that photo hangs as-is, no display frame around it.
+    frame: hasFramedPhoto(p.slug) ? 'none' : p.frame,
     atShow: show?.title,
     image: firstImage(p),
   };

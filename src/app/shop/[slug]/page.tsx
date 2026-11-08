@@ -6,7 +6,7 @@ import { fetchProductBySlug, fetchProductSlugs, fetchCategoriesWithProducts, fet
 import BuyButton from '@/components/BuyButton';
 import ImageGallery from '@/components/ImageGallery';
 import ProductNavigation from '@/components/ProductNavigation';
-import { getProductImages } from '@/lib/images';
+import { getProductImages, hasFramedPhoto } from '@/lib/images';
 import { displayTitle, describeOriginal, isOriginal, formatPrice, showDates, activeShow } from '@/lib/display';
 import { marked } from 'marked';
 import { siteUrl } from '@/lib/site';
@@ -167,7 +167,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
             productTitle={title}
             productSlug={product.slug}
             sold={original && sold}
-            frame={original ? frameFor(product) : 'none'}
+            frame={original && !hasFramedPhoto(product.slug) ? frameFor(product) : 'none'}
             framedNote={
               comesFramed(product)
                 ? 'Display frame shown. This piece comes in its own custom frame (see details).'

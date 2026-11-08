@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { seeded, frameFor } from '@/lib/frame-pick';
+import { seeded, frameFor, isCutout } from '@/lib/frame-pick';
 
 export interface GridItem {
   slug: string;
@@ -278,7 +278,7 @@ export default function OriginalsGrid({ items, allHref, posterPrice, heading = '
                   }}
                 >
                   <div
-                    className={`painting frame-${frameFor(item)} relative bg-card transition-transform duration-300 group-hover:-translate-y-1`}
+                    className={`painting frame-${frameFor(item)} relative ${isCutout(item.image?.src) ? 'painting-cutout' : 'bg-card'} transition-transform duration-300 group-hover:-translate-y-1`}
                     style={{ aspectRatio: `${ratio}` }}
                   >
                     {item.image && (

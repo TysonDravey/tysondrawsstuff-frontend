@@ -8,6 +8,7 @@ import 'yet-another-react-lightbox/styles.css';
 import 'yet-another-react-lightbox/plugins/thumbnails.css';
 import { StrapiImage } from '@/lib/api';
 import { getProductImages } from '@/lib/images';
+import { isCutout } from '@/lib/frame-pick';
 
 interface ImageGalleryProps {
   images: StrapiImage[];
@@ -50,7 +51,7 @@ export default function ImageGallery({ images, productTitle, productSlug, sold =
           aria-label={`Enlarge ${productTitle}`}
           className="lit group relative block cursor-zoom-in"
         >
-          <span className={`painting painting-fit frame-${framed ? frame : 'none'} relative block`}>
+          <span className={`painting painting-fit frame-${framed ? frame : 'none'} ${isCutout(img.src) ? 'painting-cutout' : ''} relative block`}>
             <Image
               src={img.src}
               alt={img.alt || `${productTitle}, image ${selected + 1}`}

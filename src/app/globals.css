@@ -190,6 +190,15 @@ a:focus-visible, button:focus-visible {
   border-width: var(--fwk);
   box-shadow: var(--cast);
 }
+/* A photo of the piece in its real frame, cut out from the wall (transparent corners): the shadow
+   follows the frame's outline, and the photo already carries its own light, so no sheen on top. */
+.painting.painting-cutout {
+  box-shadow: none;
+  background: transparent;
+  filter: drop-shadow(8px 16px 14px rgba(0, 0, 0, .5)) drop-shadow(2px 4px 4px rgba(0, 0, 0, .35));
+}
+.painting-cutout .painting-light { display: none; }
+
 /* Over the picture: the edge nearest the light (top, left) is shaded where the edge/frame
    blocks it, plus a faint warm sheen from the upper left fading to shade lower right. */
 .painting-light {

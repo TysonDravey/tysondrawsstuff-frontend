@@ -23,3 +23,8 @@ export function frameFor(item: { slug: string; frame?: string }): string {
   if (item.frame === 'none' || (FRAME_NAMES as readonly string[]).includes(item.frame ?? '')) return item.frame!;
   return FRAME_NAMES[Math.floor(seeded(item.slug, 5) * FRAME_NAMES.length)];
 }
+
+/** A photo of the piece in its real frame, cut out from the wall (see FRAMED_CUTOUTS in images.ts). */
+export function isCutout(src?: string): boolean {
+  return !!src?.startsWith('/framed/');
+}

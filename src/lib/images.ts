@@ -23,6 +23,32 @@ try {
 }
 
 /**
+ * Photos of pieces hanging in their real frames, straightened, lens-corrected and cut out from the
+ * wall (transparent background) by scripts/frames/straighten_framed_photo.py, in public/framed/.
+ * Keyed by the Strapi upload's original filename, minus its hash: "water_frame_02_62c03213e7.png".
+ * To add one: run the script on the upload, drop the .webp in public/framed/, add a line here.
+ */
+const FRAMED_CUTOUTS: Record<string, { width: number; height: number }> = {
+  air_frame_01: { width: 1485, height: 1903 },
+  fallout_frame_01: { width: 1441, height: 1940 },
+  fire_frame_02: { width: 1463, height: 1927 },
+  glass_frame_01: { width: 1438, height: 1915 },
+  metal_frame_01: { width: 1427, height: 1896 },
+  water_frame_02: { width: 1409, height: 1883 },
+};
+
+function framedCutout(img: LocalImage) {
+  const name = (img.originalUrl || '').split('/').pop()?.replace(/_[0-9a-f]{10}\.\w+$/, '') ?? '';
+  const cut = FRAMED_CUTOUTS[name];
+  return cut ? { name, ...cut } : null;
+}
+
+/** True when the piece has a photo of it in its real frame (so it needs no display frame). */
+export function hasFramedPhoto(productSlug: string): boolean {
+  return (imageMap[productSlug] ?? []).some(img => framedCutout(img) !== null);
+}
+
+/**
  * Get static image URL for a product image
  * Uses only static images - no Strapi fallback for fully static site
  */
@@ -52,12 +78,15 @@ export function getProductImages(productSlug: string, _strapiImages: StrapiImage
 
   if (productImages && productImages.length > 0) {
     // Use static images
-    return productImages.map((img: LocalImage) => ({
-      src: img.url,
-      alt: img.alternativeText,
-      width: img.width,
-      height: img.height
-    }));
+    const out = productImages.map((img: LocalImage) => {
+      const cut = framedCutout(img);
+      return cut
+        ? { src: `/framed/${cut.name}.webp`, alt: img.alternativeText, width: cut.width, height: cut.height, framed: true }
+        : { src: img.url, alt: img.alternativeText, width: img.width, height: img.height, framed: false };
+    });
+    // A piece photographed in its real frame leads with that photo (wall, product page, share card).
+    out.sort((a, b) => Number(b.framed) - Number(a.framed));
+    return out.map(({ framed: _framed, ...img }) => img);
   }
 
   // No fallback to Strapi - site is fully static
