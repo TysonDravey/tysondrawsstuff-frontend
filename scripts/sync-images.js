@@ -42,7 +42,8 @@ const WEB_MAX_PX = 1600;
 const WEB_TRANSFORMATION = [
   { width: WEB_MAX_PX, height: WEB_MAX_PX, crop: 'limit' },
   { overlay: WATERMARK_ID.replace(/\//g, ':'), width: 0.4, flags: 'relative', opacity: 55 },
-  { flags: 'layer_apply', gravity: 'south_east', x: 0.03, y: 0.03 },
+  // Bottom-centre: Tyson signs bottom-left or bottom-right, so the corners stay clear
+  { flags: 'layer_apply', gravity: 'south', y: 0.03 },
   { quality: 'auto:good' },
 ];
 
