@@ -190,7 +190,8 @@ export async function POST(request: NextRequest) {
 
       // Success and cancel URLs
       success_url: `${request.nextUrl.origin}/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${request.nextUrl.origin}/cancel`,
+      // The cancel page offers a way back to the piece they were looking at.
+      cancel_url: `${request.nextUrl.origin}/cancel?product=${encodeURIComponent(product.slug)}`,
 
       // Enhanced metadata for order tracking
       metadata: {

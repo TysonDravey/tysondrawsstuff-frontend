@@ -6,92 +6,65 @@ interface PaginationProps {
   baseUrl: string;
 }
 
+// Up to five page numbers around the current one, plus first/last with "…" gaps.
+function pageWindow(current: number, total: number) {
+  let start = Math.max(1, current - 2);
+  const end = Math.min(total, start + 4);
+  start = Math.max(1, end - 4);
+  return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+}
+
+const pill = 'min-w-11 h-11 px-3 grid place-items-center rounded-full text-sm font-semibold transition-colors';
+const idle = `${pill} border border-border text-soft hover:border-primary hover:text-primary`;
+
 export default function Pagination({ currentPage, totalPages, baseUrl }: PaginationProps) {
   if (totalPages <= 1) return null;
 
-  const getPageNumbers = () => {
-    const pages = [];
-    const showPages = 5; // Show 5 page numbers at most
-
-    let startPage = Math.max(1, currentPage - 2);
-    const endPage = Math.min(totalPages, startPage + showPages - 1);
-
-    // Adjust start page if we're near the end
-    if (endPage - startPage < showPages - 1) {
-      startPage = Math.max(1, endPage - showPages + 1);
-    }
-
-    for (let i = startPage; i <= endPage; i++) {
-      pages.push(i);
-    }
-
-    return pages;
-  };
-
-  const pages = getPageNumbers();
+  // Page 1 is the listing itself; the rest live at /page/N/ (the site uses trailing slashes).
+  const href = (page: number) => (page === 1 ? `${baseUrl}/` : `${baseUrl}/page/${page}/`);
+  const pages = pageWindow(currentPage, totalPages);
+  const first = pages[0];
+  const last = pages[pages.length - 1];
 
   return (
-    <div className="flex justify-center items-center space-x-2 mt-12">
-      {/* Previous Button */}
+    <nav aria-label="Pages" className="mt-14 flex flex-wrap justify-center items-center gap-2">
       {currentPage > 1 && (
-        <Link
-          href={currentPage === 2 ? baseUrl : `${baseUrl}/page/${currentPage - 1}`}
-          className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-primary border border-border rounded-md hover:bg-muted transition-colors"
-        >
-          ← Previous
+        <Link href={href(currentPage - 1)} rel="prev" className={`${idle} px-5`}>
+          ← <span className="ml-1.5 hidden sm:inline">Previous</span>
         </Link>
       )}
 
-      {/* First page if not in range */}
-      {pages[0] > 1 && (
+      {first > 1 && (
         <>
-          <Link
-            href={baseUrl}
-            className="px-3 py-2 text-sm font-medium text-muted-foreground hover:text-primary border border-border rounded-md hover:bg-muted transition-colors"
-          >
-            1
-          </Link>
-          {pages[0] > 2 && <span className="px-2 text-muted-foreground">...</span>}
+          <Link href={href(1)} className={idle}>1</Link>
+          {first > 2 && <span aria-hidden="true" className="px-1 text-muted-foreground">…</span>}
         </>
       )}
 
-      {/* Page Numbers */}
-      {pages.map((page) => (
-        <Link
-          key={page}
-          href={page === 1 ? baseUrl : `${baseUrl}/page/${page}`}
-          className={`px-3 py-2 text-sm font-medium border rounded-md transition-colors ${
-            currentPage === page
-              ? 'bg-primary text-primary-foreground border-primary'
-              : 'text-muted-foreground hover:text-primary border-border hover:bg-muted'
-          }`}
-        >
-          {page}
-        </Link>
-      ))}
-
-      {/* Last page if not in range */}
-      {pages[pages.length - 1] < totalPages && (
-        <>
-          {pages[pages.length - 1] < totalPages - 1 && <span className="px-2 text-muted-foreground">...</span>}
-          <Link
-            href={`${baseUrl}/page/${totalPages}`}
-            className="px-3 py-2 text-sm font-medium text-muted-foreground hover:text-primary border border-border rounded-md hover:bg-muted transition-colors"
-          >
-            {totalPages}
+      {pages.map(page =>
+        page === currentPage ? (
+          <span key={page} aria-current="page" className={`${pill} bg-primary text-primary-foreground`}>
+            {page}
+          </span>
+        ) : (
+          <Link key={page} href={href(page)} className={idle}>
+            {page}
           </Link>
+        ),
+      )}
+
+      {last < totalPages && (
+        <>
+          {last < totalPages - 1 && <span aria-hidden="true" className="px-1 text-muted-foreground">…</span>}
+          <Link href={href(totalPages)} className={idle}>{totalPages}</Link>
         </>
       )}
 
-      {/* Next Button */}
       {currentPage < totalPages && (
-        <Link
-          href={`${baseUrl}/page/${currentPage + 1}`}
-          className="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-primary border border-border rounded-md hover:bg-muted transition-colors"
-        >
-          Next →
+        <Link href={href(currentPage + 1)} rel="next" className={`${idle} px-5`}>
+          <span className="mr-1.5 hidden sm:inline">Next</span> →
         </Link>
       )}
-    </div>
+    </nav>
   );
 }

@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { Suspense } from 'react';
 import { redirect } from 'next/navigation';
 import type { Metadata } from 'next';
@@ -6,6 +7,9 @@ import Stripe from 'stripe';
 import Layout from '@/components/Layout';
 import { fetchCategoriesWithProducts, Category } from '@/lib/api';
 import { siteUrl } from '@/lib/site';
+import { getProductImages } from '@/lib/images';
+import { displayTitle, formatPrice } from '@/lib/display';
+import { isCutout } from '@/lib/frame-pick';
 
 interface ExpandedSession extends Stripe.Checkout.Session {
   shipping_details?: {
@@ -25,15 +29,13 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
   apiVersion: '2025-08-27.basil',
 });
 
-
-
-
 export const metadata: Metadata = {
+  title: 'Thank you | Tyson Draws Stuff',
+  robots: { index: false },
   alternates: {
     canonical: siteUrl(`/success`),
   },
 };
-
 
 interface SuccessPageProps {
   searchParams: Promise<{
@@ -53,35 +55,40 @@ async function getCheckoutSession(sessionId: string) {
   }
 }
 
-function SuccessContent({ session, categories }: { session: ExpandedSession | null, categories: Category[] }) {
+// The piece they bought (from the checkout's metadata), for the "hung on the wall" moment.
+function purchasedPiece(session: Stripe.Checkout.Session) {
+  const slug = session.metadata?.productSlug;
+  const v = session.metadata?.variant;
+  return {
+    title: displayTitle(session.metadata?.productTitle ?? ''),
+    variant: (v === 'poster' || v === 'original' ? v : 'other') as 'poster' | 'original' | 'other',
+    image: slug ? getProductImages(slug)[0] : undefined,
+  };
+}
+
+const textLink = 'text-foreground font-semibold border-b border-primary hover:text-primary';
+const button = 'bg-primary text-primary-foreground font-bold px-6 py-3 rounded hover:bg-[#F4B868] transition-colors';
+
+function SuccessContent({ session, categories }: { session: ExpandedSession | null; categories: Category[] }) {
   if (!session) {
     return (
       <Layout categories={categories}>
-        <div className="py-16">
-          <div className="container mx-auto px-4 text-center">
-            <div className="max-w-md mx-auto">
-              <h1 className="text-2xl font-bold font-display text-foreground mb-4">
-                Order Not Found
-              </h1>
-              <p className="text-foreground/80 mb-8">
-                We couldn&apos;t find your order details. Please contact support if you need assistance.
-              </p>
-              <Link
-                href="/shop"
-                className="inline-block bg-primary text-primary-foreground py-3 px-6 rounded-lg hover:bg-accent transition-colors font-semibold"
-              >
-                Continue Shopping
-              </Link>
-            </div>
-          </div>
+        <div className="mx-auto max-w-2xl px-4 sm:px-8 py-24 text-center flex flex-col items-center gap-5">
+          <p className="eyebrow">Order</p>
+          <h1 className="font-display text-4xl leading-tight">We couldn’t find that order</h1>
+          <p className="text-soft">
+            If you’ve just paid, don’t worry: your receipt is on its way by email. Questions?{' '}
+            <a href="mailto:kirkbrillon@gmail.com" className={textLink}>Email me</a>.
+          </p>
+          <Link href="/" className={`mt-2 ${button}`}>Back to the gallery</Link>
         </div>
       </Layout>
     );
   }
 
   const customer = session.customer as Stripe.Customer | null;
-  const customerEmail = customer?.email || session.customer_email;
-  const customerName = customer?.name;
+  const customerEmail = customer?.email || session.customer_email || session.customer_details?.email;
+  const customerName = customer?.name || session.customer_details?.name;
   // Since the 2025 "basil" Stripe API, shipping lives in collected_information.
   const shipping = session.collected_information?.shipping_details ?? session.shipping_details;
   const shippingAddress = shipping?.address;
@@ -94,111 +101,99 @@ function SuccessContent({ session, categories }: { session: ExpandedSession | nu
     ? `${card.brand.charAt(0).toUpperCase()}${card.brand.slice(1)} ending in ${card.last4}`
     : paymentMethod?.type === 'link' ? 'Link' : 'Card';
 
+  const piece = purchasedPiece(session);
+  const firstName = (shippingName || customerName || '').trim().split(/\s+/)[0];
+  const headline = { original: 'It’s yours.', poster: 'Your poster is on its way.', other: 'Thank you!' }[piece.variant];
+  const lede = {
+    original: `${piece.title || 'This piece'} is coming off the wall and heading to you. Thank you for giving it a home.`,
+    poster: `A print of ${piece.title || 'the piece'} is heading your way. Thank you!`,
+    other: 'Your order is confirmed. Thank you!',
+  }[piece.variant];
+
   return (
     <Layout categories={categories}>
-      <div className="py-16">
-        <div className="container mx-auto px-4">
-          <div className="max-w-2xl mx-auto">
-            {/* Success Header */}
-            <div className="text-center mb-8">
-              <div className="w-20 h-20 bg-card rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-primary">
-                <svg
-                  className="w-10 h-10 text-primary"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M5 13l4 4L19 7"
+      <div className="mx-auto max-w-7xl px-4 sm:px-8 pt-12 sm:pt-16 pb-20">
+        <div className="grid gap-10 lg:gap-16 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] items-start">
+          {/* What they bought, hung on the wall */}
+          {piece.image && (
+            <div className="salon-room grid place-items-center px-8 py-12 sm:px-12 sm:py-14">
+              <span className="lit block">
+                <span className={`painting painting-fit ${isCutout(piece.image.src) ? 'painting-cutout' : ''} relative block`}>
+                  <Image
+                    src={piece.image.src}
+                    alt={piece.image.alt || piece.title}
+                    width={piece.image.width || 1200}
+                    height={piece.image.height || 1600}
+                    priority
+                    sizes="(min-width: 1024px) 460px, 85vw"
+                    className="block w-auto h-auto max-w-full max-h-[min(60vh,560px)]"
                   />
-                </svg>
-              </div>
-              <h1 className="text-3xl font-bold font-display text-foreground mb-4">
-                Order Confirmed!
-              </h1>
-              <p className="text-foreground/80">
-                Thank you for your purchase. Your order details have been sent to your email.
-              </p>
+                  <span aria-hidden="true" className="painting-light" />
+                </span>
+              </span>
+            </div>
+          )}
+
+          <div className={`flex flex-col gap-7 ${piece.image ? '' : 'lg:col-span-2 max-w-2xl'}`}>
+            <div className="flex flex-col gap-4">
+              <p className="eyebrow">Order confirmed{firstName ? ` · thanks, ${firstName}` : ''}</p>
+              <h1 className="font-display text-4xl sm:text-[56px] leading-[1.05]">{headline}</h1>
+              <p className="text-lg text-soft">{lede}</p>
             </div>
 
-            {/* Order Details */}
-            <div className="bg-card border border-border rounded-lg p-6 mb-8">
-              <h2 className="text-xl font-semibold font-display text-foreground mb-4">Order Details</h2>
-
-              {/* Customer Information */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <dl className="grid sm:grid-cols-2 gap-x-8 gap-y-5 border-t border-border pt-6 text-sm">
+              {shippingAddress && (
                 <div>
-                  <h3 className="text-sm font-medium text-foreground mb-2">Customer Information</h3>
-                  <div className="text-sm text-foreground/80">
-                    {customerName && <p className="font-medium">{customerName}</p>}
-                    {customerEmail && <p>{customerEmail}</p>}
-                    {session.customer_details?.phone && (
-                      <p>{session.customer_details.phone}</p>
-                    )}
-                  </div>
+                  <dt className="eyebrow mb-1.5">Shipping to</dt>
+                  <dd className="text-soft leading-relaxed">
+                    {shippingName && <span className="block text-foreground">{shippingName}</span>}
+                    <span className="block">{shippingAddress.line1}</span>
+                    {shippingAddress.line2 && <span className="block">{shippingAddress.line2}</span>}
+                    <span className="block">
+                      {shippingAddress.city}, {shippingAddress.state} {shippingAddress.postal_code}
+                    </span>
+                  </dd>
                 </div>
-
-                {/* Shipping Address */}
-                {shippingAddress && (
-                  <div>
-                    <h3 className="text-sm font-medium text-foreground mb-2">Shipping Address</h3>
-                    <div className="text-sm text-foreground/80">
-                      {shippingName && <p className="font-medium">{shippingName}</p>}
-                      <p>{shippingAddress.line1}</p>
-                      {shippingAddress.line2 && <p>{shippingAddress.line2}</p>}
-                      <p>
-                        {shippingAddress.city}, {shippingAddress.state} {shippingAddress.postal_code}
-                      </p>
-                      <p>{shippingAddress.country}</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Payment Information */}
-              <div className="border-t border-border pt-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-foreground">Payment Method:</span>
-                  <span className="text-sm text-foreground/80">{paymentLabel}</span>
-                </div>
-                <div className="flex justify-between items-center mt-2">
-                  <span className="text-sm font-medium text-foreground">Total Paid:</span>
-                  <span className="text-lg font-semibold text-primary">
-                    ${(session.amount_total! / 100).toFixed(2)} CAD
+              )}
+              <div>
+                <dt className="eyebrow mb-1.5">Paid</dt>
+                <dd className="text-soft leading-relaxed">
+                  <span className="block text-foreground text-lg font-semibold">
+                    {formatPrice((session.amount_total ?? 0) / 100)} CAD
                   </span>
-                </div>
+                  <span className="block">{paymentLabel} · free shipping</span>
+                </dd>
               </div>
+              {customerEmail && (
+                <div>
+                  <dt className="eyebrow mb-1.5">Receipt sent to</dt>
+                  <dd className="text-soft break-all">{customerEmail}</dd>
+                </div>
+              )}
+            </dl>
+
+            <div className="rounded border border-border bg-card p-5 sm:p-6">
+              <h2 className="font-display text-xl mb-3">What happens next</h2>
+              <ol className="text-sm text-soft space-y-2 list-decimal pl-5 marker:text-primary">
+                <li>I pack it up carefully.</li>
+                <li>It ships free within Canada, and you’ll get tracking by email once it’s on its way.</li>
+                <li>
+                  Questions? <a href="mailto:kirkbrillon@gmail.com" className={textLink}>Email me</a> with your order
+                  number: <span className="font-mono text-xs text-foreground break-all">{session.id}</span>
+                </li>
+              </ol>
             </div>
 
-            {/* Next Steps */}
-            <div className="bg-muted border border-border rounded-lg p-6 mb-8">
-              <h3 className="text-lg font-semibold font-display text-foreground mb-2">What Happens Next?</h3>
-              <ul className="text-sm text-foreground/80 space-y-1">
-                <li>• Your order details have been sent to {customerEmail}</li>
-                <li>• We&apos;ll prepare your artwork for shipping</li>
-                <li>• You&apos;ll receive tracking information once shipped</li>
-                <li>• Questions? Contact us with your order ID: <span className="font-mono text-primary">{session.id}</span></li>
-              </ul>
-            </div>
-
-            {/* Actions */}
-            <div className="text-center space-y-4">
-              <Link
-                href="/shop"
-                className="inline-block bg-primary text-primary-foreground py-3 px-6 rounded-lg hover:bg-accent transition-colors font-semibold mr-4"
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-3">
+              <Link href="/" className={button}>Back to the gallery</Link>
+              <a
+                href="https://www.instagram.com/tyson_draws_stuff/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-semibold border-b-2 border-primary pb-0.5 hover:text-primary"
               >
-                Continue Shopping
-              </Link>
-              <Link
-                href="/"
-                className="inline-block text-foreground/60 hover:text-foreground transition-colors"
-              >
-                Return to Home
-              </Link>
+                Follow along on Instagram
+              </a>
             </div>
           </div>
         </div>
@@ -216,15 +211,11 @@ export default async function SuccessPage({ searchParams }: SuccessPageProps) {
 
   const [session, categories] = await Promise.all([
     getCheckoutSession(session_id),
-    fetchCategoriesWithProducts()
+    fetchCategoriesWithProducts(),
   ]);
 
   return (
-    <Suspense fallback={
-      <div className="container mx-auto px-4 py-16 text-center">
-        <div className="animate-pulse">Loading order details...</div>
-      </div>
-    }>
+    <Suspense fallback={<div className="py-24 text-center text-soft animate-pulse">Loading your order…</div>}>
       <SuccessContent session={session} categories={categories} />
     </Suspense>
   );
