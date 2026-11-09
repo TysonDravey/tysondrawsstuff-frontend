@@ -220,7 +220,8 @@ class App(tk.Tk):
         left.pack(side="left", fill="y")
         self.filter = tk.StringVar(value="Originals needing work")
         cb = ttk.Combobox(left, textvariable=self.filter, state="readonly", width=34,
-                          values=["Originals needing work", "All originals", "Everything live", "Hidden too"])
+                          values=["Originals needing work", "Instagram date found", "Needs year, Instagram has one",
+                                  "All originals", "Everything live", "Hidden too"])
         cb.pack(fill="x")
         cb.bind("<<ComboboxSelected>>", lambda e: self._fill_list())
         self.search = tk.StringVar()
@@ -344,6 +345,11 @@ class App(tk.Tk):
                 continue
             if mode == "Originals needing work" and p["slug"] in self.progress:
                 continue
+            ig = p["slug"] in self.hints
+            if mode.startswith(("Instagram", "Needs year")) and not ig:
+                continue
+            if mode.startswith("Needs year") and f["year"].strip():
+                continue
             if q and q not in p["title"].lower() and q not in p["slug"]:
                 continue
             out.append(p)
@@ -352,8 +358,11 @@ class App(tk.Tk):
         for p in out:
             mark = "✓ " if p["slug"] in self.progress else ("◆ " if p["slug"] in self.proposals else "• ")
             hidden = "" if p["live"] else "  (hidden)"
-            self.lb.insert("end", mark + re.sub(r"\s*-\s*Original Art$", "", p["title"]) + hidden)
-        self.count.config(text=f"{len(out)} shown   ✓ saved  ◆ draft ready  • needs a draft")
+            h = self.hints.get(p["slug"])
+            ig = f"   IG {h['date'][:4]}" if h else ""
+            self.lb.insert("end", mark + re.sub(r"\s*-\s*Original Art$", "", p["title"]) + hidden + ig)
+        self.count.config(text=f"{len(out)} shown   ✓ saved  ◆ draft ready  • needs a draft   IG = year first "
+                               f"posted ({len(self.hints)} found)")
 
     def _select(self):
         sel = self.lb.curselection()
