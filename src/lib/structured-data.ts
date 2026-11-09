@@ -34,42 +34,30 @@ export function productDescription(product: Product): string {
   return plainExcerpt(product.description, 500) ?? `${displayTitle(product.title)} by Tyson Draws Stuff (Kirk Brillon).`;
 }
 
-export function productJsonLd(product: Product, posterPrice?: number) {
+export function productJsonLd(product: Product) {
   const url = siteUrl(`/shop/${product.slug}`);
   const original = isOriginal(product);
   const show = activeShow(product);
   const images = getProductImages(product.slug).map(i => absolute(i.src));
 
-  const offers: object[] = [
-    {
-      '@type': 'Offer',
-      ...(original && product.hasPoster && { name: 'Original' }),
-      url,
-      priceCurrency: 'CAD',
-      price: ((show && product.showPrice) || product.price).toFixed(2),
-      itemCondition: 'https://schema.org/NewCondition',
-      // While a piece hangs at a show it's sold there, not online.
-      availability:
-        product.sold === true
-          ? 'https://schema.org/SoldOut'
-          : show
-            ? 'https://schema.org/InStoreOnly'
-            : 'https://schema.org/InStock',
-      shippingDetails: SHIPPING,
-    },
-  ];
-  if (posterPrice) {
-    offers.push({
-      '@type': 'Offer',
-      name: 'Poster print',
-      url: `${url}#poster`,
-      priceCurrency: 'CAD',
-      price: posterPrice.toFixed(2),
-      itemCondition: 'https://schema.org/NewCondition',
-      availability: 'https://schema.org/InStock',
-      shippingDetails: SHIPPING,
-    });
-  }
+  // One Offer per page, on purpose: Instagram/Facebook product tagging rejects a URL whose page
+  // offers more than one product ("links to a web page with more than one product"). The poster
+  // print reaches Google Shopping through /merchant-feed.xml instead.
+  const offer = {
+    '@type': 'Offer',
+    url,
+    priceCurrency: 'CAD',
+    price: ((show && product.showPrice) || product.price).toFixed(2),
+    itemCondition: 'https://schema.org/NewCondition',
+    // While a piece hangs at a show it's sold there, not online.
+    availability:
+      product.sold === true
+        ? 'https://schema.org/SoldOut'
+        : show
+          ? 'https://schema.org/InStoreOnly'
+          : 'https://schema.org/InStock',
+    shippingDetails: SHIPPING,
+  };
 
   return {
     '@context': 'https://schema.org',
@@ -82,8 +70,29 @@ export function productJsonLd(product: Product, posterPrice?: number) {
     brand: BRAND,
     ...(original && { creator: ARTIST }),
     ...(product.category && { category: product.category.name }),
-    offers: offers.length === 1 ? offers[0] : offers,
+    offers: offer,
   };
+}
+
+/**
+ * Open Graph product tags for Meta (Instagram/Facebook product tagging and link previews).
+ * Describes the original only, so Meta sees exactly one product on the page.
+ * https://developers.facebook.com/docs/marketing-api/catalog/guides/microdata-tags
+ */
+export function productOgTags(product: Product): Array<{ property: string; content: string }> {
+  const show = activeShow(product);
+  const availability =
+    product.sold === true ? 'out of stock' : show ? 'available for order' : 'in stock';
+  return [
+    { property: 'og:type', content: 'product' },
+    { property: 'product:retailer_item_id', content: product.slug },
+    { property: 'product:price:amount', content: ((show && product.showPrice) || product.price).toFixed(2) },
+    { property: 'product:price:currency', content: 'CAD' },
+    { property: 'product:availability', content: availability },
+    { property: 'product:condition', content: 'new' },
+    { property: 'product:brand', content: 'Tyson Draws Stuff' },
+    ...(product.category ? [{ property: 'product:category', content: product.category.name }] : []),
+  ];
 }
 
 /** Who's behind the site (home page). */

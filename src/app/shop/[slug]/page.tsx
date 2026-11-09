@@ -7,7 +7,7 @@ import BuyButton from '@/components/BuyButton';
 import ImageGallery from '@/components/ImageGallery';
 import ProductNavigation from '@/components/ProductNavigation';
 import { getProductImages, hasFramedPhoto } from '@/lib/images';
-import { productJsonLd, jsonLdHtml } from '@/lib/structured-data';
+import { productJsonLd, productOgTags, jsonLdHtml } from '@/lib/structured-data';
 import { displayTitle, describeOriginal, isOriginal, formatPrice, showDates, activeShow } from '@/lib/display';
 import { marked } from 'marked';
 import { siteUrl } from '@/lib/site';
@@ -63,7 +63,6 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
     openGraph: {
       title: fullTitle,
       description: metaDescription,
-      type: 'article',
       url: siteUrl(`/shop/${slug}`),
       siteName: 'Tyson Draws Stuff',
       images: [
@@ -150,7 +149,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
 
   return (
     <Layout categories={categories}>
-      <script type="application/ld+json" dangerouslySetInnerHTML={jsonLdHtml(productJsonLd(product, posterPrice))} />
+      {/* React hoists these into <head>. og:type=product + product:* tags for Instagram product tagging. */}
+      {productOgTags(product).map(t => <meta key={t.property} property={t.property} content={t.content} />)}
+      <script type="application/ld+json" dangerouslySetInnerHTML={jsonLdHtml(productJsonLd(product))} />
       <div className="mx-auto max-w-7xl px-4 sm:px-8 pt-6 sm:pt-8 pb-20">
         {/* Breadcrumb */}
         <nav aria-label="Breadcrumb" className="text-sm text-muted-foreground mb-6">
