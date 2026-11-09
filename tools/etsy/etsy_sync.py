@@ -10,6 +10,8 @@ Keys come from frontend/.env.railway (ETSY_KEYSTRING, ETSY_SHARED_SECRET). Run w
     tools\\venv\\Scripts\\python tools\\etsy\\etsy_sync.py push --limit 2   # create a couple of drafts to check
     tools\\venv\\Scripts\\python tools\\etsy\\etsy_sync.py push     # create the rest
     tools\venv\Scripts\python tools\etsy\etsy_sync.py report   # views / favourites / sales / expiry
+    tools\\venv\\Scripts\\python tools\\etsy\\etsy_sync.py attrs suggest   # colours/orientation -> etsy_attributes.json
+    tools\\venv\\Scripts\\python tools\\etsy\\etsy_sync.py attrs apply     # set item details on existing listings
 
 Why localhost: Etsy's sign-in (OAuth) ends by sending the browser to a "callback" address with a one-time
 code. This script listens on http://localhost:3003/callback for a few seconds to catch that code and swap
@@ -314,8 +316,13 @@ def listing_body(item: dict, cfg: dict) -> dict:
         size = f" {cfg['poster_size']}" if cfg["poster_size"] else ""
         title = f"{item['name']} Poster Print{size} | Art Print by Tyson Draws Stuff"
         story = re.sub(r"^Poster print of .*?\(Kirk Brillon\)\.\s*", "", item["description"])
+        # The original's size and frame aren't the poster's: every poster is ~12 x 16, unframed.
+        story = " ".join(dict.fromkeys(s for s in re.split(r"(?<=[.!?])\s+", story)
+                                       if not re.search(r"\bframe", s, re.I)))  # dict: drop repeated lines
+        story = re.sub(r"\s*\d+(?:\.\d+)?\s*[×x]\s*\d+(?:\.\d+)?\s*[″\"]?\.?", "", story).strip()
         desc = (f"Poster print of “{item['name']}”, an original painting by Kirk Brillon (Tyson Draws Stuff).\n\n"
-                f"{cfg['poster_details']}\n\nAbout the original: {story}\n\nFree shipping within Canada.")
+                f"{cfg['poster_details']} The poster is the same size whatever the size of the original, "
+                f"and it comes unframed.\n\nAbout the original painting: {story}\n\nFree shipping within Canada.")
     else:
         by = "" if "tyson draws stuff" in item["name"].lower() else " by Tyson Draws Stuff"
         title = f"{item['name']} | Art Book{by}"
@@ -451,6 +458,8 @@ def cmd_push(args) -> None:
         extra = upload_extras(etsy, sid, lid, item, start_rank=2)
         if extra:
             print(f"   + {extra} more photo(s)")
+        if apply_properties(etsy, sid, lid, item):
+            print("   + item details (size, paper, unframed, subject, colours)")
         print(f"   draft: https://www.etsy.com/your/shops/me/listing-editor/edit/{lid}")
     print("\nDone. Drafts are in Etsy > Shop Manager > Listings > Drafts. Publish them there.")
 
@@ -469,6 +478,130 @@ def cmd_images(_args) -> None:
             continue
         n = upload_extras(etsy, sid, rec["listing_id"], item, start_rank=have + 1)
         print(f"{item['name']}: +{n} photo(s)")
+
+
+# --------------------------------------------------------------------------- listing attributes
+# Etsy's "Item details" fields (they drive the search filters). The fixed ones are the same for every poster;
+# subject, colours and orientation are per painting and live in etsy_attributes.json (`attrs suggest` fills in
+# colours/orientation from the photo; subjects are picked by hand and kept on reruns).
+
+ATTR_FILE = HERE / "etsy_attributes.json"
+P_MATERIALS, P_WIDTH, P_HEIGHT = 148789511893, 47626759898, 47626759834
+P_MAT, P_PIECES, P_ASPECT, P_FRAMING = 570246213632, 570246213621, 570246213622, 145330288558
+P_ORIENT, P_SUBJECT, P_COLOR1, P_COLOR2 = 406291158455, 400394338806, 200, 52047899002
+INCHES = 5
+ORIENTATION = {"Vertical": 3460, "Horizontal": 3461, "Square": 371}
+COLORS = {"Beige": 1213, "Black": 1, "Blue": 2, "Brown": 3, "Gray": 5, "Green": 4, "Orange": 6, "Pink": 7,
+          "Purple": 8, "Red": 9, "White": 10, "Yellow": 11, "Gold": 1214, "Silver": 1215}
+SUBJECTS = {"Abstract & geometric": 2817, "Animal": 2558, "Anime & cartoon": 2559,
+            "Architecture & cityscape": 3641, "Beach & tropical": 406, "Comics & manga": 2562,
+            "Fantasy & Sci Fi": 421, "Flowers": 2952, "Food & drink": 425, "Horror & gothic": 2953,
+            "Landscape & scenery": 3644, "Love & friendship": 439, "Music": 442, "Nautical": 443,
+            "People & portrait": 3694, "Plants & trees": 2530, "Religious": 456, "Science & tech": 458,
+            "Stars & celestial": 2532, "Steampunk": 2533, "Travel & transportation": 470, "Video game": 2575}
+
+
+def color_name(r: float, g: float, b: float) -> str:
+    import colorsys
+    h, s, v = colorsys.rgb_to_hsv(r / 255, g / 255, b / 255)
+    h *= 360
+    if v < 0.18:
+        return "Black"
+    if s < 0.18:
+        return "White" if v > 0.85 else "Gray" if v > 0.3 else "Black"
+    if h < 15 or h >= 345:
+        return "Pink" if s < 0.45 and v > 0.7 else "Red" if v > 0.35 else "Brown"
+    if h < 45:
+        return "Beige" if s < 0.4 and v > 0.65 else "Orange" if v > 0.6 else "Brown"
+    if h < 70:
+        return "Beige" if s < 0.35 else "Yellow" if v > 0.55 else "Brown"
+    if h < 165:
+        return "Green"
+    if h < 255:
+        return "Blue"
+    if h < 290:
+        return "Purple"
+    return "Pink" if v > 0.5 else "Purple"
+
+
+def photo_traits(item: dict) -> dict:
+    """Orientation and the two main colours of the painting's main photo."""
+    from io import BytesIO
+    from PIL import Image
+    url = page_image(item["link"])
+    im = Image.open(BytesIO(requests.get(url, timeout=120).content)).convert("RGB")
+    w, h = im.size
+    orient = "Square" if abs(w - h) < 0.05 * max(w, h) else "Horizontal" if w > h else "Vertical"
+    counts: dict[str, int] = {}
+    raw = im.resize((80, 80)).tobytes()
+    for px in zip(raw[0::3], raw[1::3], raw[2::3]):
+        n = color_name(*px)
+        counts[n] = counts.get(n, 0) + 1
+    ranked = sorted(counts, key=counts.get, reverse=True)
+    return {"orientation": orient, "primary_color": ranked[0],
+            "secondary_color": ranked[1] if len(ranked) > 1 else None}
+
+
+def poster_properties(attrs: dict) -> list[tuple[int, dict]]:
+    """(property_id, form data) pairs for one poster listing."""
+    landscape = attrs.get("orientation") == "Horizontal"
+    w, h = (16, 12) if landscape else (12, 16)
+    props = [
+        (P_MATERIALS, {"value_ids": [196], "values": ["Paper"]}),
+        (P_WIDTH, {"value_ids": [], "values": [str(w)], "scale_id": INCHES}),
+        (P_HEIGHT, {"value_ids": [], "values": [str(h)], "scale_id": INCHES}),
+        (P_MAT, {"value_ids": [5546], "values": ["No"]}),
+        (P_PIECES, {"value_ids": [5175], "values": ["1"]}),
+        (P_ASPECT, {"value_ids": [5171], "values": ["3:4"]}),
+        (P_FRAMING, {"value_ids": [2342], "values": ["Unframed"]}),
+    ]
+    if attrs.get("orientation") in ORIENTATION:
+        props.append((P_ORIENT, {"value_ids": [ORIENTATION[attrs["orientation"]]], "values": [attrs["orientation"]]}))
+    subj = [s for s in attrs.get("subject") or [] if s in SUBJECTS]
+    if subj:
+        props.append((P_SUBJECT, {"value_ids": [SUBJECTS[s] for s in subj], "values": subj}))
+    for key, pid in (("primary_color", P_COLOR1), ("secondary_color", P_COLOR2)):
+        if attrs.get(key) in COLORS:
+            props.append((pid, {"value_ids": [COLORS[attrs[key]]], "values": [attrs[key]]}))
+    return props
+
+
+def apply_properties(etsy: "Etsy", sid: int, lid: int, item: dict) -> int:
+    if item["kind"] != "poster":
+        return 0
+    attrs = load(ATTR_FILE, {}).get(item["id"]) or photo_traits(item)
+    n = 0
+    for pid, data in poster_properties(attrs):
+        etsy.req("PUT", f"/shops/{sid}/listings/{lid}/properties/{pid}", json=data)
+        n += 1
+    return n
+
+
+def cmd_attrs(args) -> None:
+    """suggest: work out orientation/colours for every poster into etsy_attributes.json (subjects kept).
+    apply: set the item details on the listings already on Etsy."""
+    cfg = config()
+    items = [i for i in feed_items(cfg) if i["kind"] == "poster" and i["id"] not in cfg["exclude"]]
+    if args.action == "suggest":
+        attrs = load(ATTR_FILE, {})
+        for i in items:
+            old = attrs.get(i["id"], {})
+            attrs[i["id"]] = {"name": i["name"], "subject": old.get("subject", []), **photo_traits(i),
+                              **{k: old[k] for k in ("primary_color", "secondary_color") if old.get("fixed")},
+                              **({"fixed": True} if old.get("fixed") else {})}
+            a = attrs[i["id"]]
+            print(f"{i['name'][:28]:28} {a['orientation']:10} {a['primary_color']:7} {a['secondary_color'] or '':7} "
+                  f"{', '.join(a['subject'])}")
+        save(ATTR_FILE, attrs)
+        return
+    etsy, state = Etsy(), load(STATE_FILE, {})
+    sid = etsy.shop_id
+    for i in items:
+        if i["id"] in state:
+            lid = state[i["id"]]["listing_id"]
+            n = apply_properties(etsy, sid, lid, i)
+            etsy.req("PATCH", f"/shops/{sid}/listings/{lid}", data={"description": listing_body(i, cfg)["description"]})
+            print(f"{i['name']}: {n} details set, description refreshed")
 
 
 def cmd_report(_args) -> None:
@@ -510,6 +643,9 @@ def main() -> None:
     sub.add_parser("setup").set_defaults(fn=cmd_setup)
     sub.add_parser("report").set_defaults(fn=cmd_report)
     sub.add_parser("images").set_defaults(fn=cmd_images)
+    p = sub.add_parser("attrs")
+    p.add_argument("action", choices=["suggest", "apply"])
+    p.set_defaults(fn=cmd_attrs)
     p = sub.add_parser("plan")
     p.add_argument("--limit", type=int)
     p.add_argument("-v", "--verbose", action="store_true")

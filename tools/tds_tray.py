@@ -489,6 +489,14 @@ def action_open_railway(icon, item):
     webbrowser.open(CFG.get("RAILWAY_DASHBOARD_URL") or "https://railway.com/dashboard")
 
 
+def action_describe(icon, item):
+    """Opens the product description editor (tools/describe/describe_gui.py) in its own window."""
+    pyw = TOOLS_DIR / "venv" / "Scripts" / "pythonw.exe"
+    subprocess.Popen([str(pyw if pyw.exists() else sys.executable), str(TOOLS_DIR / "describe" / "describe_gui.py")],
+                     cwd=str(FRONTEND_DIR), creationflags=NO_WINDOW)
+    _bg(wake_strapi)  # Strapi may be asleep; the editor's first load waits for it anyway
+
+
 def action_edit_config(icon, item):
     subprocess.Popen(["notepad.exe", str(CONFIG_FILE)], creationflags=NO_WINDOW)
 
@@ -505,6 +513,17 @@ def action_toggle_startup(icon, item):
 
 
 def action_quit(icon, item):
+    icon.stop()
+
+
+def action_restart(icon, item):
+    """Start a fresh copy (picks up code changes) once this one has exited and freed the single-instance lock."""
+    pyw = TOOLS_DIR / "venv" / "Scripts" / "pythonw.exe"
+    exe = str(pyw if pyw.exists() else sys.executable)
+    relaunch = (f"import time, subprocess; time.sleep(3); "
+                f"subprocess.Popen([{exe!r}, {str(Path(__file__).resolve())!r}], cwd={str(FRONTEND_DIR)!r})")
+    subprocess.Popen([exe, "-c", relaunch], cwd=str(FRONTEND_DIR), creationflags=NO_WINDOW)
+    log("Restarting tray…")
     icon.stop()
 
 
@@ -534,6 +553,7 @@ def build_menu() -> pystray.Menu:
         S,
         M("✏️  Open Strapi Admin", action_open_admin, default=True),
         M("⏰  Wake Strapi", action_wake, enabled=lambda i: not _state["busy"]),
+        M("📝  Description Editor", action_describe),
         S,
         M("🔍  Deploy Preview", action_deploy_preview, enabled=lambda i: not _state["busy"]),
         M("👀  Open Preview Site", action_open_preview),
@@ -551,6 +571,7 @@ def build_menu() -> pystray.Menu:
         )),
         M(lambda i: f"{'☑' if is_startup_enabled() else '☐'}  Start at Login", action_toggle_startup),
         S,
+        M("🔄  Restart Tray", action_restart),
         M("✖  Quit", action_quit),
     )
 
