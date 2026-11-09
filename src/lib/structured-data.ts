@@ -81,8 +81,8 @@ export function productJsonLd(product: Product) {
  */
 export function productOgTags(product: Product): Array<{ property: string; content: string }> {
   const show = activeShow(product);
-  const availability =
-    product.sold === true ? 'out of stock' : show ? 'available for order' : 'in stock';
+  // Show pieces are for sale (in person, or by email to reserve), as in /meta-feed.xml.
+  const availability = product.sold === true ? 'out of stock' : 'in stock';
   return [
     { property: 'og:type', content: 'product' },
     { property: 'product:retailer_item_id', content: product.slug },
