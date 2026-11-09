@@ -245,7 +245,19 @@ export default async function ProductPage({ params }: ProductPageProps) {
               />
             ) : null}
 
-            {/* Poster */}
+            {/* Details: for an original these describe the painting itself, not the poster below */}
+            {details.length > 0 && (
+              <div>
+                <h2 className="eyebrow mb-3">{original ? 'The original painting' : 'Details'}</h2>
+                <ul className="divide-y divide-border border-y border-border">
+                  {details.map(d => (
+                    <li key={d} className="py-2.5 text-soft">{d}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {/* Poster: its own size and paper, whatever the original's */}
             {posterPrice ? (
               <div id="poster" className="scroll-mt-28 rounded border border-border bg-card p-5 flex flex-col gap-4">
                 <div>
@@ -256,21 +268,14 @@ export default async function ProductPage({ params }: ProductPageProps) {
                       : 'Love it, but not the original price? Take home a print.'}
                   </p>
                 </div>
+                <ul className="divide-y divide-border border-y border-border text-sm">
+                  <li className="py-2 text-soft">About 12 × 16″, whatever the size of the original</li>
+                  <li className="py-2 text-soft">Printed on paper</li>
+                  <li className="py-2 text-soft">Unframed, ships flat</li>
+                </ul>
                 <BuyButton productSlug={product.slug} price={posterPrice} productTitle={product.title} variant="poster" />
               </div>
             ) : null}
-
-            {/* Details */}
-            {details.length > 0 && (
-              <div>
-                <h2 className="eyebrow mb-3">Details</h2>
-                <ul className="divide-y divide-border border-y border-border">
-                  {details.map(d => (
-                    <li key={d} className="py-2.5 text-soft">{d}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
             {bodyHtml && (
               <div
                 className="text-soft leading-relaxed [&_p]:mb-4 [&_a]:text-primary [&_a]:underline"
