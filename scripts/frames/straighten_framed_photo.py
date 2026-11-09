@@ -9,6 +9,7 @@
 usage: python straighten_framed_photo.py [--radius=0.022] OUT_DIR IMAGE [IMAGE ...]
   --radius  corner rounding as a fraction of the width (0.022 suits the rounded Krampus frames;
             use ~0.004 for a square-cornered frame)
+  --keep-bottom  skip trimming shadow under the frame (pale, grey frames get nibbled by it)
 """
 import sys
 from pathlib import Path
@@ -211,7 +212,8 @@ for path in map(Path, args[1:]):
     yy, xx = np.mgrid[0:h, 0:w]
     # Only the bottom: light comes from above, so the cast shadow and the frame's lower lip sit there.
     # (Top and sides are already clean from the edge fit, and pale maple would fail the wood test.)
-    cut |= (h - 1 - yy) < ndimage.median_filter(runs(wallish[::-1]), size=41)[None, :]
+    if "--keep-bottom" not in opts:  # skip for pale, weathered frames that look like wall
+        cut |= (h - 1 - yy) < ndimage.median_filter(runs(wallish[::-1]), size=41)[None, :]
     cut = ndimage.binary_dilation(cut, iterations=2)
     soft = ndimage.gaussian_filter(np.where(cut, 0, 255).astype(np.float32), 1.0)
     flat.putalpha(Image.fromarray(np.minimum(alpha, soft).astype(np.uint8)))

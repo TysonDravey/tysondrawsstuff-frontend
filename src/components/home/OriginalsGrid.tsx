@@ -51,6 +51,9 @@ function metrics(width: number) {
 // the one with the least total squared difference from the ideal. A row that would come out far
 // too tall (e.g. one lone portrait) is capped and centred instead of blown up. Rows that come out
 // short count double: small paintings in a long thin strip look worse than big ones.
+// Width/height at which a piece is "panoramic" and always gets a row to itself.
+const WIDE = 2;
+
 function planRows(ratios: number[], width: number) {
   const { gap, target } = metrics(width);
   const n = ratios.length;
@@ -60,7 +63,14 @@ function planRows(ratios: number[], width: number) {
     best[i] = Infinity;
     for (let j = 0; j < i; j++) {
       let sum = 0;
-      for (let k = j; k < i; k++) sum += ratios[k];
+      let panoramic = false;
+      for (let k = j; k < i; k++) {
+        sum += ratios[k];
+        panoramic ||= ratios[k] >= WIDE;
+      }
+      // A panoramic piece (e.g. a triptych) hangs alone: squeezed in beside others on a phone,
+      // everything in the row would come out tiny.
+      if (panoramic && i - j > 1) continue;
       const h = (width - gap * (i - j - 1)) / sum;
       const off = h < target ? (target - h) * 2 : h - target;
       const cost = best[j] + off * off;

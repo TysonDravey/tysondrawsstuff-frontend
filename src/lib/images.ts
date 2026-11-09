@@ -35,6 +35,7 @@ const FRAMED_CUTOUTS: Record<string, { width: number; height: number }> = {
   fire_frame_02: { width: 1463, height: 1927 },
   glass_frame_01: { width: 1438, height: 1915 },
   metal_frame_01: { width: 1427, height: 1896 },
+  TDS_selfportrait_2026_01: { width: 1541, height: 1868 }, // --radius=0.004 --keep-bottom
   water_frame_02: { width: 1409, height: 1883 },
 };
 
