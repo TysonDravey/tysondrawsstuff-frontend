@@ -311,18 +311,28 @@ def tag_list(item: dict, cfg: dict) -> list[str]:
     return tags[:13]
 
 
+# Sentences about the ORIGINAL (medium, surface, size, frame, year) don't describe the poster, so they're left off.
+ORIGINAL_SPECS = re.compile(r"acrylic|\bink\b|watercolou?r|canvas|paper|mixed media|multi media|pastel|\boil\b|"
+                            r"gouache|frame|painting|pigment|^\(?(?:19|20)\d{2}\)?\.?$", re.I)
+
+
+def poster_story(feed_desc: str) -> str:
+    """The artist's story line (and the Pictured line, if any) from the feed text, without the original's specs."""
+    t = re.sub(r"^Poster print of .*?\(Kirk Brillon\)\.\s*", "", feed_desc)
+    t = re.sub(r"\s*\d+(?:\.\d+)?\s*[×x]\s*\d+(?:\.\d+)?\s*[″\"”]?", "", t)  # sizes, wherever they sit
+    keep = [s for s in re.split(r"(?<=[.!?])\s+", t)
+            if s.strip(" .") and (s.lower().startswith("pictured") or not ORIGINAL_SPECS.search(s))]
+    return " ".join(dict.fromkeys(keep)).strip()  # dict: drop repeated sentences
+
+
 def listing_body(item: dict, cfg: dict) -> dict:
     if item["kind"] == "poster":
         size = f" {cfg['poster_size']}" if cfg["poster_size"] else ""
         title = f"{item['name']} Poster Print{size} | Art Print by Tyson Draws Stuff"
-        story = re.sub(r"^Poster print of .*?\(Kirk Brillon\)\.\s*", "", item["description"])
-        # The original's size and frame aren't the poster's: every poster is ~12 x 16, unframed.
-        story = " ".join(dict.fromkeys(s for s in re.split(r"(?<=[.!?])\s+", story)
-                                       if not re.search(r"\bframe", s, re.I)))  # dict: drop repeated lines
-        story = re.sub(r"\s*\d+(?:\.\d+)?\s*[×x]\s*\d+(?:\.\d+)?\s*[″\"]?\.?", "", story).strip()
-        desc = (f"Poster print of “{item['name']}”, an original painting by Kirk Brillon (Tyson Draws Stuff).\n\n"
-                f"{cfg['poster_details']} The poster is the same size whatever the size of the original, "
-                f"and it comes unframed.\n\nAbout the original painting: {story}\n\nFree shipping within Canada.")
+        desc = (f"Poster print of “{item['name']}”, from an original painting by Kirk Brillon (Tyson Draws Stuff)."
+                f"\n\n{cfg['poster_details']} Printed on paper and sent unframed. Every poster is this size, "
+                f"whatever the size of the original painting.\n\n{poster_story(item['description'])}"
+                f"\n\nFree shipping within Canada.")
     else:
         by = "" if "tyson draws stuff" in item["name"].lower() else " by Tyson Draws Stuff"
         title = f"{item['name']} | Art Book{by}"

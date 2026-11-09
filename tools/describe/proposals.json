@@ -27,5 +27,69 @@
   "station-beach-triptych": {
     "pictured": "Three panels of a busy beach: a woman in a green dress holds a sword behind her back while a giant sand monster rises on each side.",
     "notes": "Sizes are listed left to right (12 × 16, 24 × 16, 12 × 16). Framing and year still needed."
+  },
+  "leviathan-s-calling-original-art": {
+    "pictured": "An octopus-faced creature in a red fez and dark jacket plays a red electric guitar beside a red drum kit, surrounded by giant green tentacles.",
+    "notes": "Drafted by Claude: check it against the photo. The figure looks like Lovecraft's Cthulhu, which is public domain. I left the name out anyway, so add it if you want it."
+  },
+  "doppelbock-original-art": {
+    "pictured": "Two white and brown goats with curved horns, one leaping through the air above the other lying among red flowers, against a blue sky.",
+    "notes": "Drafted by Claude: check it against the photo."
+  },
+  "self-portrait-2026": {
+    "pictured": "A bearded, grey-haired man in red glasses shouting upward, with a carved fist punching out of the canvas, among red, navy and black paint splatters.",
+    "notes": "Drafted by Claude: check it against the photo. No typos found. You could write '3d' as '3D' if you like, but I left it as is."
+  },
+  "starlight-original-art": {
+    "pictured": "An astronaut floats through pink, purple and navy space, reaching one gloved hand toward the viewer, with a star reflected in the helmet visor.",
+    "notes": "Drafted by Claude: check it against the photo. Story line has no typos. 'Reach out and touch someone' was an old Bell/AT&T phone advert slogan, if that matters for the listing."
+  },
+  "fall-fair-original-art": {
+    "pictured": "A giant blue rabbit with bulging eyes peers down beside a Ferris wheel and fair tents while small figures walk below, in blue, green and orange.",
+    "notes": "Drafted by Claude: check it against the photo. I read the creature as a rabbit because of the long upright ears and buck teeth; check that's what you meant."
+  },
+  "the-watch-original-art": {
+    "pictured": "A man in a pointed-eared mask and long cape embraces a woman in a cat-eared hood, painted in dark greens against yellow-ochre and white.",
+    "notes": "Drafted by Claude: check it against the photo. The two figures are recognisably Batman and Catwoman, so I described their costumes and left out the character names."
+  },
+  "the-signal-original-art": {
+    "pictured": "A woman in a black cat-eared suit stands on a rooftop in the rain, watching a yellow bat-shaped light over blue-grey skyscrapers.",
+    "notes": "Drafted by Claude: check it against the photo. The woman looks like Catwoman and the light in the sky looks like the Bat-Signal. I described both without naming them."
+  },
+  "the-mask-original-art": {
+    "pictured": "A woman with closed eyes and running eye makeup pulls a blue mask with pointed ears down her face, in purple and black on red.",
+    "notes": "Drafted by Claude: check it against the photo. The blue mask with pointed ears and yellow eye slits may remind people of a well-known superhero cowl. I didn't name it."
+  },
+  "cat-alley-original-art": {
+    "pictured": "A woman in a black catsuit with cat ears and a spiked bat walks down a city alley among black cats, in blue-grey and yellow-green.",
+    "notes": "Drafted by Claude: check it against the photo. The cat-eared figure in a black suit may be read as Catwoman; I described her generically and didn't name her."
+  },
+  "krampus-in-glass-original-art": {
+    "pictured": "A horned woman with a skull face, red lips, see-through arm bones and a bony tail, wearing a white blouse and green dress on turquoise.",
+    "notes": "Drafted by Claude: check it against the photo. The skin looks see-through, showing the skull, arm bones and tail bones underneath, so I described it as see-through."
+  },
+  "krampus-in-metal-original-art": {
+    "pictured": "A blue-skinned horned woman in profile with pointed ears, a hoop earring and a tail, wearing rust-red metal armour, against purple and turquoise paint splashes.",
+    "notes": "Drafted by Claude: check it against the photo. The figure looks like a female demon with ram horns and a tail, so I didn't call her Krampus in the sentence. Check that the title still fits how you want her described."
+  },
+  "krampus-in-fallout-original-art": {
+    "pictured": "A woman with curled ram horns, pointed ears and dark hair rests her face in her hands, painted in green, yellow and blue.",
+    "notes": "Drafted by Claude: check it against the photo. The figure is a horned woman, not the usual hairy Krampus. Nothing in the painting points to the Fallout game. I described what's visible and left both names out."
+  },
+  "krampus-in-air-original-art": {
+    "pictured": "A smiling horned woman with pointed ears and short spiky dark hair, in a puff-sleeved dress, reaching among floating bubbles, painted in blues and white.",
+    "notes": "Drafted by Claude: check it against the photo. The figure looks like a young woman with goat horns, not a traditional hairy Krampus, so I didn't call her Krampus in the sentence. Her red lips are the only colour that isn't blue."
+  },
+  "krampus-in-water-original-art": {
+    "pictured": "A pale woman with curling ram horns and dark shoulder-length hair holds her clasped hands to her lips, painted in blue with yellow speckles.",
+    "notes": "Drafted by Claude: check it against the photo. The title says 'in water', but I couldn't see any water in the picture, only dripping blue paint around her, so I left water out."
+  },
+  "krampus-on-fire-original-art": {
+    "pictured": "A woman with large curled ram horns rests her chin on her clasped hands, wrapped in red, orange and yellow watercolour splashes like flames.",
+    "notes": "Drafted by Claude: check it against the photo. The figure looks like a young woman with ram horns, not the usual hairy Krampus. I described what's painted, so check the title still fits."
+  },
+  "found-original-art": {
+    "pictured": "A watercolour of a red-haired woman with her eyes closed, in a dark purple top, surrounded by green and red goblin-like creatures and splashes of pink.",
+    "notes": "Drafted by Claude: check it against the photo."
   }
 }
