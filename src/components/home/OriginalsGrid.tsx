@@ -89,6 +89,36 @@ function planRows(ratios: number[], width: number) {
   return { rows, gap };
 }
 
+// Split the paintings into walls of PER_WALL spots. A panoramic piece (a triptych) takes a whole row,
+// so it counts as half a wall and hangs at the top: that wall reads "triptych, then one row of three"
+// instead of the others being split into a row above and a row below it.
+function hangWalls<T>(items: T[], ratioOf: (item: T) => number): T[][] {
+  const PANO_SPOTS = PER_WALL / 2;
+  const walls: T[][] = [];
+  let cur: T[] = [];
+  let used = 0;
+  let hasPano = false;
+  for (const item of items) {
+    const pano = ratioOf(item) >= WIDE;
+    const spots = pano ? PANO_SPOTS : 1;
+    if (cur.length && (used + spots > PER_WALL || (pano && hasPano))) {
+      walls.push(cur);
+      cur = [];
+      used = 0;
+      hasPano = false;
+    }
+    if (pano) {
+      cur.unshift(item);
+      hasPano = true;
+    } else {
+      cur.push(item);
+    }
+    used += spots;
+  }
+  if (cur.length) walls.push(cur);
+  return walls;
+}
+
 // Round arrow on each side of the wall. It runs in a full-height rail beside the wall and sticks
 // to the middle of the screen while you scroll the gallery, so it stays put no matter how tall
 // each wall is (paging never moves it out from under the pointer). Wide screens: in the margin
@@ -151,10 +181,11 @@ export default function OriginalsGrid({ items, allHref, posterPrice, heading = '
 
   const active = FILTERS.find(f => f.id === filter)!;
   const matching = items.filter(active.test);
-  const wallCount = Math.max(1, Math.ceil(matching.length / PER_WALL));
-  const current = Math.min(wall, wallCount - 1);
-  const shown = matching.slice(current * PER_WALL, current * PER_WALL + PER_WALL);
   const ratioOf = (item: GridItem) => (item.image ? item.image.width / item.image.height : 0.75);
+  const walls = hangWalls(matching, ratioOf);
+  const wallCount = Math.max(1, walls.length);
+  const current = Math.min(wall, wallCount - 1);
+  const shown = walls[current] ?? [];
   const plan = planRows(shown.map(ratioOf), wallWidth);
   const wallKey = `${filter}-${current}`;
   const layoutKey = `${wallKey}:${plan.rows.map(r => r.end).join(',')}`;
