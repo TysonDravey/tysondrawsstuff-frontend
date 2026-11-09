@@ -21,7 +21,7 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: "Tyson Draws Stuff | Original Art, Prints, and Books",
-  description: "Explore original art, posters, merch, and books by Tyson Brillon. Unique artwork and prints available for purchase.",
+  description: "Original paintings, poster prints, books and merch by Kirk Brillon. Free shipping within Canada.",
   metadataBase: new URL(SITE_URL),
   icons: {
     icon: [
@@ -32,15 +32,15 @@ export const metadata: Metadata = {
   },
   openGraph: {
     title: "Tyson Draws Stuff | Original Art, Prints, and Books",
-    description: "Explore original art, posters, merch, and books by Tyson Brillon. Unique artwork and prints available for purchase.",
+    description: "Original paintings, poster prints, books and merch by Kirk Brillon. Free shipping within Canada.",
     url: siteUrl(),
     siteName: "Tyson Draws Stuff",
     images: [
       {
-        url: "/images/og-default.jpg",
+        url: "/images/og-default.jpg?v=2",
         width: 1200,
         height: 630,
-        alt: "Tyson Draws Stuff",
+        alt: "Paintings by Tyson Draws Stuff hung on a gallery wall",
       },
     ],
     type: "website",
@@ -49,8 +49,8 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Tyson Draws Stuff | Original Art, Prints, and Books",
-    description: "Explore original art, posters, merch, and books by Tyson Brillon. Unique artwork and prints available for purchase.",
-    images: ["/images/og-default.jpg"],
+    description: "Original paintings, poster prints, books and merch by Kirk Brillon. Free shipping within Canada.",
+    images: ["/images/og-default.jpg?v=2"],
   },
   // Preview deployments must never be indexed; only the live site is.
   robots: IS_PRODUCTION_SITE
