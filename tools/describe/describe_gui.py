@@ -190,6 +190,56 @@ def load_json(p: Path) -> dict:
         return {}
 
 
+# ---------------------------------------------------------------------------- Claude drafts
+
+DRAFT_PROMPT = """Look at the painting photo at {photo} (use the Read tool), for the product "{title}".
+Its story line (the artist's own words) is: {story}
+
+Write the plain "Pictured:" sentence for its description, then reply with ONLY a JSON object, nothing else:
+{{"pictured": "...", "story_fix": "...or null", "notes": "..."}}
+
+Rules for pictured: one sentence, at most 25 words, saying what someone sees: who or what, doing what, where,
+main colours. Describe it like you would to a friend on the phone. No praise or mood words (stunning, striking,
+haunting, vibrant, bold, whimsical, eerie, moody, dreamy, mysterious, ominous, evocative, captivating, etc.),
+no interpretation or symbolism, no telling the viewer what to feel. Never name franchise or brand characters
+or logos (say "a man in a black mask and cape", not "Batman"). Do not start with "Pictured:".
+story_fix: the story line with ONLY clear typos fixed (same words otherwise), or null if it has none.
+notes: one short line for the artist, e.g. what the typo fix changed, or anything you were unsure about
+(a recognisable character, an unclear detail). Empty string if nothing."""
+
+
+def claude_draft(p: dict) -> dict:
+    """Ask Claude Code (the `claude` command, using your normal sign-in) for a Pictured draft of one product."""
+    import shutil
+    import subprocess
+    exe = shutil.which("claude") or str(Path.home() / ".local" / "bin" / "claude.exe")
+    photo = sd.photo_path(p)
+    if not photo:
+        raise RuntimeError("no photo")
+    story = parse(p.get("description") or "")["story"] or "(none)"
+    prompt = DRAFT_PROMPT.format(photo=photo, title=re.sub(r"\s*-\s*Original Art$", "", p["title"]), story=story)
+    r = subprocess.run([exe, "-p", prompt, "--allowedTools", "Read", "--output-format", "text"],
+                       cwd=str(HERE.parent.parent), capture_output=True, text=True, encoding="utf-8",
+                       timeout=300, creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0))
+    m = re.search(r"\{.*\}", r.stdout, re.S)
+    if r.returncode or not m:
+        raise RuntimeError((r.stderr or r.stdout or "no reply").strip()[:300])
+    d = json.loads(m.group(0))
+    out = {"pictured": re.sub(r"^pictured\s*:\s*", "", (d.get("pictured") or "").strip(), flags=re.I)}
+    if d.get("story_fix") and d["story_fix"].strip() != story.strip():
+        out["story_fix"] = d["story_fix"].strip()
+    out["notes"] = ("Drafted by Claude: check it against the photo. " + (d.get("notes") or "")).strip()
+    return out
+
+
+def save_proposal(slug: str, prop: dict) -> dict:
+    """Merge into proposals.json on disk (re-read first, so nothing else written there is lost)."""
+    allp = load_json(PROPOSALS)
+    allp[slug] = prop
+    PROPOSALS.write_text(json.dumps(allp, indent=2, ensure_ascii=False), encoding="utf-8")
+    return allp
+
+
 # ---------------------------------------------------------------------------- window
 
 class App(tk.Tk):
@@ -233,6 +283,9 @@ class App(tk.Tk):
         self.lb.bind("<<ListboxSelect>>", lambda e: self._select())
         self.count = ttk.Label(left, text="")
         self.count.pack(anchor="w", pady=(4, 0))
+        self.batch_btn = ttk.Button(left, text="✨ Draft all • in this list", command=self._draft_all)
+        self.batch_btn.pack(fill="x", pady=(6, 0))
+        self._drafting = False
 
         right = ttk.Frame(self, padding=8)
         right.pack(side="left", fill="both", expand=True)
@@ -246,7 +299,11 @@ class App(tk.Tk):
         self.title_lbl.pack(anchor="w")
         self.meta_lbl = ttk.Label(info, text="", foreground="#666")
         self.meta_lbl.pack(anchor="w")
-        ttk.Button(info, text="Open on site", command=self._open_site).pack(anchor="w", pady=(4, 8))
+        btns = ttk.Frame(info)
+        btns.pack(anchor="w", pady=(4, 8))
+        ttk.Button(btns, text="Open on site", command=self._open_site).pack(side="left")
+        self.draft_btn = ttk.Button(btns, text="✨ Draft Pictured with Claude", command=self._draft_one)
+        self.draft_btn.pack(side="left", padx=(8, 0))
         self.notes_lbl = ttk.Label(info, text="", foreground="#a05a00", wraplength=620, justify="left")
         self.notes_lbl.pack(anchor="w")
         self.hint_lbl = ttk.Label(info, text="", foreground="#2d6a2d", wraplength=620, justify="left")
@@ -390,7 +447,7 @@ class App(tk.Tk):
                                   f" · added to site {p.get('createdAt', '')[:7]}")
         prop = self.proposals.get(p["slug"], {})
         self.notes_lbl.config(text=prop.get("notes", "") if prop else
-                              "No Claude draft yet for the Pictured line: type one, or ask Claude to /describe this.")
+                              "No draft yet for the Pictured line: type one, or click ✨ Draft Pictured with Claude.")
         self.fix_btn.state(["!disabled"] if prop.get("story_fix") else ["disabled"])
         h = self.hints.get(p["slug"])
         self.hint_lbl.config(text=(f"Instagram: first posted {h['date']}"
@@ -416,6 +473,65 @@ class App(tk.Tk):
                 self.photo = ImageTk.PhotoImage(im)
                 self.img.config(image=self.photo, text="")
         self._q.put(show)
+
+    # ---- Claude drafts (background thread; one product at a time)
+    def _drafts_done(self):
+        self._drafting = False
+        self.draft_btn.state(["!disabled"])
+        self.batch_btn.state(["!disabled"])
+        self._fill_list()
+
+    def _run_drafts(self, todo: list[dict]):
+        if self._drafting or not todo:
+            if not todo:
+                self.status("Nothing to draft: every product in this list already has a draft or a Pictured line.")
+            return
+        self._drafting = True
+        self.draft_btn.state(["disabled"])
+        self.batch_btn.state(["disabled"])
+
+        def work():
+            ok = 0
+            for n, p in enumerate(todo, 1):
+                name = re.sub(r"\s*-\s*Original Art$", "", p["title"])
+                self._q.put(lambda name=name, n=n: self.status(f"Claude is drafting {name} ({n}/{len(todo)})…"))
+                try:
+                    prop = claude_draft(p)
+                except Exception as e:  # noqa: BLE001
+                    err = str(e)
+                    self._q.put(lambda name=name, err=err: self.status(f"{name}: draft failed: {err}"))
+                    continue
+                ok += 1
+
+                def apply(p=p, prop=prop):
+                    self.proposals = save_proposal(p["slug"], prop)
+                    if self.cur is p:  # showing it now: put the draft in
+                        if not self.vars["pictured"].get().strip():
+                            self.vars["pictured"].set(prop["pictured"])
+                        self.notes_lbl.config(text=prop.get("notes", ""))
+                        self.fix_btn.state(["!disabled"] if prop.get("story_fix") else ["disabled"])
+                self._q.put(apply)
+            self._q.put(lambda: self.status(f"Claude drafted {ok} of {len(todo)}. Check each one before saving."))
+            self._q.put(self._drafts_done)
+        threading.Thread(target=work, daemon=True).start()
+
+    def _draft_one(self):
+        if not self.cur:
+            self.status("Pick a product first.")
+            return
+        if self.proposals.get(self.cur["slug"]) and not messagebox.askyesno(
+                "Redraft?", "This one already has a draft. Ask Claude for a new one?"):
+            return
+        self._run_drafts([self.cur])
+
+    def _draft_all(self):
+        todo = [p for p in self.shown if p["slug"] not in self.proposals and p["slug"] not in self.progress
+                and not parse(p.get("description") or "")["pictured"].strip()]
+        if todo and not messagebox.askyesno(
+                "Draft with Claude", f"Ask Claude to draft a Pictured line for {len(todo)} product(s)?\n\n"
+                f"About 20–40 seconds each. Nothing is saved to Strapi; drafts show up as ◆ for you to check."):
+            return
+        self._run_drafts(todo)
 
     def _fields(self) -> dict:
         f = {k: v.get() for k, v in self.vars.items()}
