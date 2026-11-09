@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { type Category } from '@/lib/api';
+import { SignupCompact } from '@/components/SignupForm';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -99,6 +100,12 @@ export default function Layout({ children, categories = [] }: LayoutProps) {
 
       <footer className="bg-burgundy text-white">
         <div className="mx-auto max-w-7xl px-4 sm:px-8 py-12 flex flex-col gap-8">
+          {/* The home and About pages have the big sign-up band; skip the footer one there. */}
+          {pathname !== '/' && !pathname.startsWith('/about') && (
+            <div className="border-b border-white/15 pb-8">
+              <SignupCompact />
+            </div>
+          )}
           <div className="flex flex-wrap items-center justify-between gap-6">
             <Image
               src="/brand/tds-wordmark-dark.webp"

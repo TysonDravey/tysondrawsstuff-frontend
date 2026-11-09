@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import Image from 'next/image';
 import Layout from '@/components/Layout';
+import { SignupBand } from '@/components/SignupForm';
 import { fetchCategoriesWithProducts, fetchProducts, fetchShows, fetchGlobal, type Product } from '@/lib/api';
 import { siteUrl } from '@/lib/site';
 import { firstImage, wallOrder } from '@/lib/grid-items';
@@ -227,6 +228,8 @@ export default async function About() {
           </div>
         </div>
       </section>
+
+      <SignupBand />
     </Layout>
   );
 }

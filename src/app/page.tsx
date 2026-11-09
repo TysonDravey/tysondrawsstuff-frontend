@@ -15,6 +15,7 @@ import { siteUrl } from '@/lib/site';
 import { displayTitle, pullQuote, isOriginal, isAvailable, formatPrice, currentShows, showDates, activeShow } from '@/lib/display';
 import { firstImage, toGridItem, wallOrder } from '@/lib/grid-items';
 import { siteJsonLd, jsonLdHtml } from '@/lib/structured-data';
+import { SignupBand } from '@/components/SignupForm';
 
 export const metadata: Metadata = {
   alternates: {
@@ -170,6 +171,8 @@ export default async function Home() {
           </Link>
         </div>
       </section>
+
+      <SignupBand />
 
       {/* Trust row */}
       <section className="border-t border-border">
