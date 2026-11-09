@@ -16,7 +16,6 @@
   },
   "auto_renew": false,
   "exclude": [
-    "dcc-original-art-poster",
     "the-watch-original-art-poster",
     "the-signal-original-art-poster",
     "cat-alley-original-art-poster",
@@ -28,7 +27,8 @@
     "harles-original-art-poster",
     "jokes-original-art-poster",
     "bats-original-art-poster",
-    "headless-original-art-poster"
+    "headless-original-art-poster",
+    "leap-original-art-poster"
   ],
   "base_tags": [
     "art print",
@@ -42,5 +42,26 @@
     "gift for her",
     "home decor",
     "art lover gift"
-  ]
+  ],
+  "overrides": {
+    "dcc-original-art-poster": {
+      "name": "Not Broken",
+      "title": "Not Broken Poster Print 12x16 | Heart Boxers Hero and Angry Cat | LitRPG Fantasy Art Print",
+      "tags": [
+        "litrpg art",
+        "litrpg gift",
+        "angry cat art",
+        "cat warrior print",
+        "heart boxers",
+        "fantasy cat poster",
+        "gamer wall art",
+        "book lover gift",
+        "funny cat print",
+        "dungeon art",
+        "tyson draws stuff",
+        "canadian artist",
+        "art print"
+      ]
+    }
+  }
 }

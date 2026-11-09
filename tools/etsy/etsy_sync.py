@@ -326,6 +326,20 @@ def poster_story(feed_desc: str) -> str:
 
 
 def listing_body(item: dict, cfg: dict) -> dict:
+    # Per-listing overrides in etsy_config.json "overrides": {feed id: {name, title, tags}}, e.g. a fan-art piece
+    # listed under its own name with plain descriptive wording.
+    ov = cfg.get("overrides", {}).get(item["id"], {})
+    if ov.get("name"):
+        item = {**item, "name": ov["name"]}
+    body = _listing_body(item, cfg)
+    if ov.get("title"):
+        body["title"] = ov["title"][:140]
+    if ov.get("tags"):
+        body["tags"] = [t[:20] for t in ov["tags"]][:13]
+    return body
+
+
+def _listing_body(item: dict, cfg: dict) -> dict:
     if item["kind"] == "poster":
         size = f" {cfg['poster_size']}" if cfg["poster_size"] else ""
         title = f"{item['name']} Poster Print{size} | Art Print by Tyson Draws Stuff"

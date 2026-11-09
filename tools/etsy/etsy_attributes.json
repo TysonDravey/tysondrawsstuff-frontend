@@ -387,5 +387,15 @@
     "orientation": "Vertical",
     "primary_color": "Blue",
     "secondary_color": "Gray"
+  },
+  "dcc-original-art-poster": {
+    "name": "Not Broken",
+    "subject": [
+      "Fantasy & Sci Fi",
+      "Animal"
+    ],
+    "orientation": "Vertical",
+    "primary_color": "White",
+    "secondary_color": "Red"
   }
 }
