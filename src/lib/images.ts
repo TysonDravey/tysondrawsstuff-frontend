@@ -35,6 +35,9 @@ const FRAMED_CUTOUTS: Record<string, { width: number; height: number }> = {
   fire_frame_02: { width: 1463, height: 1927 },
   glass_frame_01: { width: 1438, height: 1915 },
   metal_frame_01: { width: 1427, height: 1896 },
+  // Station Beach Triptych: three framed panels, corners picked by hand (pale pine fooled the auto
+  // straightener), perspective-corrected and hung side by side on a transparent background.
+  station_beach_framed_01: { width: 2804, height: 900 },
   TDS_selfportrait_2026_01: { width: 1541, height: 1868 }, // --radius=0.004 --keep-bottom
   water_frame_02: { width: 1409, height: 1883 },
 };
