@@ -52,3 +52,6 @@ next-env.d.ts
 
 # Full-size product images must never ship with the site (local-mode sync output only)
 public/products/
+
+# Etsy OAuth tokens (tools/etsy/etsy_sync.py)
+/tools/etsy/.etsy-tokens.json

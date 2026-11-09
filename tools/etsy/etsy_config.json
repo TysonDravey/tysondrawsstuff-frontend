@@ -1,0 +1,45 @@
+{
+  "markup": 1.1,
+  "quantity": {
+    "poster": 10,
+    "book": 5
+  },
+  "poster_details": "Size: approx. 12 × 16 inches (newer prints are exactly 12 × 16; a few older ones are slightly off). Unsigned poster print. Ships flat, not rolled.",
+  "poster_size": "12x16",
+  "when_made": "2020_2026",
+  "shipping_profile_id": null,
+  "return_policy_id": null,
+  "readiness_state_id": null,
+  "taxonomy_id": {
+    "poster": null,
+    "book": null
+  },
+  "auto_renew": false,
+  "exclude": [
+    "dcc-original-art-poster",
+    "the-watch-original-art-poster",
+    "the-signal-original-art-poster",
+    "cat-alley-original-art-poster",
+    "scarecrow-original-art-poster",
+    "dent-original-art-poster",
+    "rob-original-art-poster",
+    "cats-original-art-poster",
+    "batlady-original-art-poster",
+    "harles-original-art-poster",
+    "jokes-original-art-poster",
+    "bats-original-art-poster"
+  ],
+  "base_tags": [
+    "art print",
+    "wall art",
+    "poster",
+    "illustration",
+    "tyson draws stuff",
+    "canadian artist",
+    "horror art",
+    "gift for him",
+    "gift for her",
+    "home decor",
+    "art lover gift"
+  ]
+}
