@@ -6,7 +6,9 @@
 3. Warp with a mesh (Coons patch between the four curved edges) so they come out dead straight,
    then trim a hair inside the edge so no wall survives.
 
-usage: python straighten.py OUT_DIR IMAGE [IMAGE ...]
+usage: python straighten_framed_photo.py [--radius=0.022] OUT_DIR IMAGE [IMAGE ...]
+  --radius  corner rounding as a fraction of the width (0.022 suits the rounded Krampus frames;
+            use ~0.004 for a square-cornered frame)
 """
 import sys
 from pathlib import Path
@@ -15,12 +17,14 @@ import numpy as np
 from PIL import Image, ImageDraw
 from scipy import ndimage
 
-out_dir = Path(sys.argv[1])
+opts = [a for a in sys.argv[1:] if a.startswith("--")]
+args = [a for a in sys.argv[1:] if not a.startswith("--")]
+out_dir = Path(args[0])
 out_dir.mkdir(parents=True, exist_ok=True)
 MAX = 2000      # the site shows at most 1600px
 GRID = 24       # mesh cells per side
 INSET = 0.003   # trim this fraction inside each edge
-RADIUS = 0.022  # rounded frame corners, as a fraction of the width
+RADIUS = next((float(o.split("=", 1)[1]) for o in opts if o.startswith("--radius=")), 0.022)  # corner rounding
 
 
 def frame_mask(im):
@@ -108,7 +112,7 @@ def solve_perspective(dst, src):
     return np.linalg.solve(np.array(A, float), np.array(b, float))
 
 
-for path in map(Path, sys.argv[2:]):
+for path in map(Path, args[1:]):
     im = Image.open(path).convert("RGBA").convert("RGB")
     im.thumbnail((MAX, MAX))
     H, W = im.height, im.width

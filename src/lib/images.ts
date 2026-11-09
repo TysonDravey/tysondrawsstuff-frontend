@@ -30,6 +30,7 @@ try {
  */
 const FRAMED_CUTOUTS: Record<string, { width: number; height: number }> = {
   air_frame_01: { width: 1485, height: 1903 },
+  beacon_All_01: { width: 1437, height: 1841 }, // square-cornered frame: --radius=0.004
   fallout_frame_01: { width: 1441, height: 1940 },
   fire_frame_02: { width: 1463, height: 1927 },
   glass_frame_01: { width: 1438, height: 1915 },
