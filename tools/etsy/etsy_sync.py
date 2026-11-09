@@ -53,7 +53,7 @@ API = "https://openapi.etsy.com/v3/application"
 TOKEN_URL = "https://api.etsy.com/v3/public/oauth/token"
 CONNECT_URL = "https://www.etsy.com/oauth/connect"
 REDIRECT_URI = "http://localhost:3003/callback"
-SCOPES = "listings_r listings_w shops_r transactions_r"  # transactions_r: sales counts for `report`
+SCOPES = "listings_r listings_w shops_r shops_w transactions_r"  # transactions_r: sales counts for `report`
 G = "{http://base.google.com/ns/1.0}"
 
 DEFAULT_CONFIG = {
@@ -314,8 +314,7 @@ def listing_body(item: dict, cfg: dict) -> dict:
         title = f"{item['name']} Poster Print{size} | Art Print by Tyson Draws Stuff"
         story = re.sub(r"^Poster print of .*?\(Kirk Brillon\)\.\s*", "", item["description"])
         desc = (f"Poster print of “{item['name']}”, an original painting by Kirk Brillon (Tyson Draws Stuff).\n\n"
-                f"{cfg['poster_details']}\n\nAbout the original: {story}\n\nFree shipping within Canada.\n\n"
-                "More of my work: tysondrawsstuff.com")
+                f"{cfg['poster_details']}\n\nAbout the original: {story}\n\nFree shipping within Canada.")
     else:
         by = "" if "tyson draws stuff" in item["name"].lower() else " by Tyson Draws Stuff"
         title = f"{item['name']} | Art Book{by}"
@@ -367,6 +366,47 @@ def cmd_plan(args) -> None:
         print("NOT READY:", p)
 
 
+STRAPI = "https://cms.tysondrawsstuff.com"
+# Extra Strapi photos worth showing on Etsy: the poster held up, and room/wall mock-ups. Photos of the framed
+# original are left out (the poster doesn't come framed).
+EXTRA_PHOTO = re.compile(r"poster|wall|nook|interior|room|study|cozy|marketing", re.I)
+
+
+def extra_images(item: dict) -> list[str]:
+    """URLs of the product's extra Strapi photos for Etsy, the poster-in-hand shot first."""
+    slug = re.sub(r"-poster$", "", item["id"])
+    r = requests.get(STRAPI + "/api/products", timeout=60, params={
+        "filters[slug][$eq]": slug, "populate[images][fields][0]": "name", "populate[images][fields][1]": "url"})
+    data = r.json().get("data") if r.ok else None
+    if not data:
+        return []
+    imgs = (data[0].get("images") or [])[1:]  # [0] is the main artwork, already uploaded
+    if item["kind"] == "poster":
+        imgs = [i for i in imgs if EXTRA_PHOTO.search(i["name"])]
+        imgs.sort(key=lambda i: 0 if "poster" in i["name"].lower() else 1)
+    return [(u if u.startswith("http") else STRAPI + u) for u in (i["url"] for i in imgs)][:9]
+
+
+def as_jpeg(url: str) -> bytes:
+    """Download and re-save as a reasonably sized JPEG (Strapi mock-ups are multi-MB PNGs)."""
+    from io import BytesIO
+    from PIL import Image
+    im = Image.open(BytesIO(requests.get(url, timeout=120).content)).convert("RGB")
+    im.thumbnail((2000, 2000))
+    out = BytesIO()
+    im.save(out, "JPEG", quality=88)
+    return out.getvalue()
+
+
+def upload_extras(etsy: "Etsy", sid: int, lid: int, item: dict, start_rank: int) -> int:
+    n = 0
+    for n, url in enumerate(extra_images(item), 1):
+        etsy.req("POST", f"/shops/{sid}/listings/{lid}/images",
+                 files={"image": (f"{item['id']}-{n}.jpg", as_jpeg(url), "image/jpeg")},
+                 data={"rank": start_rank + n - 1})
+    return n
+
+
 def cmd_push(args) -> None:
     cfg, state = config(), load(STATE_FILE, {})
     items = [i for i in feed_items(cfg) if i["id"] not in state and i["id"] not in cfg["exclude"]]
@@ -389,8 +429,27 @@ def cmd_push(args) -> None:
                      files={"image": (f"{item['id']}.jpg", data, "image/jpeg")}, data={"rank": 1})
         else:
             print("   (no photo found; add one in Etsy)")
+        extra = upload_extras(etsy, sid, lid, item, start_rank=2)
+        if extra:
+            print(f"   + {extra} more photo(s)")
         print(f"   draft: https://www.etsy.com/your/shops/me/listing-editor/edit/{lid}")
     print("\nDone. Drafts are in Etsy > Shop Manager > Listings > Drafts. Publish them there.")
+
+
+def cmd_images(_args) -> None:
+    """Add the extra photos to listings this script already made that still have only one photo."""
+    cfg, state, etsy = config(), load(STATE_FILE, {}), Etsy()
+    sid = etsy.shop_id
+    items = {i["id"]: i for i in feed_items(cfg)}
+    for fid, rec in state.items():
+        item = items.get(fid)
+        if not item:
+            continue
+        have = etsy.req("GET", f"/listings/{rec['listing_id']}/images")["count"]
+        if have > 1:
+            continue
+        n = upload_extras(etsy, sid, rec["listing_id"], item, start_rank=have + 1)
+        print(f"{item['name']}: +{n} photo(s)")
 
 
 def cmd_report(_args) -> None:
@@ -431,6 +490,7 @@ def main() -> None:
     sub.add_parser("auth").set_defaults(fn=cmd_auth)
     sub.add_parser("setup").set_defaults(fn=cmd_setup)
     sub.add_parser("report").set_defaults(fn=cmd_report)
+    sub.add_parser("images").set_defaults(fn=cmd_images)
     p = sub.add_parser("plan")
     p.add_argument("--limit", type=int)
     p.add_argument("-v", "--verbose", action="store_true")

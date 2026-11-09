@@ -7,12 +7,12 @@
   "poster_details": "Size: approx. 12 × 16 inches (newer prints are exactly 12 × 16; a few older ones are slightly off). Unsigned poster print. Ships flat, not rolled.",
   "poster_size": "12x16",
   "when_made": "2020_2026",
-  "shipping_profile_id": null,
-  "return_policy_id": null,
-  "readiness_state_id": null,
+  "shipping_profile_id": 69552870763,
+  "return_policy_id": 1530434975222,
+  "readiness_state_id": 1403767277648,
   "taxonomy_id": {
-    "poster": null,
-    "book": null
+    "poster": 119,
+    "book": 335
   },
   "auto_renew": false,
   "exclude": [
@@ -27,7 +27,8 @@
     "batlady-original-art-poster",
     "harles-original-art-poster",
     "jokes-original-art-poster",
-    "bats-original-art-poster"
+    "bats-original-art-poster",
+    "headless-original-art-poster"
   ],
   "base_tags": [
     "art print",

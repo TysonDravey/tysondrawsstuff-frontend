@@ -58,3 +58,6 @@ public/products/
 # describe tool (tools/describe/strapi_desc.py): photo cache and description backups
 /tools/describe/.cache/
 /tools/describe/backups/
+/tools/describe/ig_hints.json
+/tools/describe/progress.json
+/tools/describe/__pycache__/

@@ -1,0 +1,27 @@
+{
+  "_about": "Drafts for describe_gui.py, written by Claude (/describe) after looking at each photo. pictured = the plain 'Pictured:' sentence; story_fix = a suggested typo fix to the story line (only applied if you click Apply); notes = shown in the window.",
+  "bedtime-routine-original-art": {
+    "pictured": "A tentacle-faced creature pulling a white bunny-ear hood over its head, in teal and rust tones.",
+    "story_fix": "Sometimes you just need to get some rest, call it a night.",
+    "notes": "Story looks like it's missing a word: \"you just to get\". Need, or want?"
+  },
+  "eldritch-beacon-original-art": {
+    "pictured": "A man rowing a small boat toward a lit lighthouse on a dark island, under swirling blue and orange skies."
+  },
+  "dcc-original-art": {
+    "pictured": "A muscular man in heart-print boxers and spiked knee pads leaping alongside a snarling grey cat, against red splatter on white.",
+    "notes": "Fan art (Dungeon Crawler Carl): kept off Etsy. Mixed media on what surface?"
+  },
+  "headless-original-art": {
+    "pictured": "A headless rider in white armour holding up a helmet, on a horned, shaggy beast, in front of a huge red sun.",
+    "notes": "Fan art (Star Wars): keep off Etsy. Mixed media on what surface?"
+  },
+  "beach-pals-original-art": {
+    "pictured": "Goofy melting ice-cream monsters riding a red and white camper van through the surf on a sunny beach.",
+    "notes": "The van shows a VW logo: fine on your site, a small risk on Etsy."
+  },
+  "the-beacon-journal": {
+    "pictured": "Seven hand-drawn journal pages of lighthouse sketches, floor plans and notes, stained with red, mounted in an ornate gold frame.",
+    "notes": "Is 26 × 38″ the size with the frame?"
+  }
+}
