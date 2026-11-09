@@ -176,7 +176,12 @@ function SuccessContent({ session, categories }: { session: ExpandedSession | nu
               <h2 className="font-display text-xl mb-3">What happens next</h2>
               <ol className="text-sm text-soft space-y-2 list-decimal pl-5 marker:text-primary">
                 <li>I pack it up carefully.</li>
-                <li>It ships free within Canada, and you’ll get tracking by email once it’s on its way.</li>
+                <li>
+                  It ships free within Canada.{' '}
+                  {piece.variant === 'original'
+                    ? 'You’ll get tracking by email once it’s on its way.'
+                    : 'I’ll email you once it’s on its way.'}
+                </li>
                 <li>
                   Questions? <a href="mailto:kirkbrillon@gmail.com" className={textLink}>Email me</a> with your order
                   number: <span className="font-mono text-xs text-foreground break-all">{session.id}</span>
