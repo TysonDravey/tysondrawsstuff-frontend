@@ -46,6 +46,7 @@ FRONTEND = HERE.parent.parent
 ENV_FILE = FRONTEND / ".env.railway"
 CONFIG_FILE = HERE / "etsy_config.json"
 STATE_FILE = HERE / "etsy_listings.json"
+sys.path.insert(0, str(HERE))  # poster_mockup.py
 TOKEN_FILE = HERE / ".etsy-tokens.json"
 
 FEED_URL = "https://www.tysondrawsstuff.com/meta-feed.xml"
@@ -398,13 +399,31 @@ def as_jpeg(url: str) -> bytes:
     return out.getvalue()
 
 
+def generated_poster_photo(item: dict) -> bytes | None:
+    """For posters with no Printful "held up" photo in Strapi, make one (poster_mockup.py)."""
+    if item["kind"] != "poster":
+        return None
+    import poster_mockup as pm
+    p = pm.product(re.sub(r"-poster$", "", item["id"]))
+    if not p or not p.get("images") or pm.poster_photo(p):
+        return None
+    from io import BytesIO
+    out = BytesIO()
+    pm.make(pm.fetch(p["images"][0]["url"])).save(out, "JPEG", quality=90)
+    return out.getvalue()
+
+
 def upload_extras(etsy: "Etsy", sid: int, lid: int, item: dict, start_rank: int) -> int:
-    n = 0
-    for n, url in enumerate(extra_images(item), 1):
+    photos = []
+    made = generated_poster_photo(item)
+    if made:
+        photos.append(made)
+    photos += [as_jpeg(u) for u in extra_images(item)]
+    for n, data in enumerate(photos[:9], 1):
         etsy.req("POST", f"/shops/{sid}/listings/{lid}/images",
-                 files={"image": (f"{item['id']}-{n}.jpg", as_jpeg(url), "image/jpeg")},
+                 files={"image": (f"{item['id']}-{n}.jpg", data, "image/jpeg")},
                  data={"rank": start_rank + n - 1})
-    return n
+    return len(photos[:9])
 
 
 def cmd_push(args) -> None:
