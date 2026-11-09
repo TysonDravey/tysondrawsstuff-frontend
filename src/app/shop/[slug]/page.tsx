@@ -51,7 +51,7 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   const stripHtml = (html: string) => html.replace(/<[^>]*>/g, '');
   const metaDescription = product.description
     ? stripHtml(product.description).substring(0, 150).trim() + (product.description.length > 150 ? '...' : '')
-    : `Original artwork by Tyson Brillon - ${product.title}. Available for purchase.`;
+    : `Original artwork by Kirk Brillon (Tyson Draws Stuff): ${product.title}. Available for purchase.`;
 
   const ogImage = firstImage?.src || '/images/og-default.jpg';
   const fullTitle = `${product.title} | Tyson Draws Stuff`;
