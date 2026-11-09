@@ -35,6 +35,20 @@ export function frameFor(item: { slug: string; frame?: string; description?: str
   return pool[Math.floor(seeded(item.slug, 5) * pool.length)];
 }
 
+/** Real frames are about the same moulding width whatever the painting's size, so on screen (where every
+ *  painting is shown at roughly the same size) a big canvas needs a proportionally thinner frame.
+ *  1 = a 16-inch painting; a 30 × 40 gets 0.4 of that; small pieces at most 1.15. */
+export function frameScale(p: { description?: string }): number {
+  for (const d of describeOriginal(p.description).details) {
+    const m = d.match(/(\d+(?:\.\d+)?)\s*[×x]\s*(\d+(?:\.\d+)?)/);
+    if (m && !/^framed/i.test(d)) {
+      const longest = Math.max(parseFloat(m[1]), parseFloat(m[2]));
+      if (longest > 0) return Math.round(Math.min(1.15, Math.max(0.4, 16 / longest)) * 100) / 100;
+    }
+  }
+  return 1;
+}
+
 /** A photo of the piece in its real frame, cut out from the wall (see FRAMED_CUTOUTS in images.ts). */
 export function isCutout(src?: string): boolean {
   return !!src?.startsWith('/framed/');

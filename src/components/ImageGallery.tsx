@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import Lightbox from 'yet-another-react-lightbox';
 import Thumbnails from 'yet-another-react-lightbox/plugins/thumbnails';
@@ -19,16 +19,26 @@ interface ImageGalleryProps {
   frame?: string;
   /** Replaces "Frame shown for display only." under a framed painting. */
   framedNote?: string;
+  /** Frame thickness multiplier for the painting's real size (frameScale in frame-pick.ts). */
+  frameScale?: number;
 }
 
 // Product page: the piece hangs on the same oxblood wall as the home page salon, unframed (so it
 // shows what actually ships), under a picture light. A sold original gets a gallery red dot.
 // Click/tap to enlarge; extra photos (details, the piece in a room) are thumbnails underneath.
-export default function ImageGallery({ images, productTitle, productSlug, sold = false, frame = 'none', framedNote }: ImageGalleryProps) {
+export default function ImageGallery({ images, productTitle, productSlug, sold = false, frame = 'none', framedNote, frameScale = 1 }: ImageGalleryProps) {
   const [selected, setSelected] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
 
   const processed = getProductImages(productSlug, images);
+
+  // Arriving from the posters page (?view=poster): start on the photo of the print held up in the studio.
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get('view') !== 'poster') return;
+    const i = processed.findIndex(p => /studio[-_]poster/i.test(p.src));
+    if (i > 0) setSelected(i);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [productSlug]);
 
   if (!processed || processed.length === 0) {
     return (
@@ -51,7 +61,10 @@ export default function ImageGallery({ images, productTitle, productSlug, sold =
           aria-label={`Enlarge ${productTitle}`}
           className="lit group relative block cursor-zoom-in"
         >
-          <span className={`painting painting-fit frame-${framed ? frame : 'none'} ${isCutout(img.src) ? 'painting-cutout' : ''} relative block`}>
+          <span
+            className={`painting painting-fit frame-${framed ? frame : 'none'} ${isCutout(img.src) ? 'painting-cutout' : ''} relative block`}
+            style={{ ['--fw-s' as string]: frameScale }}
+          >
             <Image
               src={img.src}
               alt={img.alt || `${productTitle}, image ${selected + 1}`}

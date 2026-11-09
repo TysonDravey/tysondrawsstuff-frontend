@@ -14,8 +14,9 @@ interface ProductCardProps {
 
 function PosterCard({ product, posterPrice }: { product: Product; posterPrice?: number }) {
   const image = product.images?.[0];
+  // ?view=poster: the product page opens on the "held up in the studio" photo of the print.
   return (
-    <Link href={`/shop/${product.slug}/`} className="group block">
+    <Link href={`/shop/${product.slug}/?view=poster`} className="group block">
       <div className="aspect-[3/4] relative bg-card overflow-hidden">
         {image ? (
           <Image

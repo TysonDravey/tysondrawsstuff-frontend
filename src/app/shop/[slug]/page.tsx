@@ -11,7 +11,7 @@ import { productJsonLd, productOgTags, jsonLdHtml } from '@/lib/structured-data'
 import { displayTitle, describeOriginal, isOriginal, formatPrice, showDates, activeShow } from '@/lib/display';
 import { marked } from 'marked';
 import { siteUrl } from '@/lib/site';
-import { frameFor, comesFramed } from '@/lib/frame-pick';
+import { frameFor, frameScale, comesFramed } from '@/lib/frame-pick';
 
 const CONTACT_EMAIL = 'kirkbrillon@gmail.com';
 
@@ -173,6 +173,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
             productSlug={product.slug}
             sold={original && sold}
             frame={original && !hasFramedPhoto(product.slug) ? frameFor(product) : 'none'}
+            frameScale={frameScale(product)}
             framedNote={
               comesFramed(product)
                 ? 'Display frame shown. This piece comes in its own custom frame (see details).'

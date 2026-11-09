@@ -12,6 +12,8 @@ export interface GridItem {
   sold: boolean;
   hasPoster: boolean;
   frame?: string;
+  /** Frame thickness multiplier for the painting's real size (see frameScale). */
+  frameScale?: number;
   /** Title of the show the piece is hanging at right now. */
   atShow?: string;
   image:{ src: string; width: number; height: number; alt: string } | null;
@@ -320,7 +322,7 @@ export default function OriginalsGrid({ items, allHref, posterPrice, heading = '
                 >
                   <div
                     className={`painting frame-${frameFor(item)} relative ${isCutout(item.image?.src) ? 'painting-cutout' : 'bg-card'} transition-transform duration-300 group-hover:-translate-y-1`}
-                    style={{ aspectRatio: `${ratio}` }}
+                    style={{ aspectRatio: `${ratio}`, ['--fw-s' as string]: item.frameScale ?? 1 }}
                   >
                     {item.image && (
                       <Image

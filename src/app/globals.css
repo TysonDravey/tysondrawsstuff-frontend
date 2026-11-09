@@ -170,12 +170,12 @@ a:focus-visible, button:focus-visible {
 @media (min-width: 1024px) { .salon { --fw-k: 1; } }
 
 .painting[class*="frame-"]:not(.frame-none) {
-  --fwk: calc(var(--fw, 0px) * var(--fw-k, 1));
+  --fwk: calc(var(--fw, 0px) * var(--fw-k, 1) * var(--fw-s, 1));
   /* Per-side widths (floating frames are drawn in slight perspective); others use --fw all round. */
-  --fwt: calc(var(--fw-t, var(--fw, 0px)) * var(--fw-k, 1));
-  --fwr: calc(var(--fw-r, var(--fw, 0px)) * var(--fw-k, 1));
-  --fwb: calc(var(--fw-b, var(--fw, 0px)) * var(--fw-k, 1));
-  --fwl: calc(var(--fw-l, var(--fw, 0px)) * var(--fw-k, 1));
+  --fwt: calc(var(--fw-t, var(--fw, 0px)) * var(--fw-k, 1) * var(--fw-s, 1));
+  --fwr: calc(var(--fw-r, var(--fw, 0px)) * var(--fw-k, 1) * var(--fw-s, 1));
+  --fwb: calc(var(--fw-b, var(--fw, 0px)) * var(--fw-k, 1) * var(--fw-s, 1));
+  --fwl: calc(var(--fw-l, var(--fw, 0px)) * var(--fw-k, 1) * var(--fw-s, 1));
   margin: var(--fwt) var(--fwr) var(--fwb) var(--fwl);
   width: calc(100% - var(--fwl) - var(--fwr));
   box-shadow: none;
