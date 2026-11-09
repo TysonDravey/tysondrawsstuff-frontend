@@ -67,6 +67,10 @@ export const metadata: Metadata = {
       }
     : { index: false, follow: false },
   // Add `verification: { google: "<code>" }` here once Search Console gives a code.
+  other: {
+    // Meta Business (Tyson Draws Stuff portfolio) domain verification, needed for the Instagram/Facebook shop.
+    "facebook-domain-verification": "up90px4o6yg31opr1oh587m7zkzm4r",
+  },
 };
 
 export default function RootLayout({
