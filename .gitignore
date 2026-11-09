@@ -55,3 +55,6 @@ public/products/
 
 # Etsy OAuth tokens (tools/etsy/etsy_sync.py)
 /tools/etsy/.etsy-tokens.json
+# describe tool (tools/describe/strapi_desc.py): photo cache and description backups
+/tools/describe/.cache/
+/tools/describe/backups/

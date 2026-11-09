@@ -128,7 +128,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const posterPrice = product.hasPoster ? globalSettings.posterPrice : undefined;
 
   // Originals: story ("Sometimes…") + details (medium, size, framing). Books/merch: the full text.
-  const { story, details } = original ? describeOriginal(product.description) : { story: null, details: [] };
+  const { story, subject, details } = original
+    ? describeOriginal(product.description)
+    : { story: null, subject: null, details: [] };
   const bodyHtml = !original && product.description
     ? (marked(product.description, { breaks: true, gfm: true }) as string)
     : null;
@@ -185,6 +187,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
               </p>
               <h1 className="font-display text-4xl sm:text-5xl leading-[1.05]">{title}</h1>
               {story && <p className="text-xl text-soft italic max-w-[34ch]">“{story}”</p>}
+              {subject && <p className="text-soft max-w-[48ch]">{subject}</p>}
             </div>
 
             {/* Price and status */}

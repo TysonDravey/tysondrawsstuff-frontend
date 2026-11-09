@@ -5,7 +5,8 @@ import { describeOriginal } from './display';
  *  series' "Custom wood frame with resin inlays included".) Their photos show the painting only,
  *  so they still get a display frame; the product page just says the real one is different. */
 export function comesFramed(p: { description?: string }): boolean {
-  return describeOriginal(p.description).details.some(d => /frame/i.test(d));
+  // "Framed in black wood" yes; "Unframed" / "Not framed" / "No frame" no.
+  return describeOriginal(p.description).details.some(d => /frame/i.test(d) && !/unframed|not framed|no frame/i.test(d));
 }
 
 // Small, stable pseudo-random number (0..1) from a slug, so a painting always gets the same

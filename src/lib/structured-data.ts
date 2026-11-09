@@ -26,9 +26,9 @@ const absolute = (src: string) => (src.startsWith('http') ? src : `${SITE_URL}${
 /** Plain-text description: the artist's story plus the details (medium, size, framing). */
 export function productDescription(product: Product): string {
   if (isOriginal(product)) {
-    const { story, details } = describeOriginal(product.description);
+    const { story, subject, details } = describeOriginal(product.description);
     const sentence = (t: string) => (/[.!?…]$/.test(t) ? t : `${t}.`);
-    const text = [story, ...details].filter((t): t is string => !!t).map(sentence).join(' ');
+    const text = [story, subject, ...details].filter((t): t is string => !!t).map(sentence).join(' ');
     if (text) return text;
   }
   return plainExcerpt(product.description, 500) ?? `${displayTitle(product.title)} by Tyson Draws Stuff (Kirk Brillon).`;

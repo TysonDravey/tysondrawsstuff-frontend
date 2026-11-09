@@ -19,14 +19,17 @@ function clean(text: string): string {
   return text.replace(/&nbsp;/g, ' ').replace(/\*\*Bold\*\*/g, '').replace(/[ \t]+/g, ' ').trim();
 }
 
-// A line that reads like a spec (medium, size, framing) rather than part of the story.
-const SPEC = /\d+\s*["”]?\s*[x×]\s*\d+|acrylic|ink\b|watercolou?r|canvas|paper|mixed media|multi media|pastel|\boil\b|gouache|frame|painting|pigment/i;
+// A line that reads like a spec (medium, size, framing, year) rather than part of the story.
+const SPEC = /\d+\s*["”]?\s*[x×]\s*\d+|acrylic|ink\b|watercolou?r|canvas|paper|mixed media|multi media|pastel|\boil\b|gouache|frame|painting|pigment|^(?:(?:made|painted|drawn)\s+(?:in\s+)?)?(?:19|20)\d{2}$/i;
+
+// "Pictured: …" is a plain line saying what's in the picture (for search, Etsy and screen readers).
+const PICTURED = /^pictured\s*:\s*/i;
 
 // "16x20" / 12" x16" → 16 × 20″
 function prettySize(text: string): string {
   // The closing inch mark (and the space before it) is only eaten when there is one, so
   // "14x20 in a frame" keeps its space and "12x16 24x16" stays two sizes.
-  return text.replace(/(\d+)\s*["”]?\s*[x×]\s*(\d+)(?:\s*["”])?/g, '$1 × $2″');
+  return text.replace(/(\d+)\s*["”″]?\s*[x×]\s*(\d+)(?:\s*["”″])?/g, '$1 × $2″');
 }
 
 /**
@@ -35,16 +38,19 @@ function prettySize(text: string): string {
  *   "Sometimes your game just needs cover art.\n\nAcrylic on canvas\n16\"x20\""
  *   → { story: "Sometimes your game just needs cover art.", details: ["Acrylic on canvas", "16 × 20″"] }
  */
-export function describeOriginal(description?: string): { story: string | null; details: string[] } {
-  if (!description) return { story: null, details: [] };
+export function describeOriginal(description?: string): { story: string | null; subject: string | null; details: string[] } {
+  if (!description) return { story: null, subject: null, details: [] };
   const lines = clean(description.replace(/\r/g, ''))
     .split(/\n+/)
     .map(clean)
     .filter(Boolean);
   const story: string[] = [];
   const details: string[] = [];
+  let subject: string | null = null;
   for (const [i, line] of lines.entries()) {
-    if (i > 0 && SPEC.test(line)) {
+    if (PICTURED.test(line)) {
+      subject = line.replace(PICTURED, '').trim() || null;
+    } else if (i > 0 && SPEC.test(line)) {
       // "This is acrylic paint on canvas. 30x40" → "Acrylic paint on canvas", "30 × 40″"
       for (const part of line.replace(/^this is\s+/i, '').split(/\.\s+(?=\d)/)) {
         const d = prettySize(part.replace(/\.$/, '').trim());
@@ -55,7 +61,7 @@ export function describeOriginal(description?: string): { story: string | null; 
       story.push(line);
     }
   }
-  return { story: story.join(' ') || null, details };
+  return { story: story.join(' ') || null, subject, details };
 }
 
 export function isOriginal(product: Product): boolean {
