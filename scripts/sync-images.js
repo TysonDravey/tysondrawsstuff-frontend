@@ -40,6 +40,17 @@ const WATERMARK_ID = 'TysonDrawsStuff/brand/watermark-v1';
 const WATERMARK_FILE = path.join(PUBLIC_DIR, 'brand', 'tds-watermark.png');
 const WEB_MAX_PX = 1600;
 const UPLOAD_CACHE_FILE = path.join(__dirname, '..', 'node_modules', '.cache', 'tds-cloudinary-uploads.json');
+
+// Google Shopping (Merchant Center) rejects images with watermarks, so each product's FIRST photo also
+// gets a small, unwatermarked copy used only by the shopping feed (src/app/merchant-feed.xml). Kept to
+// FEED_MAX_PX so it's no use for printing. Listed in public/feed-images.json: { slug: {url,width,height} }.
+const FEED_PREFIX = 'TysonDrawsStuff/feed-v1';
+const FEED_MAX_PX = 800;
+const FEED_IMAGES_FILE = path.join(PUBLIC_DIR, 'feed-images.json');
+const FEED_TRANSFORMATION = [
+  { width: FEED_MAX_PX, height: FEED_MAX_PX, crop: 'limit' },
+  { quality: 'auto:good' },
+];
 const WEB_TRANSFORMATION = [
   { width: WEB_MAX_PX, height: WEB_MAX_PX, crop: 'limit' },
   { overlay: WATERMARK_ID.replace(/\//g, ':'), width: 0.4, flags: 'relative', opacity: 55 },
@@ -98,16 +109,17 @@ async function ensureWatermark() {
 }
 
 // Upload a web-safe (shrunk + watermarked) copy to Cloudinary, or get the existing one.
-// Returns { url, width, height } of the stored copy.
-async function uploadToCloudinary(imageUrl, publicId) {
+// Returns { url, width, height } of the stored copy. `transformation` defaults to the watermarked web
+// copy; the shopping feed passes FEED_TRANSFORMATION (small, no watermark).
+async function uploadToCloudinary(imageUrl, publicId, transformation = WEB_TRANSFORMATION) {
   const options = {
     public_id: publicId, overwrite: false, resource_type: 'image',
-    format: 'jpg', transformation: WEB_TRANSFORMATION,
+    format: 'jpg', transformation,
   };
   const done = (result) => {
     console.log(result.existing
       ? `  ☁️  Already on Cloudinary: ${publicId}`
-      : `  ✅ Uploaded (${result.width}×${result.height}, watermarked): ${result.secure_url}`);
+      : `  ✅ Uploaded (${result.width}×${result.height}): ${result.secure_url}`);
     return { url: result.secure_url, width: result.width, height: result.height };
   };
 
@@ -327,6 +339,7 @@ async function syncImages() {
     } catch { /* first run or missing file — start fresh */ }
 
     const imageMap = {};
+    const feedImages = {};
     const currentSlugs = [];
     let totalProcessed = 0;
     let totalErrors = 0;
@@ -428,6 +441,22 @@ async function syncImages() {
       }
 
       imageMap[slug] = localImages;
+
+      // Shopping-feed copy of the first photo (optional: a failure only leaves this item out of the feed)
+      if (USE_CLOUDINARY && images[0]) {
+        const first = images[0];
+        const feedId = `${FEED_PREFIX}/products/${slug}/${first.hash || `image-${first.id}`}`;
+        try {
+          let feed = uploadCache[feedId];
+          if (!feed) {
+            feed = await uploadToCloudinary(first.url, feedId, FEED_TRANSFORMATION);
+            uploadCache[feedId] = feed;
+          }
+          feedImages[slug] = feed;
+        } catch (error) {
+          console.warn(`  ⚠️  Shopping-feed image failed (item left out of the feed): ${error.message}`);
+        }
+      }
       console.log(`  ✅ Processed ${localImages.length}/${images.length} images`);
     }
 
@@ -479,6 +508,7 @@ async function syncImages() {
 
     console.log('\n📝 Writing image map...');
     await writeFile(IMAGE_MAP_FILE, JSON.stringify(imageMap, null, 2));
+    if (USE_CLOUDINARY) await writeFile(FEED_IMAGES_FILE, JSON.stringify(feedImages, null, 2));
 
     const mode = USE_CLOUDINARY ? '☁️  Cloudinary' : '📁 Local';
     console.log(`\n🎉 Image sync complete! (${mode})`);
