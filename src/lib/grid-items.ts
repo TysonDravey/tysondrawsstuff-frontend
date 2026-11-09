@@ -2,6 +2,7 @@ import type { Product } from './api';
 import type { GridItem } from '@/components/home/OriginalsGrid';
 import { getProductImages, hasFramedPhoto } from './images';
 import { displayTitle, isAvailable, activeShow } from './display';
+import { frameFor } from './frame-pick';
 
 // The first photo of a product, sized for layout (falls back to a portrait shape).
 export function firstImage(product: Product) {
@@ -26,7 +27,8 @@ export function toGridItem(p: Product): GridItem {
     sold: !isAvailable(p),
     hasPoster: !!p.hasPoster,
     // Photographed in its real frame: that photo hangs as-is, no display frame around it.
-    frame: hasFramedPhoto(p.slug) ? 'none' : p.frame,
+    // Otherwise the display frame is settled here, where the description is known (canvas → floater).
+    frame: hasFramedPhoto(p.slug) ? 'none' : frameFor(p),
     atShow: show?.title,
     image: firstImage(p),
   };

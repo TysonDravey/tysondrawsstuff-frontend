@@ -496,17 +496,35 @@ def promote_develop() -> None:
         warn = "\n\nNote: you have local develop commits that aren't pushed yet; they are NOT included." if unpushed else ""
         if not confirm("Promote develop → main",
                        f"Move main up to develop ({len(commits)} commit{'s' * (len(commits) != 1)}):\n\n"
-                       f"{listing}{more}{warn}\n\nDid the preview site look right?"):
+                       f"{listing}{more}{warn}\n\nThe live site rebuilds by itself afterwards (Vercel builds "
+                       f"main on every push), so no Publish Live needed.\n\nDid the preview site look right?"):
             return
-        p = _git("push", "origin", "origin/develop:refs/heads/main")
-        if p.returncode:
-            log(f"Promote failed: {p.stderr.strip()}")
-            info_box("Promote develop → main", f"Push to main failed:\n\n{p.stderr.strip()[:400]}")
-            return
-        log(f"Promoted develop to main ({len(commits)} commits).")
-        notify("main now matches develop.")
-        if live_enabled() and confirm("Publish Live?", "main is updated. Rebuild the live site from it now?"):
-            run_deploy("VERCEL_DEPLOY_HOOK_PRODUCTION", "main", "Live")
+        with _lock:
+            if _state["busy"]:
+                notify("Something is already running.")
+                return
+            _state["busy"] = True
+        try:
+            # The build Vercel starts on the push reads Strapi, so wake it first.
+            _set(deploy="Live: waking Strapi…")
+            if not wake_strapi():
+                _set(deploy="Live: cancelled (Strapi down)")
+                notify("Strapi didn't wake up, so main was not pushed.")
+                return
+            started_ms = int(datetime.now(timezone.utc).timestamp() * 1000)
+            p = _git("push", "origin", "origin/develop:refs/heads/main")
+            if p.returncode:
+                _set(deploy="Live: promote failed")
+                log(f"Promote failed: {p.stderr.strip()}")
+                info_box("Promote develop → main", f"Push to main failed:\n\n{p.stderr.strip()[:400]}")
+                return
+            log(f"Promoted develop to main ({len(commits)} commits); Vercel builds main from the push.")
+            _set(deploy="Live: building…")
+            notify("main now matches develop. Live site is rebuilding.")
+            watch_deployment("main", started_ms, "Live")
+        finally:
+            _state["busy"] = False
+            _refresh()
     except Exception as e:  # noqa: BLE001
         log(f"Promote error: {e}")
         notify(f"Promote error: {e}")

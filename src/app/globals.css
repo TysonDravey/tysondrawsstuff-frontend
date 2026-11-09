@@ -171,8 +171,13 @@ a:focus-visible, button:focus-visible {
 
 .painting[class*="frame-"]:not(.frame-none) {
   --fwk: calc(var(--fw, 0px) * var(--fw-k, 1));
-  margin: var(--fwk);
-  width: calc(100% - 2 * var(--fwk));
+  /* Per-side widths (floating frames are drawn in slight perspective); others use --fw all round. */
+  --fwt: calc(var(--fw-t, var(--fw, 0px)) * var(--fw-k, 1));
+  --fwr: calc(var(--fw-r, var(--fw, 0px)) * var(--fw-k, 1));
+  --fwb: calc(var(--fw-b, var(--fw, 0px)) * var(--fw-k, 1));
+  --fwl: calc(var(--fw-l, var(--fw, 0px)) * var(--fw-k, 1));
+  margin: var(--fwt) var(--fwr) var(--fwb) var(--fwl);
+  width: calc(100% - var(--fwl) - var(--fwr));
   box-shadow: none;
 }
 /* Product page: the painting sizes to its photo rather than filling a slot. */
@@ -181,13 +186,13 @@ a:focus-visible, button:focus-visible {
 .painting[class*="frame-"]:not(.frame-none)::before {
   content: '';
   position: absolute;
-  inset: calc(-1 * var(--fwk));
+  inset: calc(-1 * var(--fwt)) calc(-1 * var(--fwr)) calc(-1 * var(--fwb)) calc(-1 * var(--fwl));
   z-index: -1;
   pointer-events: none;
   /* Longhands only: the `border` shorthand would reset border-image (set in frames.css). */
   border-style: solid;
   border-color: transparent;
-  border-width: var(--fwk);
+  border-width: var(--fwt) var(--fwr) var(--fwb) var(--fwl);
   box-shadow: var(--cast);
 }
 /* A photo of the piece in its real frame, cut out from the wall (transparent corners): the shadow

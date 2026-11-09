@@ -4,6 +4,7 @@ import Script from "next/script";
 import GaPageView from "@/components/GaPageView";
 import "./globals.css";
 import "./frames.css";
+import "./frames-float.css";
 import { siteUrl, SITE_URL, IS_PRODUCTION_SITE } from '@/lib/site';
 
 // Headings: Alfa Slab One. Everything else: Inter. Both self-hosted by next/font, so no flash of fallback text.
