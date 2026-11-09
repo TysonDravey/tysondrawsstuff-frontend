@@ -48,7 +48,8 @@ export function describeOriginal(description?: string): { story: string | null; 
       // "This is acrylic paint on canvas. 30x40" → "Acrylic paint on canvas", "30 × 40″"
       for (const part of line.replace(/^this is\s+/i, '').split(/\.\s+(?=\d)/)) {
         const d = prettySize(part.replace(/\.$/, '').trim());
-        if (d && !details.includes(d)) details.push(d.charAt(0).toUpperCase() + d.slice(1));
+        const pretty = d && d.charAt(0).toUpperCase() + d.slice(1);
+        if (pretty && !details.includes(pretty)) details.push(pretty);
       }
     } else {
       story.push(line);

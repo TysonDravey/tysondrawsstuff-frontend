@@ -14,6 +14,7 @@ import {
 import { siteUrl } from '@/lib/site';
 import { displayTitle, pullQuote, isOriginal, isAvailable, formatPrice, currentShows, showDates, activeShow } from '@/lib/display';
 import { firstImage, toGridItem, wallOrder } from '@/lib/grid-items';
+import { siteJsonLd, jsonLdHtml } from '@/lib/structured-data';
 
 export const metadata: Metadata = {
   alternates: {
@@ -68,6 +69,7 @@ export default async function Home() {
 
   return (
     <Layout categories={categories}>
+      <script type="application/ld+json" dangerouslySetInnerHTML={jsonLdHtml(siteJsonLd())} />
       {/* Hero: featured paintings, shown whole, one at a time */}
       {heroSlides.length > 0 && <FeaturedHero slides={heroSlides} />}
 
