@@ -91,5 +91,130 @@
   "found-original-art": {
     "pictured": "A watercolour of a red-haired woman with her eyes closed, in a dark purple top, surrounded by green and red goblin-like creatures and splashes of pink.",
     "notes": "Drafted by Claude: check it against the photo."
+  },
+  "candy-corn-original-art": {
+    "pictured": "A giant orange-yellow skull-faced monster with candy corn teeth grabs a small cloaked figure whose head bursts into red spray, against dark blue clouds.",
+    "notes": "Drafted by Claude: check it against the photo. No typos to fix. \"a baby after they've shoved their faces\" mixes singular and plural, but that's grammar, not a typo, so I left it. The small round lumps along the bottom are unclear, so I left them out."
+  },
+  "trickster-original-art": {
+    "pictured": "A pumpkin-headed skeleton in a red sash holds a long staff among other armed pumpkin-headed skeletons and a giant jack-o'-lantern, in reds and blues.",
+    "notes": "Drafted by Claude: check it against the photo. The giant jack-o'-lantern in the lower right looks like it might also be a skull. I called it a jack-o'-lantern."
+  },
+  "worship-original-art": {
+    "pictured": "A crowned skeleton in red robes sits on a throne raising one hand, flanked by two red-hooded figures, before glowing yellow light and purple-red walls.",
+    "notes": "Drafted by Claude: check it against the photo. Throne is implied by the seated pose rather than clearly drawn."
+  },
+  "scarecrow-original-art": {
+    "pictured": "A tall, ragged scarecrow stands in dry brush while a small child holds a flame to its base, under an orange and red sky.",
+    "notes": "Drafted by Claude: check it against the photo. The child seems to be holding a lit stick or match to the scarecrow's base, but the small flame is a bit hard to make out."
+  },
+  "fugue-state-original-art": {
+    "pictured": "A man in a long coat and tie holds a giant syringe and a dripping blonde head among bloodied figures in green, blue and red.",
+    "notes": "Drafted by Claude: check it against the photo. The giant syringe and green glow may be a nod to Herbert West from the film Re-Animator, so I described him in general terms. I read the blonde shape in his left hand as a severed head held by the hair; please check that."
+  },
+  "hello-original-art": {
+    "pictured": "A close-up of a bald, pointy-eared face with huge round dark eyes and an open mouth of small teeth, in dark browns on black.",
+    "notes": "Drafted by Claude: check it against the photo. The bald head and pointed ears may remind people of Nosferatu, though the teeth are small rows, not fangs, so I didn't name him."
+  },
+  "the-wave-original-art": {
+    "pictured": "A woman in a dress raises an arm on a dark hill toward a lighthouse between giant waves and wings, in teal and navy.",
+    "notes": "Drafted by Claude: check it against the photo. There are large dark wings behind the lighthouse, possibly a dragon or similar creature. I just called them \"wings\", so change that if you meant something specific."
+  },
+  "outreach-original-art": {
+    "pictured": "A purple lighthouse with a red lantern top and arms reaches down through swirling purple waves to grab a hand, under a yellow sky.",
+    "notes": "Drafted by Claude: check it against the photo. I read the lower-right shape as a second hand reaching up to be grabbed and the swirls as sea spray or waves, but they could be mist or cloud."
+  },
+  "darklegs-original-art": {
+    "pictured": "A figure in a blue coat and top hat, holding a hoop, faces a white-and-red lighthouse standing on long black spider legs over pink ground.",
+    "notes": "Drafted by Claude: check it against the photo. I wasn't sure about the ring at the figure's feet. It could be a hoop they're holding, or a shadow or ripple on the ground."
+  },
+  "underneath-original-art": {
+    "pictured": "A white and red lighthouse on grey rocks above blue water, with a fanged, red-eyed creature crouched in the red and grey rocks underneath.",
+    "notes": "Drafted by Claude: check it against the photo. The lighthouse looks a bit like Peggy's Cove, but I didn't name it in case that's not what you meant."
+  },
+  "pied-piper": {
+    "pictured": "A kilted bagpiper stands on a pier while clawed, long-headed creatures climb a leaning lighthouse above crashing waves, in blue and yellow-green.",
+    "notes": "Drafted by Claude: check it against the photo. The creatures look a lot like the Xenomorphs from the Alien films, so I described them without naming them. The piper may be in a long coat with a kilt, which is hard to tell in the rain."
+  },
+  "chummiest-original-art": {
+    "pictured": "A bearded man in a cap and red glasses holds a mug beside a shark in grey-blue sea, with flames, smoke and red streaks behind.",
+    "notes": "Drafted by Claude: check it against the photo. The cap seems to say something like 'W... BEER' but I can't read all of it. I left out a few small details: a second shark fin, a half-sunk barrel or tank in the front, and what looks like a hand in the water at bottom left."
+  },
+  "chummier": {
+    "pictured": "Two men crouch in a small boat inside a curling grey-purple wave as red-eyed teal sharks circle them through streaks of red blood.",
+    "notes": "Drafted by Claude: check it against the photo. The dark-haired man with the eyepatch might be meant as a known film character (Snake Plissken?), so I didn't name him. The other man has long white hair and red glasses."
+  },
+  "chums-original-art": {
+    "pictured": "Two bearded men in hoodies sit in a small boat under a full moon as sharks and octopus tentacles rise from teal and red water.",
+    "notes": "Drafted by Claude: check it against the photo. The boat could be a canoe or a small skiff, so I called it a small boat. The men hold cans, but I left that out to stay under 25 words."
+  },
+  "a-real-fun-gal-original-art": {
+    "pictured": "A bald woman with horns and closed eyes, blood running from a wound on her forehead, in a black top against lavender paint drips.",
+    "notes": "Drafted by Claude: check it against the photo."
+  },
+  "dent-original-art": {
+    "pictured": "A man in a navy-and-white suit, half his face scarred red, strides forward holding out a coin against an orange and olive splattered background.",
+    "notes": "Drafted by Claude: check it against the photo. This looks like a well-known comic-book villain (the name 'Dent' points that way too), so I only described what's visible. 'Gotta' is casual speech, not a typo, so the story line is unchanged."
+  },
+  "rob-original-art": {
+    "pictured": "A young masked hero in a red top, yellow cape and green gloves leaps forward gripping a rope, against grey, purple and green washes.",
+    "notes": "Drafted by Claude: check it against the photo. This is the DC character Robin (red 'R' chest logo); I left out the name and logo, so check if that matters for the listing."
+  },
+  "cats-original-art": {
+    "pictured": "A woman in a black cat-eared mask and catsuit with clawed gloves crawls toward the viewer, two cats behind her, against pale pink and red-splattered paper.",
+    "notes": "Drafted by Claude: check it against the photo. The figure looks like Catwoman, so I described her as a woman in a cat-eared mask and catsuit instead of naming her."
+  },
+  "batlady-original-art": {
+    "pictured": "A woman in a dark blue pointed-ear cowl and red bat emblem lunges forward, red hair flaring, over red and pink paint splatters.",
+    "notes": "Drafted by Claude: check it against the photo. The figure is clearly recognisable as DC's Batwoman, and the chest emblem is a bat logo. Neither is named, but the product title 'BatLady' points to it, so check for trademark issues before listing on Etsy."
+  },
+  "harles-original-art": {
+    "pictured": "A woman with blonde pigtails streaked pink and blue, a red top, denim shorts and spiked red gloves walks toward you gripping a bat, on a splattered rust-red background.",
+    "notes": "Drafted by Claude: check it against the photo. The character is clearly Harley Quinn, so I left the name out. The bat in her left hand is clear, but her right hand is cut off at the bottom edge, so I can't tell if she's holding a second bat (which would fit the story line)."
+  },
+  "jokes-original-art": {
+    "pictured": "A grinning man with green hair and white clown makeup, in a maroon suit and mustard waistcoat, reaching both orange-gloved hands toward the viewer against pink-red splatters.",
+    "notes": "Drafted by Claude: check it against the photo. This is clearly the Joker (DC Comics), so I left the name out. The gloves look orange or tan in the photo."
+  },
+  "bats-original-art": {
+    "pictured": "A masked man in a blue cowl, cape and gold belt flies straight at the viewer with both fists forward, surrounded by small bats and red and turquoise paint splatter.",
+    "notes": "Drafted by Claude: check it against the photo. This is clearly Batman: the bat emblem on the chest and the cowl make him recognisable, so you may want to think about trademark risk before listing."
+  },
+  "leap-original-art": {
+    "pictured": "A man in a grey suit, black cowl, cape and yellow belt jumps between tall dark city towers, painted in watercolour greys, browns and yellow-green.",
+    "notes": "Drafted by Claude: check it against the photo. The figure is a recognisable trademarked superhero (pointed-ear cowl, cape, yellow utility belt), so I described him without naming him."
+  },
+  "the-controller-original-art": {
+    "pictured": "A one-eyed figure with bared teeth in a red buttoned coat, tied by cords to giant pale hands, against dripping blue paint.",
+    "notes": "Drafted by Claude: check it against the photo. The red shape at the top looks like a giant red sleeve cuff, so I left it out to keep the sentence short."
+  },
+  "glint-original-art-krampus": {
+    "pictured": "A red-haired woman in a pink cloak holds a sword, facing a huge brown bear at the edge of a misty purple-grey lake.",
+    "story_fix": "Sometimes you need to stare into each other's eyes, deeply, and wonder where we went wrong.",
+    "notes": "Drafted by Claude: check it against the photo. Story fix: 'each others' became 'each other's'. The red-haired woman and the big bear look like Merida and Mor'du from Pixar's Brave, so I didn't name them. Also, the image file is named 'krampus', but the painting shows a bear, so check the right photo is linked to Glint."
+  },
+  "miss-krampus-original-art": {
+    "pictured": "A pale horned woman with pointed ears looks down, eyes closed, wearing a teal top and red skirt amid red paint splatters on white.",
+    "notes": "Drafted by Claude: check it against the photo. There are red streaks running down from her closed eyes. I left them out to stay under 25 words, so add them if you want them in."
+  },
+  "lady-krampus-original-art": {
+    "pictured": "A horned woman with blue and green hair and red eyes, wearing a red slip dress, looking down against blue watercolour splashes on white.",
+    "notes": "Drafted by Claude: check it against the photo."
+  },
+  "handy-original-art": {
+    "pictured": "A red-haired woman in a white top and shorts leans among floating bug-eyed creatures and a giant purple hand, in teal, purple and rust watercolour.",
+    "notes": "Drafted by Claude: check it against the photo. I couldn't tell for sure whether the purple shape on the left is a large clawed hand or something else; it may be holding a piece of cloth."
+  },
+  "shocked-original-art": {
+    "pictured": "A red-haired woman in a green top gasps with a hand on her cheek, surrounded by animal creatures and skulls in greens, browns and purples.",
+    "notes": "Drafted by Claude: check it against the photo. No typos in the story line. The creatures look like rabbits, birds and animal skulls, but some are hard to tell apart, so I kept it general."
+  },
+  "blinky-original-art": {
+    "pictured": "A red lighthouse with ladders, its base melting into long tentacles that curl through crashing blue and teal waves under an orange-yellow sky.",
+    "notes": "Drafted by Claude: check it against the photo. I read the swirling orange-green shapes at the lighthouse's base as tentacles. If they're meant to be bent waves or the tower warping, change that word."
+  },
+  "standoff-original-art": {
+    "pictured": "A girl in a red skirt stands on rocky ground facing a giant grey, red and yellow robot with green tentacles beside a lighthouse.",
+    "notes": "Drafted by Claude: check it against the photo. The lighthouse appears to be inside the robot's tentacles or right next to it, and I couldn't tell which, so I wrote 'beside'. The blue sky was cut to stay under 25 words."
   }
 }
