@@ -469,6 +469,53 @@ def action_publish_live(icon, item):
     _bg(run_deploy, "VERCEL_DEPLOY_HOOK_PRODUCTION", "main", "Live")
 
 
+def _git(*args: str) -> subprocess.CompletedProcess:
+    return subprocess.run(["git", "-C", str(FRONTEND_DIR), *args], capture_output=True, text=True,
+                          encoding="utf-8", timeout=120, creationflags=NO_WINDOW)
+
+
+def promote_develop() -> None:
+    """Fast-forward main to what's on GitHub's develop (never a merge or force push), then offer Publish Live."""
+    try:
+        f = _git("fetch", "origin", "develop", "main")
+        if f.returncode:
+            info_box("Promote develop → main", f"Couldn't reach GitHub:\n\n{f.stderr.strip()[:400]}")
+            return
+        commits = _git("log", "--oneline", "--no-decorate", "origin/main..origin/develop").stdout.strip().splitlines()
+        if not commits:
+            info_box("Promote develop → main", "main already has everything that's on develop. Nothing to promote.")
+            return
+        if _git("merge-base", "--is-ancestor", "origin/main", "origin/develop").returncode:
+            info_box("Promote develop → main",
+                     "main has commits that develop doesn't, so it can't simply move forward.\n\n"
+                     "This needs a proper merge: ask Claude to sort it out.")
+            return
+        unpushed = _git("log", "--oneline", "origin/develop..develop").stdout.strip()
+        listing = "\n".join("• " + c.split(" ", 1)[-1][:70] for c in commits[:8])
+        more = f"\n…and {len(commits) - 8} more" if len(commits) > 8 else ""
+        warn = "\n\nNote: you have local develop commits that aren't pushed yet; they are NOT included." if unpushed else ""
+        if not confirm("Promote develop → main",
+                       f"Move main up to develop ({len(commits)} commit{'s' * (len(commits) != 1)}):\n\n"
+                       f"{listing}{more}{warn}\n\nDid the preview site look right?"):
+            return
+        p = _git("push", "origin", "origin/develop:refs/heads/main")
+        if p.returncode:
+            log(f"Promote failed: {p.stderr.strip()}")
+            info_box("Promote develop → main", f"Push to main failed:\n\n{p.stderr.strip()[:400]}")
+            return
+        log(f"Promoted develop to main ({len(commits)} commits).")
+        notify("main now matches develop.")
+        if live_enabled() and confirm("Publish Live?", "main is updated. Rebuild the live site from it now?"):
+            run_deploy("VERCEL_DEPLOY_HOOK_PRODUCTION", "main", "Live")
+    except Exception as e:  # noqa: BLE001
+        log(f"Promote error: {e}")
+        notify(f"Promote error: {e}")
+
+
+def action_promote(icon, item):
+    _bg(promote_develop)
+
+
 def action_open_preview(icon, item):
     url = CFG.get("PREVIEW_SITE_URL")
     if url:
@@ -558,6 +605,7 @@ def build_menu() -> pystray.Menu:
         M("🔍  Deploy Preview", action_deploy_preview, enabled=lambda i: not _state["busy"]),
         M("👀  Open Preview Site", action_open_preview),
         S,
+        M("⬆️  Promote develop → main", action_promote, enabled=lambda i: not _state["busy"]),
         M(lambda i: "🚀  Publish Live" if live_enabled() else "🚀  Publish Live (off until switch-over)",
           action_publish_live, enabled=lambda i: not _state["busy"]),
         M("🌐  Open Live Site", action_open_live),

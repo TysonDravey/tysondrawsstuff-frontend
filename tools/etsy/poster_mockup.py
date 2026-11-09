@@ -29,7 +29,6 @@ HERE = Path(__file__).resolve().parent
 TPL = HERE / "mockup"            # photos + templates (committed)
 OUT = HERE / "mockups_out"       # generated images (git-ignored)
 STRAPI = "https://cms.tysondrawsstuff.com"
-MARGIN = 0.035                   # paper border around the painting, as a share of the sheet's short side
 
 
 # --------------------------------------------------------------------------- Strapi
@@ -88,6 +87,27 @@ def smooth(x: np.ndarray, r: int = 20, passes: int = 3) -> np.ndarray:
     return x
 
 
+def grow_sheet(a: np.ndarray, x0: int, y0: int, w: int, h: int):
+    """Push each edge out to the real paper edge: the sheet's rim is in shadow, so a looser "paper" test
+    (pale and grey, a bit darker allowed) is used there. Returns the rectangle and the paper mask."""
+    mx, mn = a.max(-1), a.min(-1)
+    paper = whiteish(a) | ((mn > 120) & ((mx - mn) < 45))
+    x1, y1 = x0 + w - 1, y0 + h - 1
+    for _ in range(60):
+        moved = False
+        if x0 > 0 and paper[y0:y1 + 1, x0 - 1].mean() > 0.5:
+            x0 -= 1; moved = True
+        if x1 < a.shape[1] - 1 and paper[y0:y1 + 1, x1 + 1].mean() > 0.5:
+            x1 += 1; moved = True
+        if y0 > 0 and paper[y0 - 1, x0:x1 + 1].mean() > 0.5:
+            y0 -= 1; moved = True
+        if y1 < a.shape[0] - 1 and paper[y1 + 1, x0:x1 + 1].mean() > 0.5:
+            y1 += 1; moved = True
+        if not moved:
+            break
+    return x0, y0, x1 - x0 + 1, y1 - y0 + 1, paper
+
+
 def build() -> None:
     meta = {}
     for kind in ("portrait", "landscape"):
@@ -95,6 +115,7 @@ def build() -> None:
         a = np.asarray(photo).astype(float)
         white = whiteish(a)
         x0, y0, w, h = find_sheet(white)
+        x0, y0, w, h, white = grow_sheet(a, x0, y0, w, h)
         inrect = np.zeros(white.shape, bool)
         inrect[y0:y0 + h, x0:x0 + w] = True
         sheet = inrect & white
@@ -129,15 +150,13 @@ def make(art: Image.Image) -> Image.Image:
     mask = Image.open(TPL / f"{kind}_mask.png").convert("L")
     shade = np.asarray(Image.open(TPL / f"{kind}_shade.png").convert("L")).astype(float) / 200.0
 
-    # Paper: the sheet as photographed. Painting: whole, centred, inside a thin border.
-    pad = round(min(w, h) * MARGIN)
-    bw, bh = w - 2 * pad, h - 2 * pad
-    s = min(bw / art.width, bh / art.height)
-    pw, ph = round(art.width * s), round(art.height * s)
+    # Painting covers the whole sheet, corner to corner (centre-cropped where its shape differs from the sheet's).
+    s = max(w / art.width, h / art.height)
+    rw, rh = max(w, round(art.width * s)), max(h, round(art.height * s))
+    cx, cy = (rw - w) // 2, (rh - h) // 2
+    a = np.asarray(art.resize((rw, rh), Image.LANCZOS).crop((cx, cy, cx + w, cy + h))).astype(float)
     painted = np.asarray(photo).astype(float).copy()
-    px, py = x0 + (w - pw) // 2, y0 + (h - ph) // 2
-    a = np.asarray(art.resize((pw, ph), Image.LANCZOS)).astype(float)
-    painted[py:py + ph, px:px + pw] = a * shade[py:py + ph, px:px + pw, None]
+    painted[y0:y0 + h, x0:x0 + w] = a * shade[y0:y0 + h, x0:x0 + w, None]
     painted = Image.fromarray(np.clip(painted, 0, 255).astype(np.uint8))
     return Image.composite(painted, photo, mask)
 
