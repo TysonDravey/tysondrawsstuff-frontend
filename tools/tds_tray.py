@@ -213,7 +213,12 @@ def railway_instance_status() -> str | None:
         data = json.loads(out[out.index("{"):])
         for env in data["environments"]["edges"]:
             for si in env["node"]["serviceInstances"]["edges"]:
-                instances = (si["node"].get("latestDeployment") or {}).get("instances") or []
+                dep = si["node"].get("latestDeployment") or {}
+                # A slept service keeps its instance at RUNNING; the deployment
+                # status is what flips to SLEEPING.
+                if dep.get("status") == "SLEEPING":
+                    return "SLEEPING"
+                instances = dep.get("instances") or []
                 return instances[0]["status"] if instances else "SLEEPING"
     except Exception as e:
         log(f"Railway status check failed: {e}")
