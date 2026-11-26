@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
+import { createBrandedSession } from '@/lib/stripe-branding';
 
 function initializeStripe() {
   const secretKey = process.env.STRIPE_SECRET_KEY;
@@ -48,7 +49,7 @@ export async function POST(request: NextRequest) {
     // wallet buttons automatically when the device supports them; 'link'
     // adds Stripe Link. Deliberately excludes other Dashboard-enabled
     // methods (e.g. Klarna) that can ask for extra info like a phone number.
-    const session = await stripe.checkout.sessions.create({
+    const session = await createBrandedSession(stripe, {
       mode: 'payment',
       submit_type: 'pay',
       payment_method_types: ['card', 'link'],
