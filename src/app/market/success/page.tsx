@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import type { Metadata } from 'next';
 import Stripe from 'stripe';
 import MarketLocalTime from '@/components/MarketLocalTime';
@@ -77,61 +78,61 @@ export default async function MarketSuccessPage({ searchParams }: MarketSuccessP
 
   if (!payment) {
     return (
-      <div className="min-h-screen bg-black flex flex-col items-center justify-center px-6 text-center gap-6">
-        <h1 className="text-3xl font-black uppercase text-white">
-          Payment Not Found
-        </h1>
-        <p className="text-white/60 max-w-sm">
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6 text-center gap-5">
+        <p className="eyebrow">Market checkout</p>
+        <h1 className="font-display text-4xl text-foreground">Payment not found</h1>
+        <p className="text-soft max-w-sm">
           We couldn&apos;t verify a payment for this link. If you just paid, check with the artist.
         </p>
         <Link
           href="/market"
-          className="mt-2 py-4 px-8 rounded-full bg-[#E89B3B] text-black font-black uppercase tracking-wide"
+          className="mt-2 rounded bg-primary px-8 py-4 font-bold text-primary-foreground transition-colors hover:bg-[#F4B868]"
         >
-          Back to Market
+          Back to Quick Pay
         </Link>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-black flex flex-col items-center justify-center px-6 py-10 text-center">
-      <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-[#E89B3B] flex items-center justify-center mb-6 animate-[pop_0.3s_ease-out]">
+    <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6 py-10 text-center">
+      <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-primary flex items-center justify-center mb-6 animate-[pop_0.3s_ease-out]">
         <svg
-          className="w-14 h-14 sm:w-16 sm:h-16 text-black"
+          aria-hidden="true"
+          className="w-14 h-14 sm:w-16 sm:h-16 text-primary-foreground"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
-          strokeWidth={4}
+          strokeWidth={3.5}
         >
           <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
         </svg>
       </div>
 
-      <h1 className="text-5xl sm:text-7xl font-black uppercase text-[#E89B3B] tracking-tight">
-        Paid
-      </h1>
+      <h1 className="font-display text-6xl sm:text-8xl text-primary">Paid</h1>
 
-      <p className="text-5xl sm:text-6xl font-black text-white mt-4">
+      <p className="font-display text-5xl sm:text-6xl text-foreground mt-4">
         ${payment.amount.toFixed(2)}
       </p>
-      <p className="text-white/50 font-bold uppercase tracking-wide text-sm mt-1">
-        {payment.currency}
-      </p>
+      <p className="eyebrow mt-2">{payment.currency}</p>
 
-      <div className="mt-6 flex items-center gap-4 text-white/70 font-bold uppercase tracking-wide text-sm">
+      <div className="mt-6 flex items-center gap-4 text-soft font-semibold">
         <span>
           <MarketLocalTime epochSeconds={payment.createdEpoch} />
         </span>
-        <span className="text-white/30">•</span>
+        <span className="text-line-strong">•</span>
         <span>Payment #{payment.code}</span>
       </div>
 
-      <div className="mt-10 pt-6 border-t border-white/10 w-full max-w-xs">
-        <p className="text-white font-black uppercase tracking-[0.2em] text-lg">
-          Tyson Draws Stuff
-        </p>
-        <p className="text-[#E89B3B] font-bold mt-1">Thank you!</p>
+      <div className="mt-10 pt-8 border-t border-border w-full max-w-xs flex flex-col items-center gap-3">
+        <Image
+          src="/brand/tds-wordmark-dark.webp"
+          alt="Tyson Draws Stuff"
+          width={2529}
+          height={219}
+          className="h-6 w-auto"
+        />
+        <p className="text-primary font-semibold">Thank you!</p>
       </div>
     </div>
   );
